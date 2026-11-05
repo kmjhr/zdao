@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>纸上岛 · 拼豆板编辑器原型 v1.5（MARD 色号 · 荧光部件色）</title>
+<style>
+  :root{
+    --board:#FAF8F2; --line:#D8D2C2; --ink:#1A1B1C; --sub:#5F6670;
+    --accent:#4F6B9A; --ok:#35705A; --warn:#9A6A2F; --err:#A14E50; --gold:#C9A227;
+    --panel:#FBF9F4;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#F2F0E9;font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:var(--ink);}
+  header{padding:14px 20px 10px;border-bottom:2px solid var(--line);background:#fff;}
+  header h1{margin:0;font-size:20px;}
+  header p{margin:4px 0 0;font-size:12.5px;color:var(--sub);}
+  main{display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;align-items:flex-start;}
+  .board-wrap{position:relative;}
+  canvas#board{background:var(--board);border:2px solid #CFC7B2;border-radius:8px;display:block;cursor:crosshair;}
+  #info{font-size:12.5px;color:var(--sub);margin-top:6px;min-height:18px;}
+  .detail-wrap{margin-top:14px;padding:10px;background:#FFFDF6;border:2px solid var(--gold);border-radius:12px;}
+  .detail-wrap h3{margin:0 0 6px;font-size:13px;color:var(--gold);}
+  canvas#detail{background:var(--board);border:2px solid #CFC7B2;border-radius:8px;display:block;cursor:crosshair;}
+  #dinfo{font-size:12px;color:var(--sub);margin-top:6px;min-height:16px;}
+  aside{flex:1 1 300px;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;}
+  section{margin-bottom:14px;}
+  section h2{margin:0 0 8px;font-size:13px;color:var(--sub);font-weight:600;border-left:3px solid var(--accent);padding-left:8px;}
+  .sizeBtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .sBtn{padding:5px 11px;border:1.5px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:12.5px;}
+  .sBtn.on{border-color:var(--accent);background:#EDF1F8;font-weight:600;}
+  .modeBtns{display:flex;gap:8px;}
+  .modeBtn{flex:1;padding:9px 6px;border:2px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;text-align:center;font-size:13px;}
+  .modeBtn small{display:block;font-size:11px;color:var(--sub);margin-top:2px;}
+  .modeBtn.on{border-color:var(--ok);background:#EDF5F1;font-weight:700;color:var(--ok);}
+  .modeBtn.on small{color:var(--ok);}
+  #modeStat{font-size:12px;color:var(--warn);margin-top:7px;min-height:16px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{display:flex;align-items:center;gap:5px;padding:4px 9px;border:1.5px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-size:12.5px;user-select:none;}
+  .chip .dot{width:11px;height:11px;border-radius:3px;border:1px solid rgba(0,0,0,.15);}
+  .chip.on{border-color:var(--accent);background:#EDF1F8;font-weight:600;}
+  .chip.dim{opacity:.45;pointer-events:none;}
+  .chip.off{opacity:.3;filter:grayscale(.75);}
+  .colors{display:flex;flex-wrap:wrap;gap:6px;}
+  .sw{width:24px;height:24px;border-radius:5px;border:2px solid rgba(0,0,0,.12);cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);}
+  .sw.light{color:#4A4A4A;text-shadow:none;}
+  .sw.on{border-color:var(--accent);box-shadow:0 0 0 2px #fff inset;}
+  .sw.dim{opacity:.45;pointer-events:none;}
+  .ser{display:flex;flex-wrap:wrap;gap:2px;align-items:center;margin-bottom:5px;width:100%;}
+  .ser-t{width:100%;font-size:10px;color:#888;letter-spacing:.5px;margin-bottom:1px;}
+  .layers{display:flex;flex-wrap:wrap;gap:7px 12px;}
+  .layers label{font-size:12.5px;display:flex;align-items:center;gap:4px;cursor:pointer;}
+  .row2{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn{padding:6px 12px;border:1.5px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-size:12.5px;}
+  .btn:hover{border-color:var(--accent);}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn.warn{background:var(--warn);border-color:var(--warn);color:#fff;}
+  .btn.gold{background:var(--gold);border-color:var(--gold);color:#fff;}
+  select{max-width:190px;padding:4px 6px;border:1.5px solid var(--line);border-radius:6px;font-size:12px;background:#fff;}
+  textarea{width:100%;height:120px;font-family:Consolas,monospace;font-size:11px;border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical;background:#fff;}
+  .tip{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.6;}
+  .layer-item{display:flex;align-items:center;gap:7px;padding:5px 7px;border:1.5px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:12px;margin-bottom:5px;}
+  .layer-item:hover{border-color:var(--accent);}
+  .layer-item.on{border-color:var(--accent);background:#EDF1F8;font-weight:600;}
+  .layer-item .eye{flex:none;font-size:12px;width:16px;text-align:center;}
+  .layer-item .lname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .layer-item .pos{flex:none;font-size:10.5px;color:var(--sub);}
+  .layer-empty{font-size:11.5px;color:var(--sub);text-align:center;padding:12px 6px;}
+  /* ===== 角色身份卡 v1.3 ===== */
+  #cardOverlay{position:fixed;inset:0;background:rgba(20,18,16,.55);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  #cardOverlay.show{opacity:1;pointer-events:auto;}
+  #cardOverlay.done{background:rgba(20,18,16,.15);}
+  #pixelHand{position:absolute;top:6%;left:50%;margin-left:-50px;width:100px;height:80px;image-rendering:pixelated;transform:translateY(-190px);opacity:0;transition:transform .95s cubic-bezier(.55,0,.35,1),opacity .35s ease;}
+  #pixelHand.drop{transform:translateY(0);opacity:1;}
+  #pixelHand.up{transform:translateY(-210px);opacity:0;transition:transform .55s ease-in,opacity .45s ease;}
+  #ocCard{position:relative;width:360px;background:#fff;border:3px solid #222;border-radius:4px;box-shadow:8px 8px 0 rgba(0,0,0,.3);font-family:'Courier New',monospace;transform:translateY(-75px);opacity:0;transition:transform .45s cubic-bezier(.6,.04,.9,.4),opacity .3s ease;}
+  #ocCard.fall{transform:translateY(0);opacity:1;}
+  .cc-top{background:#F6CFDD;color:#7A3B4E;font-weight:700;font-size:13px;padding:8px 12px;border-bottom:2px solid #222;letter-spacing:1px;}
+  .cc-body{display:flex;gap:12px;padding:12px;}
+  .cc-photo{width:150px;height:150px;border:2px solid #222;background:#FBF6F0;cursor:pointer;position:relative;flex:none;}
+  .cc-photo canvas{width:150px;height:150px;display:block;image-rendering:pixelated;}
+  .cc-photo-hint{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;text-align:center;padding:3px 0;letter-spacing:1px;}
+  .cc-photo:hover{border-color:#7B1FA2;}
+  .cc-info{flex:1;cursor:pointer;min-width:0;}
+  .cc-info .ci-name{font-size:17px;font-weight:700;color:#222;letter-spacing:1px;margin-bottom:6px;border-bottom:2px dashed #CCC;padding-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cc-info .ci-line{font-size:11px;color:#444;margin:5px 0;line-height:1.5;}
+  .cc-info .ci-desc{font-size:10.5px;color:#777;margin-top:6px;border-top:1px dashed #CCC;padding-top:5px;line-height:1.55;white-space:pre-line;min-height:30px;}
+  .cc-bottom{background:#F6CFDD;color:#7A3B4E;font-size:10px;padding:6px 12px;border-top:2px solid #222;text-align:center;letter-spacing:.5px;}
+  #infoForm{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:300px;background:#FFF;border:3px solid #222;border-radius:4px;z-index:1001;display:none;font-family:'Courier New',monospace;box-shadow:8px 8px 0 rgba(0,0,0,.3);}
+  #infoForm h3{background:#F6CFDD;margin:0;padding:8px 12px;font-size:13px;border-bottom:2px solid #222;color:#7A3B4E;letter-spacing:1px;}
+  #infoForm .if-row{padding:7px 12px;}
+  #infoForm label{display:block;font-size:11px;color:#666;margin-bottom:3px;}
+  #infoForm input,#infoForm textarea{width:100%;box-sizing:border-box;border:2px solid #CCC;border-radius:2px;font-size:12px;padding:5px;font-family:inherit;}
+  #infoForm textarea{height:52px;resize:none;}
+  #infoForm .if-btns{display:flex;gap:8px;padding:8px 12px 12px;}
+  #infoForm .btn{flex:1;}
+</style>
+</head>
+<body>
+<header>
+  <h1>纸上岛 · 拼豆板编辑器原型 v1.5b —— MARD 色号 + 荧光部件色 + 固定双层（本体/衣服）</h1>
+  <p>打开就是 40×40 空画布：空格白色留缝、填色零缝隙占满、细黑网格。色板用 MARD 标准色号（对照图纸/买豆用），部件标注时盖荧光色浅层（像荧光笔划过）。「新建角色卡」＝像素大手扔下空白 ID 卡：点左侧照片编辑形象、点右侧填写 OC 信息。先拼色号 → 再标部件（五官/衣服分部件，方便以后动起来/换装）。内置 38 色（全色相）+ 图层：自定义/开关/排序/同格叠加。画布大小可自定义（15/21/29/40/自定 N）。</p>
+</header>
+<main>
+  <div class="board-wrap">
+    <canvas id="board"></canvas>
+    <div id="info">左键涂色/标注｜右键擦除｜拖动连续操作</div>
+    <div class="detail-wrap" id="detailWrap" style="display:none;">
+      <h3>🔍 放大镜 · 细节画布（映射回小人）</h3>
+      <canvas id="detail"></canvas>
+      <div id="dinfo"></div>
+      <div class="row2" style="margin-top:8px;">
+        <button class="btn gold" id="btnAnchor">📍 设锚点</button>
+        <button class="btn primary" id="btnSaveDetail">保存细节</button>
+        <button class="btn warn" id="btnCancelDetail">取消</button>
+      </div>
+    </div>
+  </div>
+  <aside>
+    <section>
+      <h2>0 · 画布大小（主画布/细节画布通用）</h2>
+      <div class="sizeBtns">
+        <button class="sBtn" data-s="15">15×15</button>
+        <button class="sBtn" data-s="21">21×21</button>
+        <button class="sBtn" data-s="29">29×29</button>
+        <button class="sBtn on" data-s="40">40×40</button>
+        <input type="number" id="customSize" min="8" max="64" value="36" placeholder="N" style="width:56px;padding:4px 6px;border:1.5px solid var(--line);border-radius:6px;font-size:12.5px;">
+        <button class="btn" id="btnNewBoard">新建画布</button>
+      </div>
+      <div class="tip">新建画布=按当前尺寸重来（单个空白图层）。当前尺寸 <span id="curSizeLbl">40×40</span>。</div>
+    </section>
+    <section>
+      <h2>0.5 · 放大镜（细节 ↔ 小人映射）</h2>
+      <div class="row2">
+        <button class="btn gold" id="btnZoomEdit">🔍 放大编辑「当前部件」</button>
+      </div>
+      <div class="row2" style="margin-top:6px;align-items:center;">
+        <select id="detailSel"><option value="">（还没有细节图）</option></select>
+        <button class="btn" id="btnViewDetail">查看</button>
+        <button class="btn warn" id="btnDelDetail">删除</button>
+      </div>
+      <div class="tip">选中部件（如饰品/衣服/武器）→ 放大编辑 → 在细节画布精修 → 设锚点（挂回小人的位置）→ 保存。小人身保持简化显示，细节图通过锚点映射。</div>
+    </section>
+
+    <section>
+      <h2>1 · 创作模式（两阶段）</h2>
+      <div class="modeBtns">
+        <button class="modeBtn on" id="btnPaintMode">🎨 拼豆模式<small>只管色号，像照图纸拼豆</small></button>
+        <button class="modeBtn" id="btnPartMode">🏷 部件标注<small>给豆子分部件（不改颜色）</small></button>
+      </div>
+      <div id="modeStat"></div>
+    </section>
+    <section>
+      <h2>2 · 选部件（豆子属于哪一层）</h2>
+      <div class="chips" id="partChips"></div>
+    </section>
+    <section>
+      <h2>3 · 选豆色（MARD 标准色号 · 38 色）</h2>
+      <div class="colors" id="colorSw"></div>
+      <div class="row2" style="margin-top:8px;">
+        <label style="font-size:12.5px;display:flex;align-items:center;gap:5px;">自定义
+          <input type="color" id="customColor" value="#C0392B" style="width:34px;height:24px;border:none;background:none;">
+        </label>
+        <label style="font-size:12.5px;display:flex;align-items:center;gap:5px;"><input type="checkbox" id="hlOnly"> 只看当前部件</label>
+      </div>
+      <div class="row2" style="margin-top:8px;">
+        <label style="font-size:12.5px;display:flex;align-items:center;gap:5px;">直接输入色号
+          <input type="text" id="codeInput" placeholder="如 C16" maxlength="10" spellcheck="false" style="width:72px;padding:4px 6px;border:1.5px solid var(--line);border-radius:6px;font-size:12.5px;">
+          <button class="btn" id="btnCode">选色</button>
+        </label>
+      </div>
+    </section>
+    <section>
+      <h2>4 · 图层（画画软件式：自定义/开关/排序/叠加）</h2>
+      <div class="row2" style="margin-bottom:6px;">
+        <input type="text" id="layerName" placeholder="新图层名，如：刘海" maxlength="12" spellcheck="false" style="flex:1;min-width:90px;padding:5px 8px;border:1.5px solid var(--line);border-radius:8px;font-size:12.5px;">
+        <button class="btn primary" id="btnAddLayer">＋图层</button>
+      </div>
+      <div id="layerList" style="border:1px solid var(--line);border-radius:8px;background:#fff;padding:5px;margin-bottom:6px;"></div>
+      <div class="row2">
+        <button class="btn" id="btnLayerUp">↑ 上移</button>
+        <button class="btn" id="btnLayerDown">↓ 下移</button>
+        <button class="btn warn" id="btnDelLayer">删除图层</button>
+      </div>
+      <div class="tip">当前编辑：<span id="curLayerLbl">本体</span>。原始形象固定两层：<b>本体</b>（皮肤·五官·头发，不可删）与<b>衣服</b>（可整层替换）。<b>部件按层开放</b>：本体层只能标五官与皮肤，衣服层只能标衣服与鞋，饰品层只能标饰品；切层后不可用的按钮会变灰。眼睛=显示/隐藏；上层盖下层。</div>
+    </section>
+    <section>
+      <h2>5 · 操作</h2>
+      <div class="row2">
+        <button class="btn primary" id="btnNewCard">新建角色卡</button>
+        <button class="btn" id="btnViewCard">查看角色卡</button>
+        <button class="btn primary" id="btnLoad">载入「姐姐」</button>
+        <button class="btn" id="btnBlink">演示眨眼</button>
+        <button class="btn" id="btnTalk">演示说话</button>
+        <button class="btn" id="btnExport">导出图纸 JSON</button>
+        <button class="btn warn" id="btnClear">清空</button>
+      </div>
+      <textarea id="exportBox" placeholder="导出 JSON = 色号矩阵 + 部件矩阵 + 细节图列表。" spellcheck="false"></textarea>
+      <div class="tip">默认空画布（纯白网格，不标色号）：拼豆模式涂颜色 → 部件模式标五官/衣服（分部件方便以后动起来/换装）。标注过的格子盖上该部件浅色透明层，一眼看出部件分布。多图层上层盖下层。姐姐是示例。</div>
+    </section>
+  </aside>
+</main>
+<!-- 角色身份卡 v1.3 -->
+<div id="cardOverlay">
+  <canvas id="pixelHand" width="100" height="80"></canvas>
+  <div id="ocCard">
+    <div class="cc-top">纸上岛 · OC 身份卡</div>
+    <div class="cc-body">
+      <div id="cardPhoto" class="cc-photo">
+        <canvas id="photoCanvas"></canvas>
+        <div class="cc-photo-hint">点击编辑形象</div>
+      </div>
+      <div id="cardInfo" class="cc-info">
+        <div class="ci-name" id="ciName">？？？</div>
+        <div class="ci-line">生日：<span id="ciBirth">—</span></div>
+        <div class="ci-line">性格：<span id="ciTrait">—</span></div>
+        <div class="ci-line">标签：<span id="ciTag">—</span></div>
+        <div class="ci-desc" id="ciDesc">点击右侧填写 OC 信息</div>
+      </div>
+    </div>
+    <div class="cc-bottom">点左侧＝编辑形象 · 点右侧＝填写信息</div>
+  </div>
+</div>
+<div id="infoForm">
+  <h3>OC 信息</h3>
+  <div class="if-row"><label>名字</label><input id="inName" placeholder="如：林芜"></div>
+  <div class="if-row"><label>生日</label><input id="inBirth" placeholder="如：5.21"></div>
+  <div class="if-row"><label>性格</label><input id="inTrait" placeholder="如：安静 / 毒舌"></div>
+  <div class="if-row"><label>标签</label><input id="inTag" placeholder="如：#姐姐 #纸片人"></div>
+  <div class="if-row"><label>设定</label><textarea id="inDesc" placeholder="一句话设定…"></textarea></div>
+  <div class="if-btns"><button class="btn primary" id="btnInfoSave">保存</button><button class="btn" id="btnInfoCancel">取消</button></div>
+</div>
+<script>
+(function(){
+"use strict";
+try{
+  var PARTS=[
+    {id:'hair', name:'头发', color:'#7B4A2F', tint:'#FCE83A'},
+    {id:'head', name:'头·脸', color:'#F2C9A0', tint:'#FFB74D'},
+    {id:'eyes', name:'眼睛', color:'#34261C', tint:'#40C4FF'},
+    {id:'mouth',name:'嘴巴', color:'#C67C70', tint:'#FF4081'},
+    {id:'upper',name:'上身', color:'#E8B48A', tint:'#76FF03'},
+    {id:'lower',name:'下身', color:'#C98E5E', tint:'#E040FB'},
+    {id:'top',  name:'衣服', color:'#F4F4F4', tint:'#00E5FF'},
+    {id:'pants',name:'裤子', color:'#414141', tint:'#7C4DFF'},
+    {id:'coat', name:'外套', color:'#585858', tint:'#B2FF59'},
+    {id:'shoes',name:'鞋',   color:'#2E2E2E', tint:'#FF6E40'},
+    {id:'acc',  name:'饰品', color:'#E9B5AA', tint:'#F50057'}
+  ];
+  var PRESET={name:"姐姐",cols:29,rows:29,palette:{"H1":"#E2E2E2","H2":"#FFFFFF","H3":"#B3B3B3","H4":"#868686","H5":"#474747","H6":"#2C2C2C","H7":"#000000","G3":"#F4C3A5","G7":"#9D5B3E","G8":"#592A21","G9":"#E6B483","G12":"#EBBB83","G14":"#8D614C","G17":"#56403C","E2":"#FECDDF","E4":"#E8649E","E6":"#FF346B","F2":"#FC3D45","F3":"#F74941","F8":"#BC0127","F14":"#FFA9AD","F19":"#C1444A","A4":"#FFE953","A6":"#FDAD49","A7":"#FF7C2F","B5":"#00BD35","B12":"#156F40","B14":"#ADE945","C4":"#42CCFF","C7":"#0188D3","C8":"#1054C0","C11":"#03B9B9","C17":"#50D3EC","C24":"#7DC4FF","D4":"#182A84","D13":"#B90295","D18":"#A45EC7","D20":"#9C32B2"},
+    color:JSON.parse('[["B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G14","G7","G7","G7","G7","G7","G7","G7","G7","G7","G14","G14","G8","G8","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G14","G7","G7","G7","G7","G7","G7","G7","G7","G7","G14","G14","G8","G8","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G8","G8","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G8","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G8","G8","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G8","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G14","G8","G8","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G14","G9","G3","G3","G3","G3","G3","G3","G3","G3","G3","G3","G3","G9","G14","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G14","G9","G3","G3","H2","G17","G3","G3","G3","H2","G17","G3","G3","G9","G14","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G14","G9","G3","G3","G17","G17","G3","G3","G3","G17","G17","G3","G3","G9","G14","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G14","G9","F14","F14","G3","G3","G3","G3","G3","G3","G3","F14","F14","G9","G14","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G9","G3","G3","G3","G3","F19","F19","G3","G3","G3","G3","G3","G9","G8","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","G12","G12","G12","G12","G12","G12","G12","G12","G12","G12","G12","G12","G12","G8","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","G8","G8","B2","B2","B2","G9","G9","G9","G9","G9","G9","G9","B2","B2","B2","G8","G8","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","G9","G9","G9","G9","G9","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","H4","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H4","H4","H1","H1","H1","H1","H1","H4","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H4","H1","H1","H1","H1","H1","H1","H1","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H1","H1","H1","H1","H1","H1","H1","H1","H1","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H4","H4","H4","H1","H1","H4","H4","H4","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H3","H3","H3","H1","H1","H3","H3","H3","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H3","H3","H3","H3","H3","H3","H3","H3","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H3","H3","H3","H1","H1","H3","H3","H3","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","H5","H5","H4","H3","H3","H3","H3","H3","H3","H3","H3","H4","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","H5","H5","H5","H5","H5","H5","H5","H5","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","H5","H5","H5","H5","H5","H5","H5","H5","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","H5","H5","H5","H5","B2","B2","B2","H5","H5","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","H5","H5","H5","H5","B2","B2","B2","H5","H5","H5","H5","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","H7","H7","H7","H7","B2","B2","B2","H7","H7","H7","H7","B2","B2","B2","B2","B2","B2","B2","B2","B2"],["B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2","B2"]]'), part:JSON.parse('[["none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","none","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","none","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","none","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","head","head","head","head","head","head","head","head","head","head","head","head","head","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","head","head","head","eyes","eyes","head","head","head","eyes","eyes","head","head","head","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","head","head","head","eyes","eyes","head","head","head","eyes","eyes","head","head","head","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","head","head","head","head","head","head","head","head","head","head","head","head","head","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","head","head","head","head","head","mouth","mouth","head","head","head","head","head","head","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","head","head","head","head","head","head","head","head","head","head","head","head","head","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","hair","hair","none","none","none","head","head","head","head","head","head","head","none","none","none","hair","hair","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","none","none","none","head","head","head","head","head","none","none","none","none","none","none","none","none","none","none","none","none"],["none","none","none","none","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","coat","top","top","top","top","top","coat","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","top","top","top","top","top","top","top","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","top","top","top","top","top","top","top","top","top","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","top","top","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","top","top","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","top","top","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","coat","coat","coat","coat","coat","coat","coat","coat","coat","coat","none","none","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","pants","pants","pants","pants","none","none","none","pants","pants","pants","pants","none","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","pants","pants","pants","pants","none","none","none","pants","pants","pants","pants","none","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","shoes","shoes","shoes","shoes","none","none","none","shoes","shoes","shoes","shoes","none","none","none","none","none","none","none","none","none"],["none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none","none"]]')};
+
+  // ---- 主画布（尺寸可变） ----
+  var N=40, GRID=16, PAD=24;
+  var DPR=window.devicePixelRatio||1, LW1=1, LW2=2;
+  var canvas=document.getElementById('board');
+  var ctx=canvas.getContext('2d');
+  var board={color:[],part:[]};
+  var layers=[], curLayer=0;
+  var ROLE_PARTS={base:['head','hair','eyes','mouth','upper','lower'],cloth:['top','pants','coat','shoes'],acc:['acc']};
+  var ROLE_NAME={base:'本体',cloth:'衣服',acc:'饰品'};
+  function roleOfPart(pid){
+    for(var k in ROLE_PARTS){ if(ROLE_PARTS[k].indexOf(pid)>=0) return k; }
+    return 'acc';
+  }
+  function partAllowedOnLayer(pid, ly){
+    if(!ly) return false;
+    return roleOfPart(pid)===ly.role;
+  }
+  function firstAllowedPart(ly){
+    var want=(ly&&ly.role)?ly.role:'base';
+    for(var i=0;i<PARTS.length;i++){ if(roleOfPart(PARTS[i].id)===want) return PARTS[i].id; }
+    return 'hair';
+  }
+  var mode='paint', curPart='hair', curColor='G3';
+  var hlOnly=false;
+
+  function blankMat(){
+    var c=[],p=[];
+    for(var y=0;y<N;y++){c[y]=[];p[y]=[];for(var x=0;x<N;x++){c[y][x]='B2';p[y][x]='none';}}
+    return {color:c,part:p};
+  }
+  function newLayer(name,role){
+    var m=blankMat();
+    layers.push({name:name||((ROLE_NAME[role]||'图层')+' '+(layers.length+1)),role:role||'acc',visible:true,color:m.color,part:m.part});
+    curLayer=layers.length-1;
+  }
+  function buildView(){
+    var c=[],p=[];
+    for(var y=0;y<N;y++){c[y]=[];p[y]=[];for(var x=0;x<N;x++){c[y][x]='B2';p[y][x]='none';}}
+    for(var l=0;l<layers.length;l++){
+      if(!layers[l].visible) continue;
+      for(var yy=0;yy<N;yy++)for(var xx=0;xx<N;xx++){
+        var lc=layers[l].color[yy][xx];
+        var lp=layers[l].part[yy][xx];
+        if(lc!=='B2') c[yy][xx]=lc;
+        if(lp!=='none') p[yy][xx]=lp;
+      }
+    }
+    board.color=c; board.part=p;
+  }
+  function blank(){
+    layers=[];
+    newLayer('本体','base');
+    newLayer('衣服','cloth');
+    curLayer=0;
+    buildView();
+  }
+  function loadPreset(){
+    N=PRESET.cols;
+    resetCanvasSize();
+    layers=[];
+    newLayer('本体','base');
+    newLayer('衣服','cloth');
+    var baseL=layers[0], clothL=layers[1], accL=null;
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      var pc=PRESET.color[y][x], pp=PRESET.part[y][x];
+      if(pp==='none' && pc==='B2') continue;
+      var rl=(pp==='none')?'body':roleOfPart(pp);
+      var t=null;
+      if(rl==='acc'){ if(!accL){ newLayer('饰品层','acc'); accL=layers[layers.length-1]; } t=accL; }
+      else { t=(rl==='base')?baseL:clothL; }
+      t.color[y][x]=pc; if(pp!=='none') t.part[y][x]=pp;
+    }
+    curLayer=0;
+    buildView();
+    setSizeUI(N);
+    renderLayerList();
+    render(); updateStat();
+  }
+  function resetCanvasSize(){
+    GRID=Math.max(12,Math.min(30,Math.floor(640/N)));
+    PAD=Math.max(16,Math.floor(GRID/1.4));
+    var SIZE=PAD*2+GRID*N;
+    DPR=window.devicePixelRatio||1; LW1=Math.max(1,Math.round(DPR)); LW2=LW1*2;
+    canvas.width=Math.round(SIZE*DPR); canvas.height=Math.round(SIZE*DPR);
+    canvas.style.width=SIZE+'px'; canvas.style.height=SIZE+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    document.getElementById('curSizeLbl').textContent=N+'×'+N;
+  }
+  blank();
+
+  function partTint(id){
+    var t='#E9E5D9';
+    PARTS.forEach(function(p){ if(p.id===id && p.tint) t=p.tint; });
+    return t;
+  }
+  function lum(hex){
+    var n=parseInt(hex.replace('#',''),16);
+    var r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+    return (r*299+g*587+b*114)/1000;
+  }
+
+  // ---- 细节画布（放大镜） ----
+  var dcanvas=document.getElementById('detail');
+  var dctx=dcanvas.getContext('2d');
+  var detailWrap=document.getElementById('detailWrap');
+  var detail={};
+  var detailList=[];
+  var dEditing=false, dAnchorMode=false;
+  var dGrid=16, dPad=12;
+
+  function dReset(size){
+    dGrid=Math.max(10,Math.min(28,Math.floor(420/size)));
+    dPad=Math.max(10,Math.floor(dGrid/1.5));
+    DPR=window.devicePixelRatio||1; LW1=Math.max(1,Math.round(DPR)); LW2=LW1*2;
+    var S=dPad*2+dGrid*size;
+    dcanvas.width=Math.round(S*DPR); dcanvas.height=Math.round(S*DPR);
+    dcanvas.style.width=S+'px'; dcanvas.style.height=S+'px';
+    dctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  function dBlank(size){
+    detail={size:size,color:[],part:[],anchor:null};
+    for(var y=0;y<size;y++){detail.color[y]=[];detail.part[y]=[];for(var x=0;x<size;x++){detail.color[y][x]='B2';detail.part[y][x]='none';}}
+  }
+  function dRender(){
+    var size=detail.size||0; if(!size)return;
+    dctx.clearRect(0,0,dcanvas.width,dcanvas.height);
+    dctx.fillStyle='#FAF8F2';
+    dctx.fillRect(0,0,dcanvas.width,dcanvas.height);
+    dctx.fillStyle='#000000';
+    var dlw1=LW1/DPR, dlw2=LW2/DPR;
+    for(var i=1;i<size;i++){ if(i%5===0) continue;
+      dctx.fillRect(dPad+i*dGrid, dPad, dlw1, dGrid*size);
+      dctx.fillRect(dPad, dPad+i*dGrid, dGrid*size, dlw1);
+    }
+    for(var i=5;i<size;i+=5){
+      dctx.fillRect(dPad+i*dGrid, dPad, dlw2, dGrid*size);
+      dctx.fillRect(dPad, dPad+i*dGrid, dGrid*size, dlw2);
+    }
+    for(var y=0;y<size;y++){
+      for(var x=0;x<size;x++){
+        var ck=detail.color[y][x];
+        if(ck==='B2'){
+          dctx.fillStyle='#FFFFFF';
+          dctx.fillRect(dPad+x*dGrid+1, dPad+y*dGrid+1, dGrid-2, dGrid-2);
+        }else{
+          var col=PRESET.palette[ck]||ck;
+          dctx.fillStyle=col;
+          dctx.fillRect(dPad+x*dGrid, dPad+y*dGrid, dGrid, dGrid);
+        }
+        if(detail.anchor && detail.anchor.x===x && detail.anchor.y===y){
+          dctx.strokeStyle='#C9A227'; dctx.lineWidth=3;
+          dctx.strokeRect(dPad+x*dGrid+1, dPad+y*dGrid+1, dGrid-2, dGrid-2);
+        }
+      }
+    }
+    dctx.fillStyle='#000000';
+    dctx.fillRect(dPad,dPad,dGrid*size,dlw2);
+    dctx.fillRect(dPad,dPad+dGrid*size-dlw2,dGrid*size,dlw2);
+    dctx.fillRect(dPad,dPad,dlw2,dGrid*size);
+    dctx.fillRect(dPad+dGrid*size-dlw2,dPad,dlw2,dGrid*size);
+  }
+  function dRound(c,x,y,w,h,r){
+    c.beginPath();
+    c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);
+    c.closePath();
+  }
+  function dCellFromEvent(e){
+    var r=dcanvas.getBoundingClientRect();
+    var mx=e.clientX-r.left, my=e.clientY-r.top;
+    var x=Math.floor((mx-dPad)/dGrid), y=Math.floor((my-dPad)/dGrid);
+    if(x<0||x>=detail.size||y<0||y>=detail.size) return null;
+    return {x:x,y:y};
+  }
+  var dPainting=false;
+  dcanvas.addEventListener('mousedown',function(e){
+    if(!dEditing) return;
+    var c=dCellFromEvent(e); if(!c) return;
+    if(dAnchorMode){
+      detail.anchor={x:c.x,y:c.y};
+      document.getElementById('dinfo').textContent='锚点已设在 ('+c.x+','+c.y+') —— 挂回小人的位置。';
+      dRender();
+      return;
+    }
+    if(e.button===2){detail.color[c.y][c.x]='B2';detail.part[c.y][c.x]='none';dRender();return;}
+    dPainting=true;detail.color[c.y][c.x]=curColor;detail.part[c.y][c.x]='none';dRender();
+  });
+  window.addEventListener('mousemove',function(e){
+    var c=dCellFromEvent(e);
+    if(c){
+      var ck=detail.color[c.y][c.x];
+      document.getElementById('dinfo').textContent='细节格 ('+c.x+','+c.y+')｜色号:'+(ck==='B2'?'空':ck)+(detail.anchor?'｜锚点:('+detail.anchor.x+','+detail.anchor.y+')':'｜未设锚点');
+    }
+    if(dPainting&&c){detail.color[c.y][c.x]=curColor;dRender();}
+  });
+  window.addEventListener('mouseup',function(){dPainting=false;});
+  dcanvas.addEventListener('contextmenu',function(e){e.preventDefault();var c=dCellFromEvent(e);if(c){detail.color[c.y][c.x]='B2';dRender();}});
+
+  // ---- 图层（画画软件式） ----
+  var layerBox=document.getElementById('layerList');
+  function renderLayerList(){
+    layerBox.innerHTML='';
+    if(!layers.length){
+      var d=document.createElement('div'); d.className='layer-empty'; d.textContent='还没有图层。';
+      layerBox.appendChild(d);
+      document.getElementById('curLayerLbl').textContent='—';
+      return;
+    }
+    layers.forEach(function(ly,i){
+      var d=document.createElement('div');
+      d.className='layer-item'+(i===curLayer?' on':'');
+      var badge=ly.role?('<span class="pos">'+(ROLE_NAME[ly.role]||'')+'</span>'):'';
+      d.innerHTML='<span class="eye">'+(ly.visible?'👁':'·')+'</span><span class="lname">'+ly.name+'</span>'+badge+'<span class="pos">第'+(i+1)+'层</span>';
+      d.onclick=function(){curLayer=i;renderLayerList();updateStat();render();};
+      d.querySelector('.eye').onclick=function(ev){ev.stopPropagation();ly.visible=!ly.visible;buildView();renderLayerList();render();};
+      layerBox.appendChild(d);
+    });
+    document.getElementById('curLayerLbl').textContent=layers[curLayer]?layers[curLayer].name:'—';
+    if(typeof refreshChips==='function') refreshChips();
+  }
+  document.getElementById('btnAddLayer').addEventListener('click',function(){
+    var nm=(document.getElementById('layerName').value||'').trim();
+    newLayer(nm||null,'acc');
+    document.getElementById('layerName').value='';
+    buildView(); renderLayerList(); updateStat(); render();
+    statEl.textContent='已新建图层：'+layers[curLayer].name+'。';
+  });
+  function moveLayer(delta){
+    var i=curLayer, j=i+delta;
+    if(i<0||j<0||j>=layers.length) return;
+    var tm=layers[i]; layers[i]=layers[j]; layers[j]=tm;
+    curLayer=j;
+    buildView(); renderLayerList(); render();
+  }
+  document.getElementById('btnLayerUp').addEventListener('click',function(){moveLayer(1);});
+  document.getElementById('btnLayerDown').addEventListener('click',function(){moveLayer(-1);});
+  document.getElementById('btnDelLayer').addEventListener('click',function(){
+    if(layers.length<=2){statEl.textContent='本体层与衣服层必须保留，至少 2 层。';return;}
+    var rl=layers[curLayer].role;
+    if(rl==='base'||rl==='cloth'){statEl.textContent='「'+(ROLE_NAME[rl])+'」层是原始形象的固定层，不能删。';return;}
+    layers.splice(curLayer,1);
+    if(curLayer>=layers.length) curLayer=layers.length-1;
+    buildView(); renderLayerList(); updateStat(); render();
+  });
+
+  // ---- 画布大小 ----
+  var sizeBtns=document.querySelectorAll('.sBtn');
+  function setSizeUI(s){
+    sizeBtns.forEach(function(b){b.classList.toggle('on',parseInt(b.getAttribute('data-s'),10)===s);});
+    document.getElementById('curSizeLbl').textContent=s+'×'+s;
+  }
+  sizeBtns.forEach(function(b){
+    b.addEventListener('click',function(){
+      var s=parseInt(b.getAttribute('data-s'),10);
+      setSizeUI(s); document.getElementById('customSize').value=s;
+    });
+  });
+  document.getElementById('btnNewBoard').addEventListener('click',function(){
+    var v=parseInt(document.getElementById('customSize').value,10)||29;
+    v=Math.max(8,Math.min(64,v));
+    N=v;
+    resetCanvasSize();
+    blank(); renderLayerList(); render(); updateStat();
+    setSizeUI(v);
+  });
+
+  // ---- 模式切换 ----
+  var btnPaint=document.getElementById('btnPaintMode'), btnPart=document.getElementById('btnPartMode');
+  var statEl=document.getElementById('modeStat');
+  function partName(id){var t='';PARTS.forEach(function(p){if(p.id===id)t=p.name;});return t;}
+  function setMode(m){
+    mode=m;
+    btnPaint.classList.toggle('on',m==='paint');
+    btnPart.classList.toggle('on',m==='part');
+    document.querySelectorAll('#partChips .chip').forEach(function(c){c.classList.toggle('dim',m==='paint');});
+    if(m==='part' && typeof refreshChips==='function') refreshChips();
+    document.querySelectorAll('#colorSw .sw').forEach(function(c){c.classList.toggle('dim',m==='part');});
+    updateStat(); render();
+  }
+  btnPaint.addEventListener('click',function(){setMode('paint');});
+  btnPart.addEventListener('click',function(){setMode('part');});
+  function countUnmarked(){
+    var n=0;
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){
+      if(board.color[y][x]!=='B2' && board.part[y][x]==='none') n++;
+    }
+    return n;
+  }
+  function updateStat(){
+    if(mode==='paint'){
+      statEl.textContent='拼豆模式：点格子涂颜色（空格白色、填色占满），部件先不管。';
+    }else{
+      var un=countUnmarked();
+      statEl.textContent='部件标注中：点格子只标「'+partName(curPart)+'」，已标注格子盖上该部件浅色层。未标注 '+un+' 颗'+(un===0?'（全部标完，可以换装/动画了！）':'。');
+    }
+  }
+
+  // ---- 面板 ----
+  var chipBox=document.getElementById('partChips');
+  PARTS.forEach(function(p){
+    var d=document.createElement('div');
+    d.className='chip'+(p.id===curPart?' on':'');
+    d.setAttribute('data-pid',p.id);
+    d.innerHTML='<span class="dot" style="background:'+p.color+'"></span>'+p.name;
+    d.onclick=function(){
+      if(!partAllowedOnLayer(p.id,layers[curLayer])){
+        statEl.textContent='「'+p.name+'」属于「'+(ROLE_NAME[roleOfPart(p.id)]||'其他')+'」层，当前层不能标它。';
+        return;
+      }
+      curPart=p.id;
+      document.querySelectorAll('#partChips .chip').forEach(function(c){c.classList.remove('on');});
+      d.classList.add('on'); render(); updateStat();
+    };
+    chipBox.appendChild(d);
+  });
+  function refreshChips(){
+    var ly=layers[curLayer];
+    if(ly && !partAllowedOnLayer(curPart,ly)) curPart=firstAllowedPart(ly);
+    document.querySelectorAll('#partChips .chip').forEach(function(c){
+      var pid=c.getAttribute('data-pid');
+      var ok=partAllowedOnLayer(pid,ly);
+      c.classList.toggle('off',!ok);
+      c.classList.toggle('on',!!ok && pid===curPart);
+    });
+  }
+  var swBox=document.getElementById('colorSw');
+  var mardSeries=[[['H1','H2','H3','H4','H5','H6','H7'],'H · 灰白'],
+                  [['G3','G7','G8','G9','G12','G14','G17'],'G · 棕·肤'],
+                  [['E2','E4','E6'],'E · 粉'],
+                  [['F2','F3','F8','F14','F19'],'F · 红'],
+                  [['A4','A6','A7'],'A · 橙·黄'],
+                  [['B5','B12','B14'],'B · 绿'],
+                  [['C4','C7','C8','C11','C17','C24'],'C · 蓝·青'],
+                  [['D4','D13','D18','D20'],'D · 紫']];
+  mardSeries.forEach(function(sg){
+    var box=document.createElement('div');
+    box.className='ser';
+    var tt=document.createElement('div'); tt.className='ser-t'; tt.textContent=sg[1]; box.appendChild(tt);
+    sg[0].forEach(function(k){
+      var s=document.createElement('div');
+      s.className='sw'+(k===curColor?' on':'')+(lum(PRESET.palette[k])>150?' light':'');
+      s.style.background=PRESET.palette[k];
+      s.title=k+' '+PRESET.palette[k];
+      s.textContent=k;
+      s.onclick=function(){curColor=k;document.querySelectorAll('#colorSw .sw').forEach(function(c){c.classList.remove('on');});s.classList.add('on');};
+      box.appendChild(s);
+    });
+    swBox.appendChild(box);
+  });
+  document.getElementById('customColor').addEventListener('input',function(){
+    curColor=this.value.toUpperCase().replace('#','');
+    document.querySelectorAll('#colorSw .sw').forEach(function(c){c.classList.remove('on');});
+    render(); dRender();
+  });
+  document.getElementById('hlOnly').addEventListener('change',function(){hlOnly=this.checked;render();});
+  var codeInput=document.getElementById('codeInput');
+  function applyCode(){
+    var v=codeInput.value.trim().toUpperCase();
+    if(!v) return;
+    if(PRESET.palette[v]){
+      curColor=v;
+      document.querySelectorAll('#colorSw .sw').forEach(function(c){c.classList.toggle('on',c.title.indexOf(v)===0);});
+      codeInput.style.borderColor='var(--ok)';
+      statEl.textContent='已选色号 '+v+'，可直接涂格子。';
+      render(); dRender();
+    }else{
+      codeInput.style.borderColor='var(--err)';
+      statEl.textContent='色号 '+v+' 不在当前色板。';
+    }
+  }
+  document.getElementById('btnCode').addEventListener('click',applyCode);
+  codeInput.addEventListener('keydown',function(e){if(e.key==='Enter')applyCode();});
+  codeInput.addEventListener('input',function(){codeInput.style.borderColor='var(--line)';});
+
+  function detailOf(pid){
+    for(var i=0;i<detailList.length;i++){ if(detailList[i].part===pid) return detailList[i]; }
+    return null;
+  }
+  function refreshDetailSel(){
+    var sel=document.getElementById('detailSel');
+    sel.innerHTML='';
+    if(!detailList.length){
+      var o=document.createElement('option'); o.value=''; o.textContent='（还没有细节图）'; sel.appendChild(o);
+      return;
+    }
+    detailList.forEach(function(d,i){
+      var o=document.createElement('option'); o.value=i;
+      o.textContent=d.name+' · '+d.size+'×'+d.size+' · 锚点('+d.anchor.x+','+d.anchor.y+')';
+      sel.appendChild(o);
+    });
+  }
+  document.getElementById('btnZoomEdit').addEventListener('click',function(){
+    var s=parseInt(document.getElementById('customSize').value,10)||21;
+    s=Math.max(8,Math.min(64,s));
+    dBlank(s); dReset(s);
+    dEditing=true; dAnchorMode=false;
+    detailWrap.style.display='block';
+    document.getElementById('dinfo').textContent='正在为「'+partName(curPart)+'」拼放大细节（'+s+'×'+s+'）：涂色号，然后点「设锚点」选挂回小人的位置，最后保存。';
+    dRender();
+  });
+  document.getElementById('btnAnchor').addEventListener('click',function(){
+    if(!dEditing){document.getElementById('dinfo').textContent='先点「放大编辑」再设锚点。';return;}
+    dAnchorMode=!dAnchorMode;
+    document.getElementById('dinfo').textContent=dAnchorMode?'锚点模式：点一个格子设为挂回点（金色框）。':'已退出锚点模式。';
+  });
+  document.getElementById('btnSaveDetail').addEventListener('click',function(){
+    if(!dEditing) return;
+    if(!detail.anchor){document.getElementById('dinfo').textContent='请先设锚点（挂回小人的位置）。';return;}
+    var pid=curPart;
+    for(var i=detailList.length-1;i>=0;i--){ if(detailList[i].part===pid) detailList.splice(i,1); }
+    detailList.push({
+      id:'D'+(Date.now().toString(36)),
+      name:partName(pid),
+      part:pid,
+      size:detail.size,
+      anchor:{x:detail.anchor.x,y:detail.anchor.y},
+      color:detail.color.map(function(r){return r.slice();}),
+      partM:detail.part.map(function(r){return r.slice();})
+    });
+    refreshDetailSel();
+    dEditing=false; detailWrap.style.display='none';
+    render();
+    statEl.textContent='细节已保存：'+partName(pid)+' 放大图 '+detail.size+'×'+detail.size+'，锚点挂回小人。小人身仍显示简化版。';
+  });
+  document.getElementById('btnCancelDetail').addEventListener('click',function(){
+    dEditing=false; detailWrap.style.display='none';
+  });
+  document.getElementById('btnViewDetail').addEventListener('click',function(){
+    var sel=document.getElementById('detailSel');
+    if(!detailList.length||sel.value===''||sel.selectedIndex<0){statEl.textContent='细节列表为空，先放大编辑保存一个。';return;}
+    var d=detailList[parseInt(sel.value,10)];
+    detail={size:d.size,color:d.color.map(function(r){return r.slice();}),part:d.partM.map(function(r){return r.slice();}),anchor:{x:d.anchor.x,y:d.anchor.y}};
+    dReset(d.size); dEditing=false;
+    detailWrap.style.display='block';
+    document.getElementById('dinfo').textContent='查看：'+d.name+' 放大图（'+d.size+'×'+d.size+'），金框=锚点。可再点「放大编辑」重新画。';
+    dRender();
+  });
+  document.getElementById('btnDelDetail').addEventListener('click',function(){
+    var sel=document.getElementById('detailSel');
+    if(!detailList.length||sel.value===''||sel.selectedIndex<0){statEl.textContent='没有可删除的细节图。';return;}
+    var i=parseInt(sel.value,10);
+    var name=detailList[i].name;
+    detailList.splice(i,1);
+    refreshDetailSel();
+    render();
+    statEl.textContent='已删除细节：'+name+'。';
+  });
+
+  // ---- 渲染主画布 ----
+  function render(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#FAF8F2';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#000000';
+    var lw1=LW1/DPR, lw2=LW2/DPR;
+    for(var i=1;i<N;i++){ if(i%5===0) continue;
+      ctx.fillRect(PAD+i*GRID, PAD, lw1, GRID*N);
+      ctx.fillRect(PAD, PAD+i*GRID, GRID*N, lw1);
+    }
+    for(var i=5;i<N;i+=5){
+      ctx.fillRect(PAD+i*GRID, PAD, lw2, GRID*N);
+      ctx.fillRect(PAD, PAD+i*GRID, GRID*N, lw2);
+    }
+    for(var y=0;y<N;y++){
+      for(var x=0;x<N;x++){
+        var ck=board.color[y][x], pk=board.part[y][x];
+        var col=PRESET.palette[ck]||ck;
+        if(ck==='B2'){
+          ctx.fillStyle='#FFFFFF';
+          ctx.fillRect(PAD+x*GRID+1, PAD+y*GRID+1, GRID-2, GRID-2);
+          continue;
+        }
+        if(hlOnly && pk!==curPart && pk!=='none'){ col='#E9E5D9'; }
+        ctx.fillStyle=col;
+        ctx.fillRect(PAD+x*GRID, PAD+y*GRID, GRID, GRID);
+        if(pk!=='none' && !(hlOnly && pk!==curPart)){
+          ctx.globalAlpha=0.55;
+          ctx.fillStyle=partTint(pk);
+          ctx.fillRect(PAD+x*GRID, PAD+y*GRID, GRID, GRID);
+          ctx.globalAlpha=1;
+        }
+        if(mode==='part' && pk==='none'){
+          ctx.fillStyle='#A14E50';
+          ctx.beginPath();
+          ctx.arc(PAD+x*GRID+GRID/2, PAD+y*GRID+GRID/2, 2.5, 0, Math.PI*2);
+          ctx.fill();
+        }
+        if(detailOf(pk)){
+          ctx.fillStyle='#C9A227';
+          ctx.beginPath();
+          ctx.arc(PAD+x*GRID+GRID-2.5, PAD+y*GRID+GRID-2.5, 3, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.fillStyle='#000000';
+    ctx.fillRect(PAD,PAD,GRID*N,lw2);
+    ctx.fillRect(PAD,PAD+GRID*N-lw2,GRID*N,lw2);
+    ctx.fillRect(PAD,PAD,lw2,GRID*N);
+    ctx.fillRect(PAD+GRID*N-lw2,PAD,lw2,GRID*N);
+  }
+  function roundRect(c,x,y,w,h,r){
+    c.beginPath();
+    c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);
+    c.closePath();
+  }
+
+  // ---- 主画布操作 ----
+  function cellFromEvent(e){
+    var r=canvas.getBoundingClientRect();
+    var mx=e.clientX-r.left, my=e.clientY-r.top;
+    var x=Math.floor((mx-PAD)/GRID), y=Math.floor((my-PAD)/GRID);
+    if(x<0||x>=N||y<0||y>=N) return null;
+    return {x:x,y:y};
+  }
+  var painting=false;
+  function apply(x,y,erase){
+    if(!layers.length) return;
+    var ly=layers[curLayer];
+    if(!erase && mode==='part' && !partAllowedOnLayer(curPart, ly)){
+      statEl.textContent='当前是「'+((ly&&ROLE_NAME[ly.role])||'')+'」层，不能标「'+partName(curPart)+'」，请先切到对应图层。';
+      return;
+    }
+    if(erase){ly.color[y][x]='B2';ly.part[y][x]='none';}
+    else if(mode==='paint'){ ly.color[y][x]=curColor; ly.part[y][x]='none'; }
+    else { ly.part[y][x]=curPart; }
+    buildView();
+  }
+  canvas.addEventListener('mousedown',function(e){
+    if(e.button===2){var c=cellFromEvent(e);if(c){apply(c.x,c.y,true);render();updateStat();}return;}
+    var c=cellFromEvent(e);if(!c)return;
+    painting=true;apply(c.x,c.y,false);render();updateStat();
+  });
+  window.addEventListener('mousemove',function(e){
+    var c=cellFromEvent(e);
+    var info=document.getElementById('info');
+    if(c){
+      var ck=board.color[c.y][c.x];
+      var pn='—';
+      PARTS.forEach(function(p){if(p.id===board.part[c.y][c.x])pn=p.name;});
+      var pk=board.part[c.y][c.x];
+      info.textContent='格 ('+c.x+','+c.y+')｜部件:'+pn+'｜色号:'+(ck==='B2'?'空':ck)+(detailOf(pk)?'｜⭐有放大细节':'');
+    }
+    if(painting&&c){apply(c.x,c.y,false);render();updateStat();}
+  });
+  window.addEventListener('mouseup',function(){painting=false;});
+  canvas.addEventListener('contextmenu',function(e){e.preventDefault();var c=cellFromEvent(e);if(c){apply(c.x,c.y,true);render();updateStat();}});
+
+  // ---- 按钮 ----
+  document.getElementById('btnLoad').addEventListener('click',function(){loadPreset();});
+  document.getElementById('btnClear').addEventListener('click',function(){blank();render();updateStat();});
+  document.getElementById('btnExport').addEventListener('click',function(){
+    var out={name:PRESET.name,cols:N,rows:N,palette:PRESET.palette,
+      layers:layers.map(function(ly){return {name:ly.name,role:ly.role,visible:ly.visible,color:ly.color,part:ly.part};}),
+      details:detailList};
+    document.getElementById('exportBox').value=JSON.stringify(out);
+  });
+  function cellsOf(pid){
+    var out=[];
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){ if(board.part[y][x]===pid) out.push([x,y]); }
+    return out;
+  }
+  var blinking=false;
+  document.getElementById('btnBlink').addEventListener('click',function(){
+    if(blinking)return;blinking=true;
+    var cells=cellsOf('eyes');
+    if(!cells.length){blinking=false;return;}
+    var saved=cells.map(function(c){return board.color[c[1]][c[0]];});
+    function closeEyes(){cells.forEach(function(c){board.color[c[1]][c[0]]='F7';});render();}
+    function openEyes(){cells.forEach(function(c,i){board.color[c[1]][c[0]]=saved[i];});render();}
+    closeEyes();
+    setTimeout(function(){openEyes();setTimeout(function(){closeEyes();setTimeout(function(){openEyes();blinking=false;},160);},240);},180);
+  });
+  var talking=false;
+  document.getElementById('btnTalk').addEventListener('click',function(){
+    if(talking)return;talking=true;
+    var cells=cellsOf('mouth');
+    if(!cells.length){talking=false;return;}
+    var saved=cells.map(function(c){return board.color[c[1]][c[0]];});
+    var n=0,open=false;
+    function tick(){
+      open=!open;
+      cells.forEach(function(c){board.color[c[1]][c[0]]=open?'F7':saved[0];});
+      render();
+      n++;
+      if(n<6){setTimeout(tick,140);}else{talking=false;}
+    }
+    tick();
+  });
+
+  // 默认空白画布（让用户自己画 OC 初始形象）
+  resetCanvasSize();
+  setSizeUI(40);
+  document.getElementById('customSize').value=40;
+  renderLayerList();
+  setMode('paint');
+  render();
+
+  // ============ 角色身份卡（v1.3） ============
+  var cardInfo={name:'',birth:'',trait:'',tag:'',desc:''};
+  var overlay=document.getElementById('cardOverlay');
+  var ocCard=document.getElementById('ocCard');
+  var pixelHand=document.getElementById('pixelHand');
+  var handCtx=pixelHand.getContext('2d');
+  var photoCanvas=document.getElementById('photoCanvas');
+  var photoCtx=photoCanvas.getContext('2d');
+  var handTimer=null;
+  function drawPixelHand(){
+    var m=['XX.XX.XX.XX','XX.XX.XX.XX','XX.XX.XX.XX','XXXXXXXXXX','XXXXXXXXXX','XXXXXXXXXX','XXXXXXXXXX','XXXXXXXXXX'];
+    var g=8;
+    handCtx.clearRect(0,0,pixelHand.width,pixelHand.height);
+    handCtx.fillStyle='#F2C9A0';
+    for(var r=0;r<m.length;r++)for(var c=0;c<m[r].length;c++){
+      if(m[r][c]==='X'){ handCtx.fillRect(c*g+0.5,r*g+0.5,g-1,g-1); handCtx.strokeStyle='#222'; handCtx.strokeRect(c*g+0.5,r*g+0.5,g-1,g-1); }
+    }
+  }
+  function updateCardPhoto(){
+    photoCanvas.width=300; photoCanvas.height=300;
+    photoCtx.clearRect(0,0,300,300);
+    photoCtx.drawImage(canvas,0,0,300,300);
+  }
+  function renderCardInfo(){
+    document.getElementById('ciName').textContent=cardInfo.name||'？？？';
+    document.getElementById('ciBirth').textContent=cardInfo.birth||'—';
+    document.getElementById('ciTrait').textContent=cardInfo.trait||'—';
+    document.getElementById('ciTag').textContent=cardInfo.tag||'—';
+    document.getElementById('ciDesc').textContent=cardInfo.desc||'点击右侧填写 OC 信息';
+  }
+  function showCard(show){
+    overlay.classList.toggle('show',show);
+    if(show){ updateCardPhoto(); renderCardInfo(); }
+  }
+  function newCharacterCard(){
+    clearTimeout(handTimer);
+    drawPixelHand();
+    pixelHand.classList.remove('drop','up');
+    ocCard.classList.remove('fall');
+    overlay.classList.remove('done');
+    overlay.classList.add('show');
+    void pixelHand.offsetWidth;
+    pixelHand.classList.add('drop');
+    handTimer=setTimeout(function(){ ocCard.classList.add('fall'); },850);
+    handTimer=setTimeout(function(){ pixelHand.classList.add('up'); },1500);
+    handTimer=setTimeout(function(){ overlay.classList.add('done'); },2100);
+  }
+  document.getElementById('btnNewCard').addEventListener('click',newCharacterCard);
+  document.getElementById('btnViewCard').addEventListener('click',function(){ showCard(true); });
+  document.getElementById('cardPhoto').addEventListener('click',function(){
+    showCard(false);
+    statEl.textContent='正在编辑形象：拼好后点「查看角色卡」回看身份卡。';
+  });
+  document.getElementById('cardInfo').addEventListener('click',function(){
+    document.getElementById('infoForm').style.display='block';
+  });
+  overlay.addEventListener('click',function(e){
+    if(e.target===overlay){
+      var f=document.getElementById('infoForm');
+      if(f.style.display==='block'){ f.style.display='none'; }
+      else{ showCard(false); }
+    }
+  });
+  document.getElementById('btnInfoSave').addEventListener('click',function(){
+    cardInfo.name=document.getElementById('inName').value.trim();
+    cardInfo.birth=document.getElementById('inBirth').value.trim();
+    cardInfo.trait=document.getElementById('inTrait').value.trim();
+    cardInfo.tag=document.getElementById('inTag').value.trim();
+    cardInfo.desc=document.getElementById('inDesc').value.trim();
+    document.getElementById('infoForm').style.display='none';
+    renderCardInfo();
+  });
+  document.getElementById('btnInfoCancel').addEventListener('click',function(){
+    document.getElementById('infoForm').style.display='none';
+  });
+}catch(e){document.body.insertAdjacentHTML('beforeend','<div style="padding:12px;color:#A14E50">初始化失败：'+e.message+'</div>');}
+})();
+</script>
+</body>
+</html>
