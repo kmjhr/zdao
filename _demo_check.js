@@ -1,0 +1,587 @@
+
+(function(){
+try{
+  /* ================= 静态数据 ================= */
+  var PALETTE = {"H1":"#FCFCFA","H2":"#E8E6E1","H3":"#CFCDC6","H4":"#A8A6A0","H5":"#7B7A76","H6":"#4A4946","H7":"#1F1E1C","G1":"#F5D9C4","G2":"#EFC3A8","G3":"#D9A57E","G4":"#B57A50","G5":"#8A5432","G6":"#5E3A22","G7":"#3A2517","E1":"#FFE3EC","E2":"#FFB6C9","E3":"#F0789A","E4":"#C9456B","F1":"#FFE0DC","F2":"#FF9A8F","F3":"#F04444","F4":"#C42525","F5":"#8A1616","F6":"#5C0F0F","A1":"#FFF4C2","A2":"#FFD966","A3":"#FFA726","A4":"#E8730C","A5":"#B85000","B1":"#E3F7D0","B2":"#A8E06C","B3":"#4CAF50","B4":"#207A38","B5":"#0E4C22","C1":"#DFF6FF","C2":"#9ADCF0","C3":"#4FB3D9","C4":"#2478B5","C5":"#133F7A","C6":"#0A2347","D1":"#F0E4FA","D2":"#C9A8E8","D3":"#9861C9","D4":"#5E3590","D5":"#34204F"};
+
+  var AXES = [
+    {k:'social',   n:'社交度'},
+    {k:'express',  n:'表达量'},
+    {k:'tempo',    n:'节奏'},
+    {k:'curious',  n:'好奇'},
+    {k:'order',    n:'秩序'},
+    {k:'volatile', n:'情绪波动'},
+    {k:'intimacy', n:'亲密距离'}
+  ];
+
+  var CONFLICTS = [{k:'confront',n:'硬顶'},{k:'avoid',n:'回避'},{k:'yield',n:'示弱'}];
+
+  /* 24 词 → 刻度增量。基准 3，累加后钳制 1–5 */
+  var WORDS = [
+    {w:'自来熟',  d:{social:2,  intimacy:-1}},
+    {w:'话痨',    d:{express:2, social:1}},
+    {w:'爱热闹',  d:{social:1,  curious:1}},
+    {w:'怕生',    d:{social:-2, intimacy:1}},
+    {w:'寡言',    d:{express:-2}},
+    {w:'独来独往',d:{social:-1, intimacy:1}},
+    {w:'冷脸',    d:{express:-1, intimacy:1}, c:'avoid'},
+    {w:'慢热',    d:{social:-1, intimacy:2}},
+    {w:'黏人',    d:{intimacy:-2, social:1}},
+    {w:'疏离',    d:{social:-1, intimacy:1}},
+    {w:'易炸',    d:{volatile:2}, c:'confront'},
+    {w:'没脾气',  d:{volatile:-2}, c:'yield'},
+    {w:'急性子',  d:{tempo:2}},
+    {w:'磨蹭',    d:{tempo:-2}},
+    {w:'坐不住',  d:{tempo:1,  order:-2}},
+    {w:'宅',      d:{curious:-1, social:-1}},
+    {w:'爱乱走',  d:{curious:2, order:-1}},
+    {w:'守着不动',d:{curious:-1, tempo:-1}},
+    {w:'强迫症',  d:{order:2}},
+    {w:'邋遢',    d:{order:-2}},
+    {w:'认死理',  d:{order:1,  express:1}},
+    {w:'随和',    d:{volatile:-1, social:1}},
+    {w:'嘴硬',    d:{express:1}, c:'confront'},
+    {w:'心软',    d:{volatile:1}, c:'yield'}
+  ];
+
+  var KEY = 'zdao_card_v1';
+
+  /* ================= 状态 ================= */
+  function blank(){
+    return {
+      name:'', gender:'未知', birthday:'', intro:'', tags:[],
+      matrix:null,
+      persona:{ axis:{social:3,express:3,tempo:3,curious:3,order:3,volatile:3,intimacy:3}, conflict:'', words:[] },
+      boundary:{ values:'', taboos:'', never_do:'' }
+    };
+  }
+
+  var S = blank();
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return;
+      var d = JSON.parse(raw);
+      if(!d || typeof d !== 'object') return;
+      S = blank();
+      if(typeof d.name === 'string') S.name = d.name;
+      if(typeof d.gender === 'string') S.gender = d.gender;
+      if(typeof d.birthday === 'string') S.birthday = d.birthday;
+      if(typeof d.intro === 'string') S.intro = d.intro;
+      if(Array.isArray(d.tags)) S.tags = d.tags.slice(0,6);
+      if(d.matrix && d.matrix.size && Array.isArray(d.matrix.layers)) S.matrix = d.matrix;
+      if(d.persona && d.persona.axis){
+        AXES.forEach(function(a){
+          var v = Number(d.persona.axis[a.k]);
+          if(isFinite(v)) S.persona.axis[a.k] = Math.max(1, Math.min(5, Math.round(v)));
+        });
+      }
+      if(d.persona && typeof d.persona.conflict === 'string') S.persona.conflict = d.persona.conflict;
+      if(d.persona && Array.isArray(d.persona.words)) S.persona.words = d.persona.words.slice(0,5);
+      if(d.boundary && typeof d.boundary === 'object'){
+        ['values','taboos','never_do'].forEach(function(k){
+          if(typeof d.boundary[k] === 'string') S.boundary[k] = d.boundary[k];
+        });
+      }
+    }catch(e){ console.warn('读取存档失败', e); }
+  }
+
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(S)); }
+    catch(e){ console.warn('保存失败', e); }
+  }
+
+  /* ================= 元素 ================= */
+  var hand=document.getElementById('hand'),
+      card=document.getElementById('card'),
+      scan=document.getElementById('scan'),
+      beam=document.getElementById('beam'),
+      occ=document.getElementById('ocname'),
+      metaEl=document.getElementById('meta'),
+      wordsEl=document.getElementById('words'),
+      badge=document.getElementById('badge'),
+      throwBtn=document.getElementById('throwBtn'),
+      putBtn=document.getElementById('putBtn'),
+      clearBtn=document.getElementById('clearBtn'),
+      logEl=document.getElementById('log'),
+      pixelcv=document.getElementById('pixelcv'),
+      phempty=document.getElementById('phempty'),
+      imgMask=document.getElementById('imgMask'),
+      detMask=document.getElementById('detMask'),
+      detBody=document.getElementById('detBody'),
+      fileIn=document.getElementById('fileIn'),
+      imgprev=document.getElementById('imgprev'),
+      imgMeta=document.getElementById('imgMeta');
+
+  if(!hand||!card||!throwBtn){return;}
+  hand.querySelector('img').src='https://aka.doubaocdn.com/s/6hnRpkl6Jr';
+
+  /* ================= 手感动画（原样保留） ================= */
+  var busy=false, made=false, handTop=-240;
+
+  function easeIn(t){return t*t;}
+  function easeOutBack(t){var c=1.70158;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);}
+
+  function tw(from,to,dur,ease,set,done){
+    var t0=null;
+    function step(ts){
+      if(t0===null){t0=ts;}
+      var p=Math.min(1,(ts-t0)/dur);
+      set(from+(to-from)*ease(p));
+      if(p<1){requestAnimationFrame(step);}else if(done){done();}
+    }
+    requestAnimationFrame(step);
+  }
+
+  function setHand(v){
+    handTop=Math.round(v);
+    hand.style.transform='translateY('+handTop+'px) rotate(180deg)';
+  }
+  function setCard(v,rot,alpha){
+    card.style.transform='translateY('+Math.round(v)+'px) rotate('+(rot||0)+'deg)';
+    if(alpha!==undefined){card.style.opacity=alpha;}
+  }
+
+  var floatToken=0;
+  function floatLoop(){
+    floatToken++;var my=floatToken;var t0=null;
+    function step(ts){
+      if(my!==floatToken){return;}
+      if(t0===null){t0=ts;}
+      var p=((ts-t0)/2000)%1;
+      setCard(Math.round(Math.sin(p*Math.PI*2))-1,0,1);
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ================= 卡面渲染 ================= */
+  function ready(){
+    return !!(S.matrix && S.name && S.name.trim());
+  }
+
+  function drawPixelTo(cv, matrix){
+    var n = matrix.size;
+    if(cv.width !== n){ cv.width = n; cv.height = n; }
+    var ctx = cv.getContext('2d');
+    ctx.clearRect(0,0,n,n);
+    var px = {};
+    (matrix.layers||[]).forEach(function(l){
+      if(l.visible === false) return;
+      var a = l.pixels || [];
+      for(var i=0;i<a.length;i++){
+        if(a[i] !== null && a[i] !== undefined && a[i] !== 'transparent') px[i] = a[i];
+      }
+    });
+    var extra = matrix.extra_colors || {};
+    for(var i=0;i<n*n;i++){
+      var code = px[i];
+      if(!code) continue;
+      var hex = PALETTE[code] || extra[code] || (typeof code === 'string' && code.charAt(0) === '#' ? code : null);
+      if(!hex) continue;
+      ctx.fillStyle = hex;
+      ctx.fillRect(i % n, Math.floor(i / n), 1, 1);
+    }
+  }
+
+  function paintCard(){
+    occ.textContent = S.name || '未命名 OC';
+    metaEl.textContent = (S.gender || '未知') + ' · 生日 ' + (S.birthday || '——');
+
+    if(S.persona.words.length){
+      wordsEl.textContent = S.persona.words.join(' · ');
+      wordsEl.className = 'words';
+    }else{
+      wordsEl.textContent = '未设性格';
+      wordsEl.className = 'words none';
+    }
+
+    if(S.matrix){
+      pixelcv.style.display = 'block';
+      phempty.style.display = 'none';
+      drawPixelTo(pixelcv, S.matrix);
+    }else{
+      pixelcv.style.display = 'none';
+      phempty.style.display = 'block';
+    }
+
+    badge.className = 'badge' + (ready() ? ' on' : '');
+    putBtn.disabled = !(made && ready());
+  }
+
+  /* ================= 编辑器 / JSON 导入 ================= */
+  function goEditor(){
+    window.open('../编辑器原型/index.html','_blank');
+    logEl.textContent = '已打开编辑器：画完点右上「导出」→ JSON → 回来导入';
+  }
+
+  function importJSON(file){
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        var d = JSON.parse(String(fr.result));
+        if(!d || !d.size || !Array.isArray(d.layers)){
+          logEl.textContent = '这份 JSON 不像编辑器导出的（缺 size / layers）';
+          return;
+        }
+        S.matrix = {
+          size: Number(d.size),
+          layers: d.layers.map(function(l){
+            return {
+              id: l.id, part_type: l.part_type, part_index: l.part_index,
+              display_name: l.display_name, visible: l.visible !== false,
+              pixels: Array.isArray(l.pixels) ? l.pixels : []
+            };
+          }),
+          extra_colors: d.extra_colors || {}
+        };
+        save(); paintCard(); paintImgPreview();
+        var parts = S.matrix.layers.length;
+        logEl.textContent = '已导入 ' + S.matrix.size + '×' + S.matrix.size + '，' + parts + ' 层';
+        closeMask('imgMask');
+      }catch(err){
+        logEl.textContent = 'JSON 解析失败：' + (err && err.message ? err.message : err);
+      }
+    };
+    fr.readAsText(file);
+  }
+
+  function paintImgPreview(){
+    if(!S.matrix){
+      imgprev.innerHTML = '还没有形象';
+      if(imgMeta) imgMeta.textContent = '';
+      return;
+    }
+    var cv = document.createElement('canvas');
+    drawPixelTo(cv, S.matrix);
+    imgprev.innerHTML = '';
+    imgprev.appendChild(cv);
+    if(imgMeta){
+      var counts = {};
+      S.matrix.layers.forEach(function(l){ counts[l.part_type] = (counts[l.part_type]||0)+1; });
+      imgMeta.textContent = '当前：' + S.matrix.size + '×' + S.matrix.size + '，' +
+        S.matrix.layers.length + ' 层（' + Object.keys(counts).join('、') + '）';
+    }
+  }
+
+  /* ================= 弹层 ================= */
+  function openMask(id){ var m=document.getElementById(id); if(m) m.classList.add('on'); }
+  function closeMask(id){
+    var m=document.getElementById(id);
+    if(m) m.classList.remove('on');
+    if(id === 'detMask'){ save(); paintCard(); }
+  }
+
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ closeMask(b.getAttribute('data-close')); });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      closeMask('detMask'); closeMask('imgMask');
+    }
+  });
+
+  /* ================= 详情：四页签 ================= */
+  var curTab = 'base';
+
+  function wordsDelta(){
+    var sum = {};
+    AXES.forEach(function(a){ sum[a.k] = 0; });
+    var cf = '';
+    S.persona.words.forEach(function(w){
+      var def = WORDS.filter(function(x){ return x.w === w; })[0];
+      if(!def) return;
+      Object.keys(def.d||{}).forEach(function(k){ sum[k] = (sum[k]||0) + def.d[k]; });
+      if(def.c) cf = def.c;
+    });
+    return {sum:sum, conflict:cf};
+  }
+
+  function renderDet(){
+    var html = '';
+
+    if(curTab === 'base'){
+      html =
+        '<div class="fld"><label>姓名（必填，1–12 字）</label><input type="text" id="fName" maxlength="12" value="' + esc(S.name) + '" placeholder="比如 阿岚"></div>' +
+        '<div class="two">' +
+          '<div class="fld"><label>性别</label><select id="fGender">' +
+            ['男','女','未知','其他'].map(function(g){
+              return '<option value="' + g + '"' + (S.gender===g?' selected':'') + '>' + g + '</option>';
+            }).join('') +
+          '</select></div>' +
+          '<div class="fld"><label>生日（月-日，年可空）</label><input type="text" id="fBirth" maxlength="5" value="' + esc(S.birthday) + '" placeholder="04-12"></div>' +
+        '</div>' +
+        '<div class="fld"><label>简介（0–200 字）</label><textarea id="fIntro" maxlength="200" placeholder="一句话说清他是谁">' + esc(S.intro) + '</textarea></div>' +
+        '<div class="fld"><label>标签（最多 6 个，逗号分隔）</label><input type="text" id="fTags" value="' + esc(S.tags.join('、')) + '" placeholder="书虫、夜猫子"></div>' +
+        '<div class="note"><b>这里填的是「身份」</b>：姓名、生日、性别。它跟性格是两回事 —— 这里改错只是难看，改性格会让他整个人不一样。</div>';
+    }
+
+    if(curTab === 'pers'){
+      var wd = wordsDelta();
+      var useWords = S.persona.words.length > 0;
+      var ax = '';
+      AXES.forEach(function(a){
+        var shown = useWords ? clamp(S.persona.axis[a.k] + (wd.sum[a.k]||0)) : S.persona.axis[a.k];
+        ax += '<div class="axrow"><span>' + a.n + '</span>' +
+          '<input type="range" min="1" max="5" step="1" data-ax="' + a.k + '" value="' + shown + '"' + (useWords?' disabled':'') + '>' +
+          '<b data-axv="' + a.k + '">' + shown + '</b></div>';
+      });
+      var cfShown = S.persona.conflict || (useWords ? wd.conflict : '');
+      html =
+        '<div class="sec-t">① 先用词还是先拉杆</div>' +
+        '<div class="chips" id="wordChips">' +
+          WORDS.map(function(x){
+            var on = S.persona.words.indexOf(x.w) >= 0;
+            var dis = !on && S.persona.words.length >= 5;
+            return '<button type="button" class="chip' + (on?' on':'') + (dis?' dis':'') + '" data-w="' + x.w + '">' + x.w + '</button>';
+          }).join('') +
+        '</div>' +
+        '<div class="note" id="wordNote">已选 <b>' + S.persona.words.length + '</b> / 5 个词' +
+          (useWords ? '　·　刻度由词折算，滑杆此时只读' : '　·　没选词时可直接拉滑杆') + '</div>' +
+        '<div class="sec-t">② 7 个刻度（1–5）</div>' + ax +
+        '<div class="sec-t">③ 遇冲突怎么办</div>' +
+        '<div class="chips" id="cfChips">' +
+          CONFLICTS.map(function(c){
+            var on = cfShown === c.k;
+            return '<button type="button" class="chip' + (on?' on':'') + '" data-c="' + c.k + '">' + c.n + '</button>';
+          }).join('') +
+        '</div>' +
+        '<div class="note"><b>性格管「他去不去做」</b>：去不去跟人说话、多久靠近、遇冲突硬顶还是回避。卡面只显示你选的词，不显示数值 —— 玩家要靠看行为归纳。<br>' +
+        '<b>他动起来多大</b>是另一件事，在编辑器里叫「动作风格」，不进卡面。</div>';
+    }
+
+    if(curTab === 'bound'){
+      html =
+        '<div class="fld"><label>价值观（≥1 条，逗号分隔）</label><textarea id="bValues" placeholder="认为承诺必须守；看不起装可怜">' + esc(S.boundary.values) + '</textarea></div>' +
+        '<div class="fld"><label>禁忌 / 雷区（≥1 条，逗号分隔）</label><textarea id="bTaboos" placeholder="不许提他父亲；不许碰他桌上的信">' + esc(S.boundary.taboos) + '</textarea></div>' +
+        '<div class="fld"><label>永不做（≤10 条，硬边界）</label><textarea id="bNever" placeholder="不会主动伤人；不会说自己害怕">' + esc(S.boundary.never_do) + '</textarea></div>' +
+        '<div class="note"><b>这三条是硬边界</b>：AI 生成任何回应前先过滤，不是生成完再检查。<br>「永不做」一旦定了就不该再改 —— 改了等于换了一个人。</div>';
+    }
+
+    if(curTab === 'rel'){
+      html =
+        '<div class="note" style="margin-top:0">' +
+        '<b>关系需要至少两个 OC 才能填。</b><br><br>' +
+        '字段已经定了：与谁、类型（亲缘 / 友缘 / 敌对 / 权力 / 爱慕）、双向强度 A→B 与 B→A、备注。' +
+        '双向分开是因为「他单方面在意对方」和「两人互相在意」是完全不同的戏。<br><br>' +
+        '这一版只有一张卡，所以这里是空的。等做多卡卡册时再接。' +
+        '</div>';
+    }
+
+    detBody.innerHTML = html;
+    bindDet();
+  }
+
+  function clamp(v){ return Math.max(1, Math.min(5, Math.round(v))); }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+
+  function bindDet(){
+    if(curTab === 'base'){
+      var m = {
+        fName:'name', fBirth:'birthday', fIntro:'intro'
+      };
+      Object.keys(m).forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener('input', function(){ S[m[id]] = el.value; });
+      });
+      var g = document.getElementById('fGender');
+      if(g) g.addEventListener('change', function(){ S.gender = g.value; });
+      var t = document.getElementById('fTags');
+      if(t) t.addEventListener('input', function(){
+        S.tags = t.value.split(/[、,，\s]+/).filter(function(x){ return x; }).slice(0,6);
+      });
+    }
+
+    if(curTab === 'pers'){
+      var wc = document.getElementById('wordChips');
+      if(wc) wc.addEventListener('click', function(e){
+        var b = e.target.closest ? e.target.closest('[data-w]') : null;
+        if(!b) return;
+        var w = b.getAttribute('data-w');
+        var i = S.persona.words.indexOf(w);
+        if(i >= 0){
+          S.persona.words.splice(i,1);
+        }else{
+          if(S.persona.words.length >= 5) return;
+          S.persona.words.push(w);
+        }
+        renderDet(); save();
+      });
+
+      AXES.forEach(function(a){
+        var r = detBody.querySelector('[data-ax="' + a.k + '"]');
+        if(!r || r.disabled) return;
+        r.addEventListener('input', function(){
+          S.persona.axis[a.k] = Number(r.value);
+          var lb = detBody.querySelector('[data-axv="' + a.k + '"]');
+          if(lb) lb.textContent = r.value;
+        });
+      });
+
+      var cfBox = document.getElementById('cfChips');
+      if(cfBox) cfBox.addEventListener('click', function(e){
+        var b = e.target.closest ? e.target.closest('[data-c]') : null;
+        if(!b) return;
+        var c = b.getAttribute('data-c');
+        S.persona.conflict = (S.persona.conflict === c) ? '' : c;
+        renderDet(); save();
+      });
+    }
+
+    if(curTab === 'bound'){
+      var map = {bValues:'values', bTaboos:'taboos', bNever:'never_do'};
+      Object.keys(map).forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener('input', function(){ S.boundary[map[id]] = el.value; });
+      });
+    }
+  }
+
+  document.querySelectorAll('.tab').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      curTab = b.getAttribute('data-tab');
+      renderDet();
+    });
+  });
+
+  var detSave = document.getElementById('detSave');
+  if(detSave) detSave.addEventListener('click', function(){ closeMask('detMask'); });
+
+  /* ================= 交互入口 ================= */
+  document.getElementById('photo').addEventListener('click', function(){
+    paintImgPreview();
+    openMask('imgMask');
+    logEl.textContent = '照片区被点：选「去编辑器画」或「导入 JSON」';
+  });
+
+  document.getElementById('info').addEventListener('click', function(){
+    curTab = 'base';
+    document.querySelectorAll('.tab').forEach(function(x){
+      x.classList.toggle('on', x.getAttribute('data-tab') === 'base');
+    });
+    renderDet();
+    openMask('detMask');
+  });
+
+  document.getElementById('goEdit').addEventListener('click', goEditor);
+  document.getElementById('importBtn').addEventListener('click', function(){ fileIn.click(); });
+  fileIn.addEventListener('change', function(){
+    if(fileIn.files && fileIn.files[0]) importJSON(fileIn.files[0]);
+    fileIn.value = '';
+  });
+
+  /* ================= 手 / 卡 流程 ================= */
+  function newCharacter(){
+    if(busy){return;}
+    busy=true;
+    putBtn.disabled=true;
+    logEl.textContent='手降下…';
+    setCard(-120,0,0);
+    if(made){
+      card.style.opacity='1';
+      tw(-120,0,100,easeIn,function(v){setCard(v,0,1);},function(){
+        busy=false; paintCard();
+        logEl.textContent='第二张起不出手（省略入场，直接淡入）';
+        floatLoop();
+      });
+      return;
+    }
+    tw(-240,-50,140,easeIn,setHand,function(){
+      logEl.textContent='松手…';
+      card.style.opacity='1';
+      tw(-120,0,150,easeIn,function(v){
+        setCard(v,(-10)+10*((v+120)/120),1);
+      },function(){
+        logEl.textContent='落定 + 手同时收回';
+        var handDone=false,cardDone=false;
+        function both(){
+          if(handDone && cardDone){
+            busy=false; made=true;
+            paintCard();
+            logEl.textContent = ready()
+              ? '流畅完成。这卡已经能放入世界'
+              : '流畅完成。还缺点东西：点照片区画形象、点信息区填名字';
+            floatLoop();
+          }
+        }
+        tw(0,9,60,easeOutBack,function(v){setCard(v,0,1);},function(){setCard(0,0,1);cardDone=true;both();});
+        tw(-50,-240,140,easeIn,setHand,function(){handDone=true;both();});
+      });
+    });
+  }
+
+  function putInWorld(){
+    if(busy||!made){return;}
+    if(!ready()){
+      logEl.textContent = S.matrix
+        ? '还没有名字：点信息区填一个'
+        : '还没有形象：点照片区去画，或导入编辑器 JSON';
+      return;
+    }
+    busy=true;
+    putBtn.disabled=true;
+    floatToken++;
+    logEl.textContent='卡抬起（150ms，尺寸不变）';
+    tw(0,1,150,easeIn,function(v){
+      setCard(-6*v,-3*v,1);
+    },function(){
+      logEl.textContent='划过读取槽（200ms）';
+      scan.style.opacity='1';
+      tw(0,1,200,easeIn,function(v){
+        beam.style.left=Math.round(-50+470*v)+'px';
+      },function(){
+        logEl.textContent='停顿 100ms（在读）';
+        setTimeout(function(){
+          scan.style.opacity='0';
+          logEl.textContent='翻正 + 淡出';
+          tw(0,1,150,easeIn,function(v){
+            card.style.opacity=String(1-v);
+            card.style.transform='translateY('+Math.round(-40*v)+'px) rotate('+Math.round(6*v)+'deg)';
+          },function(){
+            card.style.opacity='0';
+            busy=false; made=false;
+            paintCard();
+            logEl.textContent='「' + (S.name||'未命名 OC') + '」已放入世界。点「新建角色」再做一张';
+          });
+        },100);
+      });
+    });
+  }
+
+  clearBtn.addEventListener('click', function(){
+    S = blank();
+    save();
+    paintCard();
+    paintImgPreview();
+    logEl.textContent = '已清空这张卡（世界里的那份不受影响）';
+  });
+
+  throwBtn.addEventListener('click', newCharacter);
+  putBtn.addEventListener('click', putInWorld);
+
+  /* ================= 启动 ================= */
+  load();
+  paintCard();
+  upsetStart();
+
+  function upsetStart(){
+    // 首次进入自动出手一次，让新用户直接看到卡
+    setTimeout(function(){
+      if(!made && !localStorage.getItem(KEY + '_seen')){
+        try{ localStorage.setItem(KEY + '_seen','1'); }catch(e){}
+        newCharacter();
+      }
+    }, 500);
+  }
+
+}catch(e){console.error('初始化失败',e);}
+})();
