@@ -1,0 +1,127 @@
+<html style="margin:0;padding:0;">
+<title>能不能画动物和异形</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:830px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">能，但不能靠「再加几个部件」解决</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">这套部件系统的本质不是人形，是「能被官方动效驱动的语义单元」。人只是其中一种排布方式。但硬把动物部件塞进同一张表，选择器会先崩。</div>
+
+<div style="margin-top:20px;background:#fff;border-left:3px solid #A14E50;padding:12px 14px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:7px;">先说为什么不能硬加</div>
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+动物要尾巴、耳朵、翅膀、四条腿；鸟要喙、双翼；异形什么都可能要。全塞进一张表，部件从 17 涨到 25+。<br>
+然后玩家画一只猫，建层时看到 25 个选项，其中 12 个用不上——而且他不知道自己用不上，会以为「我没画全」。<br>
+<b style="color:#1A1B1C;">部件表是给「一类形态」用的，不是给所有形态共用。</b>
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">正解：先定体型，再给该体型的部件集</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">建角色第一步不问「画什么部件」，先问「画的是什么」。选完体型，部件选择器只显示这一套。</div>
+
+<div style="display:grid;gap:8px;margin-top:9px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;border-left:3px solid #4F6B9A;">
+<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
+<span style="font-size:12px;font-weight:600;">human · 人形</span>
+<span style="font-size:9px;padding:2px 7px;background:#F0F8F3;color:#35705A;border-radius:9px;">已定稿</span>
+<span style="font-size:10px;color:#B9B6AC;">17 部件</span>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+head · hair · brow · eyes · mouth · torso · arm_l · arm_r · leg_l · leg_r ＋ top · coat · pants · shoes · sleeve_l · sleeve_r ＋ acc<br>
+<b style="color:#1A1B1C;">动效集</b>：呼吸 / 眨眼 / 走 / 挥手 / 坐 / 躺 / 说话 / 弯腰捡 / 表情。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;border-left:3px solid #35705A;">
+<div style="font-size:12px;font-weight:600;">quadruped · 四足（猫狗狼马）</div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:1px;">11 部件</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+head · eyes · mouth · body · leg_1~4 · tail · ear_l · ear_r ＋ acc<br>
+<b style="color:#1A1B1C;">动效集</b>：呼吸 / 眨眼 / 四足走（对角步态）/ 摇尾 / 抖耳 / 趴下 / 舔嘴 / 哈气。<br>
+<b style="color:#9A6A2F;">少了</b>：hair、brow、衣服全套、挥手、坐椅子——四足不穿衣服，也没有手。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;border-left:3px solid #9A6A2F;">
+<div style="font-size:12px;font-weight:600;">avian · 鸟</div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:1px;">10 部件</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+head · eyes · beak · body · wing_l · wing_r · leg_l · leg_r · tail ＋ acc<br>
+<b style="color:#1A1B1C;">动效集</b>：呼吸 / 眨眼 / 跳走（不是走）/ 扇翅 / 抖羽 / 啄 / 转头。<br>
+注意嘴换成 <b>beak</b>（喙）——不是 mouths 换名字，是它只做「开合啄」，不做「说话」。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #6B5F4A;border-radius:5px;padding:12px 13px;border-left:3px solid #6B5F4A;">
+<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
+<span style="font-size:12px;font-weight:600;">custom · 异形（史莱姆 / 机械 / 晶体 / 植物）</span>
+<span style="font-size:9px;padding:2px 7px;background:#FFF7E6;color:#9A6A2F;border-radius:9px;">只有这档能装下一切</span>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+body · eye（1–4 个）· mouth（0–2 个）· limb（0–8 个）· acc（12 个）
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">异形的关键改动：limb 而不是 arm / leg</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">人形必须分左右手，因为挥手只挥右手。异形没法预设「哪只是手」——所以要换一种切法。</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+<div style="background:#FDF0F0;border:1px solid #F0DADA;border-radius:5px;padding:11px 12px;">
+<div style="font-size:10px;color:#A14E50;font-weight:600;margin-bottom:5px;">人形：按语义分</div>
+<div style="font-size:11px;line-height:1.9;color:#5F6670;">
+arm_l 左臂 · arm_r 右臂 · leg_l 左腿 · leg_r 右腿<br>
+<b style="color:#1A1B1C;">系统知道哪只是手</b>，所以能播「挥手」——手抬起来。
+</div>
+</div>
+<div style="background:#F0F8F3;border:1px solid #CFE6D9;border-radius:5px;padding:11px 12px;">
+<div style="font-size:10px;color:#35705A;font-weight:600;margin-bottom:5px;">异形：按锚点分</div>
+<div style="font-size:11px;line-height:1.9;color:#5F6670;">
+limb1 ~ limb8，每个自带锚点<br>
+<b style="color:#1A1B1C;">系统不知道它是手还是尾</b>，所以只能播「摆动」——按锚点旋转。玩家给每个 limb 选摆动类型（摆 / 摇 / 扇 / 挥）。
+</div>
+</div>
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#5F6670;line-height:1.9;">
+这样史莱姆 0 个 limb、蜘蛛 8 个 limb、蜈蚣 20 个（超上限就砍到 8，够用），都成立。<br>
+<b style="color:#A14E50;">代价</b>：异形做不了「挥手打招呼」这种精确动作，只有通用摆动。想要精确，得自己给那层加帧。
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">一个反直觉的地方</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px;">
+<div style="background:#F0F8F3;border:1px solid #CFE6D9;border-radius:5px;padding:11px 12px;">
+<div style="font-size:10px;color:#35705A;font-weight:600;margin-bottom:5px;">动物其实更好画</div>
+<div style="font-size:11px;line-height:1.9;color:#5F6670;">
+手不用画五指（爪子一两团就够）、脸不用分眉毛、不用做衣服。部件少，单件像素量小。
+</div>
+</div>
+<div style="background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:11px 12px;">
+<div style="font-size:10px;color:#9A6A2F;font-weight:600;margin-bottom:5px;">但四足走路更难</div>
+<div style="font-size:11px;line-height:1.9;color:#6B5F4A;">
+人有两条腿，左右交替就完事。四条腿要走对<b>对角步态</b>（左前 → 右后 → 右前 → 左后），顺序错了看着像在跳。这是新增的动效复杂度。
+</div>
+</div>
+</div>
+
+<div style="margin-top:24px;background:#fff;border-left:3px solid #4F6B9A;padding:12px 14px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:7px;">首版做不做：不做，但数据里留口子</div>
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+现在人形这套还没落地（编辑器改造 15.5 人日没动工）。再开四种体型要多 3–5 天，而且人形方案本身还没验证跑不跑得通——很可能第一版跑起来才发现锚点和帧哪里不对，到时候要改两遍。<br>
+<b style="color:#1A1B1C;">但数据结构现在就要留口子，不然以后改起来是伤筋动骨。</b><br>
+做法：每个角色存一个字段 <code style="font-size:10px;">body_plan: "human" | "quadruped" | "avian" | "custom"</code>；部件表按它过滤；首版只实现 human，custom 只留最小集但不做 UI 入口。<br>
+这样以后加体型，只是「多一张部件表 + 多一套动效集」，不动核心架构。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">顺带回答一个隐含的问题</div>
+<div style="font-size:11px;line-height:2.0;">
+那「狗和人能不能同框」？<br>
+能，而且这正是这套系统比 LPC 强的地方——LPC 只有人。你这里每个角色独立带 <code style="font-size:10px;">body_plan</code>，地图上狗和人在同一张地图上走，各自播各自的动效，互相不干扰。<br>
+唯一要处理的是<b style="color:#1A1B1C;">尺度和锚点</b>：狗的地面锚点和人的不一样，占格数也可能不同。这条得在 <code style="font-size:10px;">body_plan</code> 里一并存「占格」和「脚点偏移」。
+</div>
+
+</div>
+</div>
+</html>

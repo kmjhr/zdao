@@ -1,0 +1,136 @@
+<html style="margin:0;padding:0;">
+<title>部件标记能不能撑起动画</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:760px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">部件标记撑得起动画吗</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">现有编辑器 11 部件 vs 补齐后 16 部件，逐个动作能不能做。</div>
+
+<div style="display:grid;grid-template-columns:1fr 92px 92px;gap:1px;margin-top:18px;background:#E4E3DD;border:1px solid #E4E3DD;">
+<div style="background:#fff;padding:9px 11px;font-size:11px;font-weight:600;letter-spacing:1px;color:#5F6670;">动作</div>
+<div style="background:#fff;padding:9px 6px;font-size:11px;font-weight:600;text-align:center;color:#5F6670;">现 11 部件</div>
+<div style="background:#fff;padding:9px 6px;font-size:11px;font-weight:600;text-align:center;color:#5F6670;">补齐 16</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">眨眼（双眼同时）</div>
+<div style="background:#FFF7E6;padding:9px 6px;font-size:11px;text-align:center;color:#9A6A2F;">退化</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">单眼 wink</div>
+<div style="background:#FBF0F0;padding:9px 6px;font-size:11px;text-align:center;color:#A14E50;">不能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">张嘴说话</div>
+<div style="background:#FFF7E6;padding:9px 6px;font-size:11px;text-align:center;color:#9A6A2F;">退化</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">挑眉 / 皱眉</div>
+<div style="background:#FBF0F0;padding:9px 6px;font-size:11px;text-align:center;color:#A14E50;">不能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">走路左右腿交替</div>
+<div style="background:#FBF0F0;padding:9px 6px;font-size:11px;text-align:center;color:#A14E50;">不能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">挥手 / 摆臂</div>
+<div style="background:#FBF0F0;padding:9px 6px;font-size:11px;text-align:center;color:#A14E50;">不能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">脱掉衣服露出本体</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">外套套在上衣外面</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">换裤子</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+
+<div style="background:#fff;padding:9px 11px;font-size:12px;">手持物跟着手走</div>
+<div style="background:#FFF7E6;padding:9px 6px;font-size:11px;text-align:center;color:#9A6A2F;">退化</div>
+<div style="background:#F0F8F3;padding:9px 6px;font-size:11px;text-align:center;color:#35705A;">能</div>
+</div>
+
+<div style="font-size:11px;color:#5F6670;margin-top:9px;line-height:1.8;">退化 = 只能整块平移或抖动，看得出「在动」但不像那个动作；不能 = 结构上缺部件，做不出来。</div>
+
+<div style="margin-top:22px;border-top:1px solid #E4E3DD;padding-top:15px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:9px;">差的四件事</div>
+
+<div style="display:flex;gap:11px;margin-bottom:9px;">
+<div style="flex:none;width:22px;height:22px;border-radius:4px;background:#FBF0F0;color:#A14E50;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;">1</div>
+<div style="font-size:12px;line-height:1.7;color:#1A1B1C;">部件没有左右。<code style="font-size:11px;background:#EDEFF3;padding:1px 4px;border-radius:3px;">upper</code> 是「上半身整块」、<code style="font-size:11px;background:#EDEFF3;padding:1px 4px;border-radius:3px;">lower</code> 是「下半身整块」，走路只能整体平移，两条腿不分开。</div>
+</div>
+
+<div style="display:flex;gap:11px;margin-bottom:9px;">
+<div style="flex:none;width:22px;height:22px;border-radius:4px;background:#FBF0F0;color:#A14E50;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;">2</div>
+<div style="font-size:12px;line-height:1.7;color:#1A1B1C;">没有眉毛。11 个部件里 <code style="font-size:11px;background:#EDEFF3;padding:1px 4px;border-radius:3px;">brow</code> 不存在，挑眉皱眉无从谈起。</div>
+</div>
+
+<div style="display:flex;gap:11px;margin-bottom:9px;">
+<div style="flex:none;width:22px;height:22px;border-radius:4px;background:#FBF0F0;color:#A14E50;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;">3</div>
+<div style="font-size:12px;line-height:1.7;color:#1A1B1C;">没有部件锚点。现在只有挂件的锚点，没有「肩在哪、胯在哪」。人形千姿百态，同一个抬腿角度贴到不同人身上就是错的。</div>
+</div>
+
+<div style="display:flex;gap:11px;">
+<div style="flex:none;width:22px;height:22px;border-radius:4px;background:#FBF0F0;color:#A14E50;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;">4</div>
+<div style="font-size:12px;line-height:1.7;color:#1A1B1C;">没有帧。眼睛只有一张，嘴巴只有一张。眨眼靠压扁还行，张嘴说话压扁就变成「抿嘴抖」，不像。</div>
+</div>
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:15px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:10px;">补齐后的部件表（11 → 16）</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:9px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;letter-spacing:1px;color:#35705A;font-weight:600;margin-bottom:6px;">本体 · 10</div>
+<div style="font-size:11px;line-height:2;color:#1A1B1C;">head 头<br>hair 头发<br><span style="color:#A14E50;font-weight:600;">brow 眉毛 ·新</span><br>eyes 眼睛<br>mouth 嘴巴<br>torso 躯干<br><span style="color:#A14E50;font-weight:600;">arm_l / arm_r ·新</span><br><span style="color:#A14E50;font-weight:600;">leg_l / leg_r ·新</span></div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;letter-spacing:1px;color:#9A6A2F;font-weight:600;margin-bottom:6px;">衣服 · 5</div>
+<div style="font-size:11px;line-height:2;color:#1A1B1C;">top 上衣<br>coat 外套<br>pants 裤子<br>shoes 鞋<br>sleeve 袖子 ·新</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;letter-spacing:1px;color:#5F6670;font-weight:600;margin-bottom:6px;">饰品 · 1</div>
+<div style="font-size:11px;line-height:2;color:#1A1B1C;">acc 饰品</div>
+</div>
+
+<div style="background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;letter-spacing:1px;color:#9A6A2F;font-weight:600;margin-bottom:6px;">旧的保留</div>
+<div style="font-size:11px;line-height:2;color:#1A1B1C;">upper / lower<br><span style="font-size:10px;color:#6B5F4A;">没拆的人继续用，退化模式</span></div>
+</div>
+
+</div>
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:15px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:9px;">两条动起来的路</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:11px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:6px;">程序化变换（零美术）</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">按锚点位移 / 旋转 / 压扁。适合：眨眼、挑眉、说话抖嘴、走路上下浮动。<br>代价：像素画旋转 15° 以上描边会碎，大角度动作不能这么干。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:6px;">逐帧替换（要画）</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">同一部件存 2–4 张。适合：走路摆腿、挥手、张嘴说话、wink。<br>代价：一张 29×29 就是一个部件帧，玩家得自己画，或官方给通用帧。</div>
+</div>
+</div>
+<div style="font-size:11px;color:#5F6670;margin-top:10px;line-height:1.8;">推荐组合：小动作走程序化（眨眼 / 挑眉 / 说话），大幅度动作走逐帧（走路 / 挥手）。两者都要求先有部件锚点。</div>
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:15px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:9px;">编辑器要加的东西 · 约 6 人日</div>
+<div style="font-size:12px;line-height:2.1;color:#1A1B1C;">
+<span style="display:inline-block;width:150px;color:#5F6670;font-size:11px;">部件表 11 → 16</span>0.5 天，改 PARTS 与 ROLE_PARTS<br>
+<span style="display:inline-block;width:150px;color:#5F6670;font-size:11px;">拆分笔刷</span>1 天，把已有格子从 upper 刷到 arm_r，不用重画<br>
+<span style="display:inline-block;width:150px;color:#5F6670;font-size:11px;">部件锚点</span>0.5 天，点一格设为肩点 / 胯点<br>
+<span style="display:inline-block;width:150px;color:#5F6670;font-size:11px;">帧管理</span>2 天，同部件多帧 + 存法<br>
+<span style="display:inline-block;width:150px;color:#5F6670;font-size:11px;">运行时合成</span>2 天，按锚点变换拼出一帧
+</div>
+</div>
+
+</div>
+</div>
+</html>

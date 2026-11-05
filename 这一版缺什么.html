@@ -1,0 +1,156 @@
+<html style="margin:0;padding:0;">
+<title>这一版缺什么</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:830px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">数据层全了，播放层是空的</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">17 部件、选区、撤销、两档、导出全都做出来了。但 26 个动效、4 个性格、18 个动作表情——<b style="color:#A14E50;">一个都不会真的动</b>。这不是 bug，是没写。</div>
+
+<div style="margin-top:18px;background:#fff;border-left:3px solid #A14E50;padding:13px 15px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:7px;">最硬的证据，作者自己写在代码里</div>
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+<code style="font-size:10px;background:#F7F7F5;padding:1px 4px;">previewMotion()</code>（第 4211 行）点击试播时弹出的提示是：<br>
+<b style="color:#1A1B1C;">「试播「…」900ms（编辑器最小预览；真实播放由演绎系统负责）」</b><br>
+而它实际做的事，是把那一层横向左右晃一下：<code style="font-size:10px;background:#F7F7F5;padding:1px 4px;">pvx = Math.sin(pr*π*4) * (1-pr) * cell * amp</code>（第 1674 行）。<br>
+走路不会迈腿，眨眼不会闭眼，说话不会张嘴。所有动效预览都是同一套正弦抖动。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">第一档 · 有壳无芯（四项）</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">数据存得很漂亮，但没有一个消费者。这是这一版最大的缺口。</div>
+
+<div style="display:grid;gap:8px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">1 · 动效没有播放器</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">
+26 条 <code style="font-size:10px;">MOTIONS</code> 登记得很全（id / group / parts / how / duration / loop / trigger / launch），但没有任何代码读 <code style="font-size:10px;">how</code> 去执行。挂载到层只是写一个 <code style="font-size:10px;">animation</code> 对象。<br>
+<b>缺的是</b>：一个按 <code style="font-size:10px;">motion_id</code> 分发的执行器——走路走腿交替、眨眼换闭眼帧、说话嘴帧交替。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">2 · 性格只是存了个名字</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">
+<code style="font-size:10px;">PERSONALITIES</code> 四套参数写得很准（turn / swing / step / breath / blink / hair），但全文件<b>没有任何计算读过它们</b>。<code style="font-size:10px;">PERSONALITIES[pid]</code> 只被用来取 <code style="font-size:10px;">.desc</code> 显示在界面上。<br>
+那个「收 / 放」滑杆（tune −1~1）也只是存着。所以现在选「活泼」和选「慵懒」，画面上看一模一样。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">3 · 动作表情勾选没人读</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">
+<code style="font-size:10px;">artwork.character.actions[id]</code> 存了每个动作开不开（第 3230 行），但没有任何地方查这个值决定播不播。<br>
+所以勾了「挥手」和没勾，行为上没有任何差别。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">4 · 帧存了，但没有消费者</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">
+<code style="font-size:10px;">addFrameFromLayer()</code>（第 4233 行）能把当前层像素存成一张「自绘帧」素材，存进 <code style="font-size:10px;">motion_assets</code>。但没有任何代码拿这张帧去替换层画面。<br>
+帧素材本质上是一堆躺在数组里的数据。
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:12px;background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;line-height:1.9;color:#6B5F4A;">
+这四项加起来意味着：<b>26 个动效 + 4 个性格 + 18 个动作表情 + N 张帧，全都没有接上画面。</b><br>
+界面看起来什么都有，但它是「配置器」，不是「动画器」。
+</div>
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">第二档 · 跟定好的规格冲突</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;margin-top:9px;">
+<div style="background:#fff;padding:11px 12px;">
+<div style="font-size:11px;font-weight:600;">画布档位不对</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.9;margin-top:5px;">
+<code style="font-size:9px;">SIZE_OPTIONS = [16, 24, 32, 40]</code>，<b>没有 29</b>，默认选 32。<br>
+规格是：默认 29×29，可选 15 / 21 / 29 / 40，自定 8–64。<br>
+29 是当初从市面拼豆图纸定的基准，缺了它，画出来的角色和岛上 1 豆 = 1 设备的换算对不上。
+</div>
+</div>
+<div style="background:#fff;padding:11px 12px;">
+<div style="font-size:11px;font-weight:600;">一打开就是空白</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.9;margin-top:5px;">
+没有任何示例角色。新手进来只看到 32 格空网格，不知道「17 层该长什么样」「一只手臂占几格」。<br>
+旧版里的姐姐 29×29 数据这一版没了。
+</div>
+</div>
+</div>
+
+<div style="margin-top:9px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;">
+<div style="background:#fff;padding:11px 12px;">
+<div style="font-size:11px;font-weight:600;">官方帧全是占位</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.9;margin-top:5px;">
+六条 <code style="font-size:9px;">builtin.eyes.closed</code> / <code style="font-size:9px;">mouth.open</code> / <code style="font-size:9px;">mouth.smile</code> / <code style="font-size:9px;">mouth.o</code> / <code style="font-size:9px;">brow.up</code> / <code style="font-size:9px;">brow.down</code>，note 逐条写着「内置占位，待接官方素材」。<br>
+点开看到的是空素材 + 缺像素标记。
+</div>
+</div>
+<div style="background:#fff;padding:11px 12px;">
+<div style="font-size:11px;font-weight:600;">动作表情放错地方</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.9;margin-top:5px;">
+定的是「底部同一台预览台、两个页签」，现在塞进了右侧「设置」页里（第 4119–4120 行）。<br>
+后果：没有一处能「整人播放」，只能一层一层试。
+</div>
+</div>
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">第三档 · 缺的创作工具</div>
+
+<div style="margin-top:9px;display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:8px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">水平镜像 ✗</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:3px;">画好左腿复制不出右腿。四条对称部件全靠手画两遍。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">整层偏移 ✗</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:3px;">整层画偏一格只能重画。这是最高频的返工。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">魔棒 / 连通选择 ✗</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:3px;">有矩形选区，但要点选「一只手的全部像素」还得手框。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">必填检查 ✗</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:3px;">头 / 躯干缺失不报。建了层但没画，也能导出上岛。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">影子 ✗</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:3px;">按轮廓生成的半透明椭圆，运行时的事，编辑器不做也对。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">多草稿 ✗</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:3px;">只有一个 autosave 槽（<code style="font-size:9px;">papersisland.editor.autosave.v2</code>），新建就覆盖上一个。做第二个 OC 必须先把第一个导出。</div>
+</div>
+</div>
+
+<div style="margin-top:12px;font-size:11px;color:#5F6670;line-height:1.9;">
+没列进缺失的：<b>撤消 / 层锁定 / 层合并 / 移到层 / 复制到层 / 反选 / 两档 / 风险确认 / PNG+JSON 导出 / 自动保存</b> —— 这些都有，而且做得比我原先建议的更细（选区是多矩形真补集，移动有冲突策略）。
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">顺带一个隐患，不是缺功能是埋雷</div>
+<div style="margin-top:9px;background:#fff;border-left:3px solid #9A6A2F;padding:11px 13px;">
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+撤销是<b>全量 JSON 快照 × 50 步</b>（<code style="font-size:10px;">serializeArtwork()</code> 第 1299 行）。每笔操作都序列化整个作品。<br>
+32×32 × 17 层的 JSON 约 200 KB，50 份约 10 MB 常驻内存。换到 40×40 或层数更多，每次落笔都要序列化一遍，会开始卡。<br>
+<b>建议</b>：把快照压成只记「改动的那一层 + 索引」，或者降到 20 步。
+</div>
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">补齐顺序</div>
+<div style="margin-top:9px;font-size:11px;line-height:2.1;">
+<b style="color:#A14E50;">① 动效执行器</b>（性格 → 参数 → 每帧算位移/换帧）。这一步不做，前面所有设计都是纸面。<br>
+<b style="color:#9A6A2F;">② 把性格接进参数计算</b>，让它真的改变摆幅与步频。<br>
+<b style="color:#9A6A2F;">③ 动作表情搬到预览台</b>，给一个整人播放的地方。<br>
+<b style="color:#4F6B9A;">④ 尺寸改回 29 默认；塞一个示例角色</b>，让人知道目标长什么样。<br>
+<b style="color:#4F6B9A;">⑤ 镜像、整层偏移、必填检查</b>，三个小工具，都是半天级。<br>
+<b style="color:#5F6670;">⑥ 多草稿</b>，等前面稳定了再做，因为它要动存储层。
+</div>
+
+</div>
+</div>
+</html>

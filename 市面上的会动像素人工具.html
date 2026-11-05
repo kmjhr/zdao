@@ -1,0 +1,140 @@
+<html style="margin:0;padding:0;">
+<title>市面上做会动像素人的东西</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:840px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">有，但都是隔壁那三类，没有完全对口的</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">现有的东西各缺一块：要么部件不是你画的，要么系统不认识你画的部件，要么全靠你自己做。你这个「自绘部件 + 系统识型 + 套官方动效」正好在三者的缝里。</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:4px;">第一类：组合式捏人（部件是素材库）</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">最接近的是这个，也是唯一把「部件 + 官方动效」真正跑通的公开实现。</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
+<span style="font-size:12px;font-weight:600;">Universal LPC Spritesheet Character Generator</span>
+<span style="font-size:9px;padding:2px 7px;background:#F0F8F3;color:#35705A;border-radius:9px;">开源 · 仍活跃</span>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:6px;">
+选性别、体型、头发、衣服、护甲、武器，右边直接预览「走路」动画，导出成 spritesheet。部件分类是 body / head（含耳鼻眼胡须头发）/ torso / legs / feet / weapon / shield，每个部件都自带多方向、多动作的帧。<br>
+美术全部开源（GPL3 + CC-BY-SA3），TypeScript + WebGL 实现，换色走 GPU 调色板。<br>
+<b style="color:#A14E50;">缺的那块</b>：部件是作者画的，你只能选。想画一个自己的发型？不行。
+</div>
+</div>
+
+<div style="margin-top:8px;background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:12px;font-weight:600;">UnitForge · RPG Maker 内置 Generator · Picrew</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:6px;">
+同一路线。UnitForge 是 8 职业 + 可换装 + 预制多动画；RPG Maker 的是有限组合；Picrew 是海量日系捏人但绝大多数是静态图。<br>
+<b style="color:#A14E50;">共同的缺</b>：都是「选」，不是「画」。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">第二类：上传图自动分解（最像，但黑箱）</div>
+
+<div style="background:#fff;border:1px solid #F0E2C8;border-radius:5px;padding:12px 13px;margin-top:9px;">
+<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
+<span style="font-size:12px;font-weight:600;">DotEMotion</span>
+<span style="font-size:9px;padding:2px 7px;background:#FFF7E6;color:#9A6A2F;border-radius:9px;">2026.11 仍在更新</span>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:6px;">
+浏览器里跑。把一张角色图扔进去，<b>自动分解成部件</b>，再自动加上走、跑、攻击的动画，出高质量 spritesheet。<br>
+这正是你想做的事的自动化版本：图进去 → 部件出来 → 动画出来。<br>
+<b style="color:#A14E50;">它的命门</b>：靠算法猜「哪块是手臂」。图大一点、对比清楚一点猜得准；<b style="color:#1A1B1C;">29×29 这种尺寸猜不动</b>——腿和裤子在这尺寸上根本分不开。而且猜错了玩家没法纠正，因为系统不告诉他"我认成了什么"。
+</div>
+</div>
+
+<div style="margin-top:8px;background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:12px;font-weight:600;">Miso Editor · PixelLab · Ludo · SpriteLab</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:6px;">
+Miso 是 3D 模型一键出 1–64 方向 spritesheet；PixelLab/Ludo/SpriteLab 是 AI 文生 sprite + 自动动画，还能出 4/8 方向。<br>
+这些是「AI 帮你按」的路线，跟你「玩家像素手绘」的主张正面冲突——生成出来不是玩家画的那只手。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">第三类：通用像素编辑器（什么都能做，全靠人）</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;margin-top:9px;">
+<div style="font-size:12px;font-weight:600;">Aseprite · Piskel · Pixelorama · LibreSprite</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:6px;">
+Aseprite 是这行的标准工具（买断约 20 美元），图层 + 帧时间轴 + 洋葱皮 + tag 分组帧；Piskel 免费网页；Pixelorama 开源。<br>
+<b style="color:#35705A;">值得注意</b>：Aseprite 圈子里已经有一套成熟的「模块化角色」做法——<b>每个动画打一个 tag，每个要开关的部件占一个 layer</b>。有人把它写成了教程，讲得很直白：动画＝tag，模块＝layer，两个维度交叉。<br>
+<b style="color:#A14E50;">缺的那块</b>：它不知道「这个 layer 是眼睛」。你自己知道，软件不知道。所以眨不了眼——眨眼得你自己画两张图再打 tag。
+</div>
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">四类摆在一起，缝在哪</div>
+
+<div style="display:grid;grid-template-columns:1fr 92px 92px 92px;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;margin-top:9px;">
+<div style="background:#fff;padding:8px 9px;font-size:10px;font-weight:600;color:#5F6670;">特征</div>
+<div style="background:#fff;padding:8px 6px;font-size:10px;font-weight:600;color:#5F6670;text-align:center;">组合式</div>
+<div style="background:#fff;padding:8px 6px;font-size:10px;font-weight:600;color:#5F6670;text-align:center;">自动分解</div>
+<div style="background:#fff;padding:8px 6px;font-size:10px;font-weight:600;color:#5F6670;text-align:center;">通用编辑器</div>
+
+<div style="background:#fff;padding:7px 9px;font-size:11px;">玩家自己画</div>
+<div style="background:#FDF0F0;padding:7px 6px;font-size:10px;text-align:center;color:#A14E50;">✗</div>
+<div style="background:#F0F8F3;padding:7px 6px;font-size:10px;text-align:center;color:#35705A;">✓</div>
+<div style="background:#F0F8F3;padding:7px 6px;font-size:10px;text-align:center;color:#35705A;">✓</div>
+
+<div style="background:#fff;padding:7px 9px;font-size:11px;">系统知道部件类型</div>
+<div style="background:#F0F8F3;padding:7px 6px;font-size:10px;text-align:center;color:#35705A;">✓</div>
+<div style="background:#FFF7E6;padding:7px 6px;font-size:10px;text-align:center;color:#9A6A2F;">猜的</div>
+<div style="background:#FDF0F0;padding:7px 6px;font-size:10px;text-align:center;color:#A14E50;">✗</div>
+
+<div style="background:#fff;padding:7px 9px;font-size:11px;">自动套官方动效</div>
+<div style="background:#F0F8F3;padding:7px 6px;font-size:10px;text-align:center;color:#35705A;">✓</div>
+<div style="background:#F0F8F3;padding:7px 6px;font-size:10px;text-align:center;color:#35705A;">✓</div>
+<div style="background:#FDF0F0;padding:7px 6px;font-size:10px;text-align:center;color:#A14E50;">✗</div>
+
+<div style="background:#fff;padding:7px 9px;font-size:11px;">玩家可纠正认错了</div>
+<div style="background:#F2F2F0;padding:7px 6px;font-size:10px;text-align:center;color:#B9B6AC;">—</div>
+<div style="background:#FDF0F0;padding:7px 6px;font-size:10px;text-align:center;color:#A14E50;">✗</div>
+<div style="background:#F2F2F0;padding:7px 6px;font-size:10px;text-align:center;color:#B9B6AC;">—</div>
+
+<div style="background:#FFF7E6;padding:8px 9px;font-size:11px;font-weight:600;">你要的位置</div>
+<div style="background:#FFF7E6;padding:7px 6px;font-size:10px;text-align:center;color:#9A6A2F;">✗</div>
+<div style="background:#FFF7E6;padding:7px 6px;font-size:10px;text-align:center;color:#9A6A2F;">半</div>
+<div style="background:#FFF7E6;padding:7px 6px;font-size:10px;text-align:center;color:#9A6A2F;">✗</div>
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#5F6670;line-height:1.9;">
+第四行是分水岭。自动分解那一类<b>不做纠正机制</b>——它猜错了就错了，玩家只能重传一张图再猜。<br>
+而你这套把「声明部件类型」变成建层时的<b>一步选择</b>，玩家说什么就是什么。这不是退步到人工，是把不确定性从算法手里拿回来。
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">三处该抄的，三处别抄的</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px;">
+<div style="background:#F0F8F3;border:1px solid #CFE6D9;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#35705A;margin-bottom:6px;">该抄</div>
+<div style="font-size:11px;line-height:2.0;color:#5F6670;">
+<b style="color:#1A1B1C;">LPC 的部件树</b> —— body / head / torso / legs / feet / weapon 这套分法跟你的 17 个几乎一一对应。拿它当校验表，看有没有漏掉该有的。<br>
+<b style="color:#1A1B1C;">Aseprite 的 tag + layer</b> —— 动画＝tag、模块＝layer，这套已被验证十几年。你的「动效绑层」就是它，只是内置进产品。<br>
+<b style="color:#1A1B1C;">LPC 的 spritesheet 布局</b> —— 每动作固定行列，引擎切片不会乱。你的帧管理可以照这个规矩定。
+</div>
+</div>
+<div style="background:#FDF0F0;border:1px solid #F0DADA;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#A14E50;margin-bottom:6px;">别抄</div>
+<div style="font-size:11px;line-height:2.0;color:#5F6670;">
+<b style="color:#1A1B1C;">LPC 的美术素材</b> —— GPL3 / CC-BY-SA3 双协议，且是 32×32 侧视角写实向，跟你 29×29 正俯视拼豆风完全不搭。抄规范，不抄图。<br>
+<b style="color:#1A1B1C;">自动分解</b> —— DotEMotion 那套在 29×29 上会崩。像素太少，腿和裤子分不开。<br>
+<b style="color:#1A1B1C;">AI 代笔</b> —— PixelLab 那类出的是「AI 画的人」，不是玩家画的人。你的核心是玩家那只手。
+</div>
+</div>
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">一句话结论</div>
+<div style="font-size:11px;line-height:2.0;">
+有类似的东西，但都只做对了三分之二。<br>
+<b style="color:#1A1B1C;">你这套的独特之处不在技术，在「谁来决定这块像素是什么」。</b> LPC 是作者定，DotEMotion 是算法定，Aseprite 是人自己心里定但软件不知道——只有你把这一步显式地放进建层流程里。<br>
+这也解释了为什么「建层必须选部件」不是麻烦，是这套东西的地基。
+</div>
+
+<div style="margin-top:18px;border-top:1px solid #E4E3DD;padding-top:12px;">
+<div style="font-size:10px;color:#B9B6AC;line-height:1.8;">
+参考：Universal LPC Spritesheet Character Generator（sanderfrenken / lrusso / seikho 多个镜像，LiberatedPixelCup 官方仓库仍活跃）· DotEMotion（bekire23，2026.11 更新）· Aseprite 模块化角色工作流（dalichro.me 教程）· Miso Editor（Steam，2026.11）· PixelLab / Ludo / SpriteLab（AI 生成类）· Piskel / Pixelorama / LibreSprite（开源编辑器）
+</div>
+</div>
+
+</div>
+</div>
+</html>

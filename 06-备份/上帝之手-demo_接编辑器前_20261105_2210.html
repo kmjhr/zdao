@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>上帝之手 · 手感验证</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#14121B}
+body{color:#F2EFE6;font-family:system-ui,-apple-system,'PingFang SC',sans-serif;min-height:100vh;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px}
+.hint{font-size:13px;color:#A8A296;line-height:1.8;text-align:center}
+.stage{position:relative;width:min(92vw,760px);aspect-ratio:4/3;background:#1F1D2B;
+border:3px solid #0D0B14;border-radius:8px;overflow:hidden}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:16px 16px}
+.hand{position:absolute;left:50%;top:0;width:168px;height:216px;margin-left:-84px;
+transform:translateY(-240px) rotate(180deg);pointer-events:none;image-rendering:pixelated}
+.hand img{width:100%;height:100%;display:block;image-rendering:pixelated}
+.card{position:absolute;left:50%;top:50%;width:420px;height:262px;margin-left:-210px;margin-top:-131px;
+background:#2B2839;border:3px solid #0D0B14;border-radius:4px;opacity:0;
+box-shadow:0 8px 0 rgba(0,0,0,.4);transform:translateY(-120px)}
+.photo{position:absolute;left:18px;top:18px;bottom:18px;width:226px;background:#0D0B14;
+border:2px solid #3D3950;display:flex;align-items:center;justify-content:center;color:#5C5771;font-size:11px;cursor:pointer}
+.photo:hover{border-color:#E8B44A;color:#E8B44A}
+.info{position:absolute;left:260px;top:24px;right:18px;font-size:12px;color:#A8A296;line-height:2.05;overflow:hidden;white-space:nowrap;cursor:pointer}
+.info .tip{color:#5C5771;font-size:12px;margin-top:8px;white-space:nowrap}
+.info b{display:block;color:#F2EFE6;font-size:15px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scan{position:absolute;left:50%;top:50%;width:420px;height:262px;margin-left:-210px;margin-top:-131px;
+opacity:0;pointer-events:none;overflow:hidden;border-radius:4px}
+.scan i{position:absolute;top:-10px;bottom:-10px;width:26px;background:rgba(255,255,255,.55);filter:blur(3px)}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn{font-family:inherit;font-size:14px;padding:10px 20px;background:#2B2839;color:#F2EFE6;
+border:3px solid #0D0B14;border-radius:4px;cursor:pointer;position:relative;top:0;box-shadow:0 3px 0 #0D0B14}
+.btn:active{top:3px;box-shadow:none;background:#3A3750}
+.btn[disabled]{opacity:.35;cursor:default}
+.log{font-size:12px;color:#5C5771;height:16px}
+</style>
+</head>
+<body>
+<div class="hint">点「新建角色」：手从顶端伸下来，扔一张空白卡<br>再点「放入世界」：卡立起、划过读取槽、扫光</div>
+<div class="stage" id="stage">
+  <div class="grid"></div>
+  <div class="card" id="card">
+    <div class="photo" id="photo">照片</div>
+    <div class="info" id="info"><b id="ocname">未命名 OC</b><div>性别：未知</div><div>生日：——</div><div class="tip">点此处编辑资料</div></div>
+  </div>
+  <div class="scan" id="scan"><i id="beam"></i></div>
+  <div class="hand" id="hand"><img id="handimg" alt="hand"></div>
+</div>
+<div class="row">
+  <button class="btn" id="throwBtn">新建角色</button>
+  <button class="btn" id="putBtn" disabled>放入世界</button>
+</div>
+<div class="log" id="log"></div>
+<script>
+(function(){
+try{
+  var hand=document.getElementById('hand'),
+      card=document.getElementById('card'),
+      scan=document.getElementById('scan'),
+      beam=document.getElementById('beam'),
+      occ=document.getElementById('ocname'),
+      throwBtn=document.getElementById('throwBtn'),
+      putBtn=document.getElementById('putBtn'),
+      logEl=document.getElementById('log');
+  if(!hand||!card||!throwBtn){return;}
+
+  hand.querySelector('img').src='https://aka.doubaocdn.com/s/6hnRpkl6Jr';
+
+  var busy=false, made=false, handTop=-240;
+
+  function easeIn(t){return t*t;}
+  function easeOutBack(t){var c=1.70158;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);}
+
+  function tw(from,to,dur,ease,set,done){
+    var t0=null;
+    function step(ts){
+      if(t0===null){t0=ts;}
+      var p=Math.min(1,(ts-t0)/dur);
+      set(from+(to-from)*ease(p));
+      if(p<1){requestAnimationFrame(step);}else if(done){done();}
+    }
+    requestAnimationFrame(step);
+  }
+
+  function setHand(v){
+    handTop=Math.round(v);
+    hand.style.transform='translateY('+handTop+'px) rotate(180deg)';
+  }
+  function setCard(v,rot,alpha){
+    card.style.transform='translateY('+Math.round(v)+'px) rotate('+(rot||0)+'deg)';
+    if(alpha!==undefined){card.style.opacity=alpha;}
+  }
+
+  var floatToken=0;
+  function floatLoop(){
+    floatToken++;var my=floatToken;var t0=null;
+    function step(ts){
+      if(my!==floatToken){return;}
+      if(t0===null){t0=ts;}
+      var p=((ts-t0)/2000)%1;
+      setCard(Math.round(Math.sin(p*Math.PI*2))-1,0,1);
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function newCharacter(){
+    if(busy){return;}
+    busy=true;
+    putBtn.disabled=true;
+    logEl.textContent='手降下…';
+    setCard(-120,0,0);
+    if(made){
+      // 第二张起省略入场：直接淡入
+      card.style.opacity='1';
+      tw(-120,0,100,easeIn,function(v){setCard(v,0,1);},function(){
+        busy=false;putBtn.disabled=false;
+        logEl.textContent='第二张起不出手（省略入场，直接淡入）';
+        floatLoop();
+      });
+      return;
+    }
+    tw(-240,-50,140,easeIn,setHand,function(){
+      logEl.textContent='松手…';
+      card.style.opacity='1';
+      tw(-120,0,150,easeIn,function(v){
+        setCard(v,(-10)+10*((v+120)/120),1);
+      },function(){
+        logEl.textContent='落定 + 手同时收回';
+        var handDone=false,cardDone=false;
+        function both(){if(handDone && cardDone){busy=false;made=true;putBtn.disabled=false;logEl.textContent='流畅完成。卡开始悬浮';floatLoop();}}
+        tw(0,9,60,easeOutBack,function(v){setCard(v,0,1);},function(){setCard(0,0,1);cardDone=true;both();});
+        tw(-50,-240,140,easeIn,setHand,function(){handDone=true;both();});
+      });
+    });
+  }
+
+  function putInWorld(){
+    if(busy||!made){return;}
+    busy=true;
+    putBtn.disabled=true;
+    floatToken++;
+    logEl.textContent='卡抬起（150ms，尺寸不变）';
+    tw(0,1,150,easeIn,function(v){
+      setCard(-6*v,-3*v,1);
+    },function(){
+      logEl.textContent='划过读取槽（200ms）';
+      scan.style.opacity='1';
+      tw(0,1,200,easeIn,function(v){
+        beam.style.left=Math.round(-50+470*v)+'px';
+      },function(){
+        logEl.textContent='停顿 100ms（在读）';
+        setTimeout(function(){
+          scan.style.opacity='0';
+          logEl.textContent='翻正 + 淡出';
+          tw(0,1,150,easeIn,function(v){
+            card.style.opacity=String(1-v);
+            card.style.transform='translateY('+Math.round(-40*v)+'px) rotate('+Math.round(6*v)+'deg)';
+          },function(){
+            card.style.opacity='0';
+            occ.textContent='阿岚';
+            busy=false;made=false;putBtn.disabled=true;
+            logEl.textContent='已放入世界。再点「新建角色」看第二张（不出手）';
+          });
+        },100);
+      });
+    });
+  }
+
+  throwBtn.addEventListener('click',newCharacter);
+  putBtn.addEventListener('click',putInWorld);
+  document.getElementById('photo').addEventListener('click',function(){
+    logEl.textContent='照片区被点：进入形象编辑（此处接编辑器，后续接衣柜）';
+  });
+  var info=document.getElementById('info');
+  if(info&&occ){
+    info.addEventListener('click',function(e){
+      if(e.target===occ){return;}
+      logEl.textContent='信息区被点：编辑名字 / 性别 / 生日 / 简介';
+    });
+    occ.addEventListener('click',function(e){
+      e.stopPropagation();
+      occ.setAttribute('contenteditable','true');
+      occ.focus();
+      logEl.textContent='名字可直接改，回车确定';
+    });
+    occ.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();occ.blur();}
+    });
+    occ.addEventListener('blur',function(){
+      occ.removeAttribute('contenteditable');
+      logEl.textContent='名字已保存';
+    });
+  }
+}catch(e){console.error('初始化失败',e);}
+})();
+</script>
+</body>
+</html>

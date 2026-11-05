@@ -1,0 +1,147 @@
+<html style="margin:0;padding:0;">
+<title>动效绑定与预览放在哪</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:820px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">三块功能各自该待在哪</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">绑动效是「层的属性」，动作与表情是「整人播放」——属性的归层，播放的归一台。别为了整齐把它们塞进一个设置页。</div>
+
+<div style="margin-top:18px;font-size:13px;font-weight:600;margin-bottom:4px;">编辑器整体布局</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:11px;">画布在左，图层在右，预览台压在最底下横贯一整条。</div>
+
+<div style="background:#fff;border:1px solid #D5D3CA;border-radius:6px;padding:12px;">
+
+<div style="display:flex;gap:10px;">
+<div style="flex:1;min-width:0;">
+<div style="background:#F7F7F5;border:1px solid #E4E3DD;border-radius:4px;height:236px;display:flex;align-items:center;justify-content:center;position:relative;">
+<div style="font-size:10px;color:#B9B6AC;position:absolute;top:9px;left:11px;">画布 29×29</div>
+<div style="width:104px;height:104px;border:1px dashed #C9C6BC;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#B9B6AC;">人物</div>
+</div>
+</div>
+
+<div style="flex:none;width:216px;">
+<div style="font-size:10px;color:#5F6670;letter-spacing:1px;margin-bottom:7px;">图层</div>
+
+<div style="border:1px solid #E4E3DD;border-radius:4px;padding:7px 8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;">
+<div><div style="font-size:11px;">刘海</div><div style="font-size:9px;color:#B9B6AC;">头发</div></div>
+<div style="font-size:9px;background:#FFF7E6;color:#9A6A2F;padding:2px 6px;border-radius:9px;">飘</div>
+</div>
+
+<div style="border:1px solid #E4E3DD;border-radius:4px;padding:7px 8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;">
+<div><div style="font-size:11px;">后发</div><div style="font-size:9px;color:#B9B6AC;">头发</div></div>
+<div style="font-size:9px;background:#EDEFF3;color:#8C877C;padding:2px 6px;border-radius:9px;">无</div>
+</div>
+
+<div style="border:1px solid #4F6B9A;background:#F4F6FA;border-radius:4px;padding:7px 8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;">
+<div><div style="font-size:11px;">眼睛</div><div style="font-size:9px;color:#B9B6AC;">眼睛</div></div>
+<div style="font-size:9px;background:#FFF7E6;color:#9A6A2F;padding:2px 6px;border-radius:9px;">眨</div>
+</div>
+
+<div style="border:1px solid #E4E3DD;border-radius:4px;padding:7px 8px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;">
+<div><div style="font-size:11px;">上衣1</div><div style="font-size:9px;color:#B9B6AC;">上衣</div></div>
+<div style="font-size:9px;background:#EDEFF3;color:#8C877C;padding:2px 6px;border-radius:9px;">无</div>
+</div>
+
+<div style="font-size:9px;color:#B9B6AC;margin-top:8px;line-height:1.6;">右侧那颗胶囊＝这个图层的动效，点它换。</div>
+</div>
+</div>
+
+<div style="margin-top:10px;border-top:1px solid #E4E3DD;padding-top:10px;">
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+
+<div style="width:46px;height:46px;border:1px solid #E4E3DD;border-radius:3px;background:#F7F7F5;display:flex;align-items:center;justify-content:center;flex:none;">
+<div style="width:20px;height:20px;border:1px dashed #C9C6BC;"></div>
+</div>
+
+<div style="font-size:10px;color:#5F6670;letter-spacing:1px;">预览台</div>
+
+<div style="display:flex;gap:4px;">
+<span style="font-size:10px;background:#4F6B9A;color:#fff;padding:4px 10px;border-radius:3px;">动作</span>
+<span style="font-size:10px;background:#EDEFF3;color:#5F6670;padding:4px 10px;border-radius:3px;">表情</span>
+</div>
+
+<div style="display:flex;gap:4px;flex-wrap:wrap;">
+<span style="font-size:10px;background:#fff;border:1px solid #E4E3DD;padding:4px 8px;border-radius:3px;">待机</span>
+<span style="font-size:10px;background:#fff;border:1px solid #E4E3DD;padding:4px 8px;border-radius:3px;">走</span>
+<span style="font-size:10px;background:#fff;border:1px solid #E4E3DD;padding:4px 8px;border-radius:3px;">挥手</span>
+<span style="font-size:10px;background:#fff;border:1px solid #E4E3DD;padding:4px 8px;border-radius:3px;">坐</span>
+</div>
+
+<div style="font-size:10px;color:#B9B6AC;">‖</div>
+
+<div style="display:flex;gap:4px;">
+<span style="font-size:10px;background:#EDEFF3;color:#5F6670;padding:4px 9px;border-radius:3px;">1x</span>
+<span style="font-size:10px;background:#fff;border:1px solid #E4E3DD;padding:4px 9px;border-radius:3px;">▶</span>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">三块功能的位置与理由</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:5px;">绑动效 · 图层行尾</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">它是<b style="color:#1A1B1C">这一层</b>的属性，不是全局设置。放行尾，改的时候眼睛不用离开画布。</div>
+<div style="font-size:10px;color:#9A6A2F;margin-top:6px;">别放「设置」页——改头发动效还要切页，等于走两步。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:5px;">动作查看 · 预览台「动作」页</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">整人播放，不是单层预览。点一个按钮就播一遍走、挥手、坐。</div>
+<div style="font-size:10px;color:#9A6A2F;margin-top:6px;">别做成列表对话框——动作是要「看」的，不是「读」的。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:5px;">表情查看 · 同一台「表情」页</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">跟动作共用一个播放器，只是数据源不同：动作改肢体，表情改五官。</div>
+<div style="font-size:10px;color:#9A6A2F;margin-top:6px;">别单独再造一个播放器——两个播放器迟早不同步。</div>
+</div>
+
+</div>
+
+<div style="margin-top:20px;background:#fff;border-left:3px solid #4F6B9A;padding:12px 14px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:7px;">为什么动作和表情共用一台，不拆成两个面板</div>
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+播放器逻辑完全一样：读同一份角色数据 → 按帧改部件 → 画出来。拆成两套，等于同一个 bug 要修两遍、性能要优化两遍。<br>
+而且真实场景里它们是混着用的——「一边走一边笑」这种组合，只有一台才能播。
+</div>
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">不该放的地方</div>
+<div style="font-size:11px;line-height:2.05;">
+<b>不放进角色卡</b>：角色卡是展示面，只显示待机一帧 + 播放头像小动效。绑动效和调动作是创作行为，不该混在展示面上。<br>
+<b>不放进衣柜</b>：衣柜只做换装与预览，不改动效绑定。<br>
+<b>不单独做「动效管理」页</b>：首版动作是官方固定集，玩家不自定义，没有库要管。
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">预览台的几个细节</div>
+<div style="font-size:11px;line-height:2.05;">
+播放画布和主画布<b>同一缩放</b>（2x / 3x / 4x），否则看起来会跳。<br>
+点动作按钮＝播一次；再点一次＝钉住那一帧（方便看造型）。<br>
+长按＝循环播，松手停。<br>
+预览只读：播的时候画布锁定，防止边播边画把帧搞乱。<br>
+速度档 0.5x / 1x / 2x，默认 1x。
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">手机端怎么办</div>
+<div style="font-size:11px;line-height:1.95;">
+横屏时就是上面那个布局。<br>
+竖屏时预览台折叠成一条 48pt 高的横条，左边缩略人像、右边横向滚动的动作按钮，点开展成全屏播放。<br>
+两侧栏收成抽屉，图层抽屉从右滑出——动效胶囊跟着层走，位置不变。
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:14px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:8px;">一句话</div>
+<div style="font-size:11px;line-height:1.9;">
+<b>层属性贴着层放，整人播放压在最底下。</b><br>
+绑动效进图层行尾，动作与表情进同一台预览台的两个页签，其余界面一概不碰。
+</div>
+</div>
+
+</div>
+</div>
+</html>

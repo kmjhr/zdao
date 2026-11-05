@@ -1,0 +1,165 @@
+<html style="margin:0;padding:0;">
+<title>架构改造后要补的创作工具</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:830px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">改图层架构会砍掉一批便利，得补回来</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">旧架构改格子标签就能换部件，新架构得搬整块像素。凡是「原来一步、现在三步」的操作，都得配一个工具。</div>
+
+<div style="margin-top:18px;background:#fff;border-left:3px solid #4F6B9A;padding:12px 14px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:7px;">先看现在有什么（已核实代码）</div>
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+<b style="color:#35705A;">已有</b>：图层上下移动（moveLayer + 上移下移按钮，第 479–487 行）、层增删、层显隐、换色填充<br>
+<b style="color:#A14E50;">没有</b>：选区（全文件 0 处）、撤销重做（0 处）、复制层、镜像、层锁定、整层偏移<br>
+所以下面这些不是「优化」，是<b style="color:#1A1B1C;">从零建</b>。原来 8 人日里只算了一天「选区移到指定层」，那还是按改标签估的。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">第一档：不做就干不了</div>
+
+<div style="display:grid;gap:8px;margin-top:9px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">
+<span style="font-size:12px;font-weight:600;">矩形选区 + 移到指定层</span>
+<span style="font-size:10px;padding:2px 7px;background:#FDF0F0;color:#A14E50;border-radius:9px;">你已提</span>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+框一块，选目标层，整块搬过去。搬完原层清空。<br>
+三个细节：搬之前弹「保留副本？」（默认不保留）；目标层已有像素时叠加而非覆盖；搬完自动跳到目标层，否则玩家不知道搬成功了没。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">整层偏移</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+整层画偏一格，现在只能重画。要能选中层后用方向键整体平移，或者拖拽层内容。<br>
+这个比「移到指定层」更高频——画错位置是常事，画错部件才是偶发。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">撤销 / 重做</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+<b style="color:#A14E50;">这条最要命。</b>格子里画错一格，删了重画无所谓；层删错了，整只手臂没了。<br>
+而且新架构下误操作更贵：搬错层、合并错层、改错部件类型，都是不可逆的。<br>
+没有撤销，玩家不敢动图层——最终结果就是只用默认 8 层，一个都不建。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">层锁定</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+画头发时笔刷容易漏到脸层。锁定后画布点击只作用于未锁定层。<br>
+17 层叠在一起，不锁就没法画——这是层多了之后才出现的问题。
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">第二档：不做会很难受</div>
+
+<div style="display:grid;gap:8px;margin-top:9px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">魔棒（按连通块选）</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+点一下画布上任一像素，自动选中同层内与它连通的所有像素。<br>
+要搬整只手臂，手框框不准；魔棒一点就选中。比矩形选区准得多。<br>
+代价：像素画本来就分离（描边把各部分隔开），所以连通块往往就是「一只手」。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">复制层 + 水平镜像</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+画好左腿，复制一份镜像成右腿。<br>
+左右对称的部件有四个：arm_l/arm_r、leg_l/leg_r、sleeve_l/sleeve_r，加上鞋。没有这个工具，每个都得画两遍。<br>
+注意：不能无脑镜像——人有左右手差别，镜像出来是「照镜子的人」，可能别扭。所以工具做完要提示一句「镜像结果需手动微调」。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">层合并</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+反过来：画得太碎，十几层每层两格，想合成一层。像素叠加，part 取上层。<br>
+没有它，玩家建了一堆层之后只能删了重画。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">改部件类型（限定条件下）</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+建成了「上衣」其实想是「外套」。part 说是锁死不可改，但要留一个口子。<br>
+条件：<b>没绑动效、且这层是本部件唯一一层</b>时才允许改。绑了动效再改，飘的头发立刻变成不飘的裤子。<br>
+不满足条件就提示「先解绑动效」——这比直接禁止友好。
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">第三档：锦上添花</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px;margin-top:9px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">对齐吸附</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">手臂层移动时显示躯干轮廓，可选吸附到躯干边界。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">空层标记</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">层行显示像素数，空层灰显「空」。17 层里找不出哪个没画是折磨。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">必填检查</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">导出前查 head / torso 在不在。缺了给提示，别让它带着残缺角色上岛。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">层内切帧</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">同一层存 2–4 张帧（说话嘴、走路腿）。这是后面动画的地基。</div>
+</div>
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">工作量得改：8 人日不够</div>
+
+<div style="display:grid;grid-template-columns:1fr 74px 1fr;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;margin-top:9px;">
+<div style="background:#fff;padding:6px 9px;font-size:11px;">矩形选区基础（含虚线框、拖拽）</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">1.5</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">原方案按改标签估，实际要建整套</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">选区移到指定层</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">0.75</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">原方案列的 1 人日</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">魔棒连通选区</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">1</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">新增</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">整层偏移</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">0.5</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">新增</div>
+<div style="background:#FFF7E6;padding:6px 9px;font-size:11px;">撤销 / 重做（粗粒度）</div><div style="background:#FFF7E6;padding:6px 6px;font-size:11px;text-align:center;color:#A14E50;">2</div><div style="background:#FFF7E6;padding:6px 9px;font-size:10px;color:#6B5F4A;">最大单项，且是重构不是加功能</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">层锁定</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">0.5</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">新增</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">复制层 + 镜像</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">0.5</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">新增</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">层合并 + 改部件类型</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">0.75</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">新增</div>
+<div style="background:#fff;padding:6px 9px;font-size:11px;">空层标记 + 必填检查</div><div style="background:#fff;padding:6px 6px;font-size:11px;text-align:center;color:#9A6A2F;">0.5</div><div style="background:#fff;padding:6px 9px;font-size:10px;color:#B9B6AC;">新增</div>
+</div>
+
+<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:9px 13px;">
+<div style="font-size:10px;color:#B9B6AC;">原估</div>
+<div style="font-size:17px;font-weight:600;">8</div>
+<div style="font-size:10px;color:#5F6670;">人日</div>
+</div>
+<div style="font-size:14px;color:#B9B6AC;">→</div>
+<div style="background:#fff;border:1px solid #4F6B9A;border-radius:5px;padding:9px 13px;">
+<div style="font-size:10px;color:#4F6B9A;">修正</div>
+<div style="font-size:17px;font-weight:600;">15.5</div>
+<div style="font-size:10px;color:#5F6670;">人日</div>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.8;flex:1;min-width:180px;">
+8 天原方案 + 7.5 天新工具。差的不只是数量，是<b style="color:#1A1B1C;">原方案低估了「选区」这一层基础设施</b>。
+</div>
+</div>
+
+<div style="margin-top:22px;background:#FDF0F0;border:1px solid #F0DADA;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#A14E50;margin-bottom:6px;">撤销为什么是最大单项</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+现在的编辑器把所有状态摊在全局变量里直接改：<code style="font-size:10px;">pix</code> 一格一格写、<code style="font-size:10px;">layers</code> 数组随手 push/splice。<br>
+做撤销的前提是把这些东西收进一个集中的<b>状态对象</b>，每次操作前存快照。这不是「加个 undo 按钮」，是<b>把整个编辑器的数据流重铺一遍</b>。<br>
+如果只做粗粒度（记层结构不记每格），大概 1 天够用；要做每格级撤销，2 天起，还有日志膨胀问题。<br>
+建议：<b>首版只做粗粒度</b>——记「层增删、层移动、层合并、选区搬家、改部件类型」这几种，格子级不动。因为格子画错重画成本低，层搞错成本高。
+</div>
+</div>
+
+</div>
+</div>
+</html>

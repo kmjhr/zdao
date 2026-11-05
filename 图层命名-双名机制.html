@@ -1,0 +1,111 @@
+<html style="margin:0;padding:0;">
+<title>图层双名：机器键与显示名</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:790px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">图层两个名字：一个给系统，一个给你</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">部件归属锁死给系统认，显示名随你改。改名不动归属，删层也不打乱动效。</div>
+
+<div style="margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:10px;letter-spacing:1px;color:#4F6B9A;font-weight:600;margin-bottom:6px;">part · 给系统认</div>
+<div style="font-size:11px;line-height:1.8;">固定 17 类之一，<b>永远不可改</b>。系统靠它决定这层能不能眨眼、能不能摆腿。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:10px;letter-spacing:1px;color:#4F6B9A;font-weight:600;margin-bottom:6px;">id · 给系统绑</div>
+<div style="font-size:11px;line-height:1.8;">层的唯一编号，建层时发一次，<b>永远不变</b>。动效绑在它上面，删谁都不错位。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:10px;letter-spacing:1px;color:#35705A;font-weight:600;margin-bottom:6px;">label · 给你看</div>
+<div style="font-size:11px;line-height:1.8;">显示名，随你改。默认「头发1」，可改成「刘海」。<b>不影响上面两个</b>。</div>
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">一个重要的纠正</div>
+<div style="background:#fff;border-left:3px solid #9A6A2F;padding:12px 14px;margin-top:8px;">
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+你说「系统读头发1来理解」——<b style="color:#1A1B1C;">系统其实不读那个 1，它读的是「头发」这个类型 + 这一层的固定编号</b>。<br>
+「1 / 2 / 3」只是显示序号：同一部件开了好几层，人得靠它区分是哪一个。删掉一层后，剩下的会自动重排成 1、2，但你改过的名字和绑好的动效都不会跟着变。
+</div>
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:4px;">层列表长什么样</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:10px;">主名是你给的，右边那个灰标是系统认的部件类型，常驻不隐藏——防止你改完名忘了这层原本是什么。</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:7px;padding:13px 15px;max-width:400px;">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0EFEA;">
+<div style="font-size:11px;">刘海</div><div style="font-size:9px;background:#EDEFF3;color:#5F6670;padding:2px 6px;border-radius:3px;">头发</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0EFEA;">
+<div style="font-size:11px;">后发</div><div style="font-size:9px;background:#EDEFF3;color:#5F6670;padding:2px 6px;border-radius:3px;">头发</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0EFEA;">
+<div style="font-size:11px;">脸</div><div style="font-size:9px;background:#EDEFF3;color:#5F6670;padding:2px 6px;border-radius:3px;">头</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F0EFEA;">
+<div style="font-size:11px;">眼睛</div><div style="font-size:9px;background:#EDEFF3;color:#5F6670;padding:2px 6px;border-radius:3px;">眼睛</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;">
+<div style="font-size:11px;">上衣1</div><div style="font-size:9px;background:#FDF3E3;color:#9A6A2F;padding:2px 6px;border-radius:3px;">上衣</div>
+</div>
+</div>
+
+<div style="font-size:11px;color:#5F6670;margin-top:9px;line-height:1.8;">没改名的层仍显示默认名（头发1、头发2），改成「刘海」「后发」之后，两份头发就认得出来了。</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">改名的规则</div>
+<div style="font-size:11px;line-height:2.05;">
+双击层名就地编辑，回车确认，Esc 取消。<br>
+最长 8 个汉字（16 字符），超出截断不报错。<br>
+<b>允许重名</b>——两个都叫「刘海」也行，因为机器键不是名字，不会撞。<br>
+留空自动回落默认名（这是为了让懒人也能用）。<br>
+名字只影响显示与搜索，导入导出时和 part、id 一起存，三者互不覆盖。
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">删层之后，动效为什么不错位</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:10px;letter-spacing:1px;color:#5F6670;font-weight:600;margin-bottom:8px;">删之前</div>
+<div style="font-size:11px;line-height:2.0;">
+<span style="color:#5F6670;">L1</span> 头发1<span style="font-size:9px;color:#999;"> · 绑「飘」</span><br>
+<span style="color:#5F6670;">L2</span> 头发2<span style="font-size:9px;color:#999;"> · 绑「不动」</span>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:10px;letter-spacing:1px;color:#5F6670;font-weight:600;margin-bottom:8px;">删掉 L1 之后</div>
+<div style="font-size:11px;line-height:2.0;">
+<span style="color:#5F6670;">L2</span> 头发1<span style="font-size:9px;color:#999;"> · 仍绑「不动」</span>
+</div>
+<div style="font-size:10px;color:#35705A;margin-top:6px;">显示序号自动变 1，动效仍跟 L2 走</div>
+</div>
+</div>
+
+<div style="font-size:11px;color:#5F6670;margin-top:10px;line-height:1.8;">
+如果动效绑的是「头发1」这个显示编号，删层后它就会指到另一层上，飘的变成不动的。<b>绑 id 才安全</b>，所以显示序号可以随便重排。
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:14px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:8px;">动效配置里怎么显示</div>
+<div style="font-size:11px;line-height:1.9;">
+下拉里写 <code style="font-size:10px;background:#EDEFF3;padding:1px 4px;border-radius:3px;">刘海（头发）</code>，用括号里的类型让你对照——因为「刘海」这个名字本身不含部件信息，你不一定记得它是头发还是帽子。<br>
+排序按部件分组，同组内按层序。
+</div>
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:14px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:8px;">图层对象长这样</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;font-family:monospace;font-size:10px;line-height:1.9;color:#1A1B1C;">
+{<br>
+&nbsp;&nbsp;id: "L7",&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#999;">// 系统键，永不变</span><br>
+&nbsp;&nbsp;part: "hair",&nbsp;&nbsp;<span style="color:#999;">// 17 类之一，锁死</span><br>
+&nbsp;&nbsp;label: "刘海",&nbsp;&nbsp;<span style="color:#35705A;">// 显示名，随便改</span><br>
+&nbsp;&nbsp;visible: true,<br>
+&nbsp;&nbsp;active: true,&nbsp;&nbsp;&nbsp;<span style="color:#999;">// 衣服层用：衣柜靠它切换</span><br>
+&nbsp;&nbsp;pixels: [...]<br>
+}
+</div>
+</div>
+
+</div>
+</div>
+</html>

@@ -1,0 +1,159 @@
+<html style="margin:0;padding:0;">
+<title>图层即部件：架构改造</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:790px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">图层即部件：可以改，而且比逐格标记好</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">新建图层时选这个图层是什么部件，取消格子级标记矩阵，同一部件可开多层（头发1 / 头发2）。这是把「作坊式刷标签」换成「工程式建层」。</div>
+
+<div style="margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:13px 14px;">
+<div style="font-size:11px;letter-spacing:1px;color:#A14E50;font-weight:600;margin-bottom:8px;">现在 · 格子级标记</div>
+<div style="font-size:11px;line-height:1.9;color:#1A1B1C;">
+一个图层里混着多种部件<br>
+每画一格都要先选「部件笔刷」<br>
+裁剪后标签跟着格子走、会被切碎<br>
+想给头发分前后层，做不到<br>
+<b style="color:#A14E50;">→ 双层选择：先切层，再切笔刷</b>
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #CFE6D9;border-radius:6px;padding:13px 14px;">
+<div style="font-size:11px;letter-spacing:1px;color:#35705A;font-weight:600;margin-bottom:8px;">改后 · 图层级绑定</div>
+<div style="font-size:11px;line-height:1.9;color:#1A1B1C;">
+一层只属于一个部件<br>
+建层时选一次，之后只管画<br>
+标签是整层的，搬不走也切不碎<br>
+头发可开两层：头发1 飘、头发2 不动<br>
+<b style="color:#35705A;">→ 单层选择：切到哪层就画哪个部件</b>
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:4px;">新建图层的流程</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:11px;">点「＋图层」→ 只弹一件事：这层画什么。</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:12px 13px;">
+<div style="font-size:10px;color:#4F6B9A;font-weight:600;letter-spacing:1px;margin-bottom:7px;">① 选部件</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;">
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">头</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">头发</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">眉毛</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">眼睛</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">嘴巴</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">躯干</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">左臂</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">右臂</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">左腿</span>
+<span style="font-size:10px;background:#EDEFF3;padding:3px 7px;border-radius:3px;">右腿</span>
+<span style="font-size:10px;background:#FDF3E3;padding:3px 7px;border-radius:3px;">上衣</span>
+<span style="font-size:10px;background:#FDF3E3;padding:3px 7px;border-radius:3px;">外套</span>
+<span style="font-size:10px;background:#FDF3E3;padding:3px 7px;border-radius:3px;">裤子</span>
+<span style="font-size:10px;background:#FDF3E3;padding:3px 7px;border-radius:3px;">鞋</span>
+<span style="font-size:10px;background:#FDF3E3;padding:3px 7px;border-radius:3px;">袖子</span>
+<span style="font-size:10px;background:#F6EFF8;padding:3px 7px;border-radius:3px;">饰品</span>
+</div>
+<div style="font-size:10px;color:#5F6670;margin-top:8px;line-height:1.7;">固定 16 个，不可新增、不可改名。灰＝本体，黄＝衣服，紫＝饰品。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:12px 13px;">
+<div style="font-size:10px;color:#4F6B9A;font-weight:600;letter-spacing:1px;margin-bottom:7px;">② 自动编号</div>
+<div style="font-size:11px;line-height:1.9;">
+选了「头发」<br>
+已有 0 层 → 建「头发」<br>
+已有 1 层 → 建「头发2」<br>
+已有 2 层 → 建「头发3」
+</div>
+<div style="font-size:10px;color:#5F6670;margin-top:8px;line-height:1.7;">同部件上限 4 层。够分前后、外挂、飘带。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:12px 13px;">
+<div style="font-size:10px;color:#4F6B9A;font-weight:600;letter-spacing:1px;margin-bottom:7px;">③ 落位</div>
+<div style="font-size:11px;line-height:1.9;">
+所属角色由部件自动推导<br>
+<span style="color:#5F6670;">头/头发/眉/眼/嘴/躯干<br>左右臂/左右腿 → 本体</span><br>
+<span style="color:#5F6670;">上衣/外套/裤/鞋/袖 → 衣服</span><br>
+<span style="color:#5F6670;">饰品 → 饰品</span>
+</div>
+<div style="font-size:10px;color:#5F6670;margin-top:8px;line-height:1.7;">玩家不用再选角色，少一层判断。</div>
+</div>
+
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:4px;">同一部件多层的价值：动效可以分开绑</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:10px;">这是你这个改动真正解决问题的地方——原来一个头发只能整体动。</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:7px;">头发1 · 后发</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">绑「风摆」：走路时 ±1px 横向位移，2fps</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:7px;">头发2 · 刘海</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">不绑动效：跟头一起走，永远不动</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:7px;">上衣1 / 上衣2</div>
+<div style="font-size:11px;line-height:1.8;color:#5F6670;">两套衣服，靠「激活」互斥，衣柜就落在这一层</div>
+</div>
+</div>
+
+<div style="margin-top:10px;background:#fff;border-left:3px solid #4F6B9A;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;margin-bottom:6px;">动效绑定的是层，不是部件名</div>
+<div style="font-size:11px;line-height:1.9;color:#5F6670;">
+<code style="font-size:10px;background:#EDEFF3;padding:1px 4px;border-radius:3px;">{ layerId: 'L7', part: 'hair', seq: 1, anim: 'sway' }</code><br>
+同一部件两层可以有完全不同的动态，互不干扰；换装时只换层的激活状态，动效声明不用改。
+</div>
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">要补的三条规则，不然会乱</div>
+<div style="font-size:11px;line-height:2.05;">
+<b>本体至少留 1 层</b>：头 / 躯干 不可删到 0，否则人没了；其余本部件可删干净。<br>
+<b>衣服可以 0 层</b>：这是「脱光」的表达，正好你要的脱衣。上衣 0 层 = 没穿上衣，外套 0 层 = 没穿外套。<br>
+<b>同部件上限 4 层</b>：不限的话有人开 20 层头发，侧栏直接崩。
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:10px;">这个改法的代价，要说清楚</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
+<div style="background:#FFF7E6;border:1px solid #F0E2C8;border-radius:6px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:6px;">层数会从 5 涨到 15 以上</div>
+<div style="font-size:11px;line-height:1.8;color:#6B5F4A;">一个人物拆满 16 部件就是 16 层，侧栏必须按角色分组折叠，否则全摊开根本找不到。</div>
+</div>
+<div style="background:#FFF7E6;border:1px solid #F0E2C8;border-radius:6px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:6px;">画错层要靠搬，不能靠改标签</div>
+<div style="font-size:11px;line-height:1.8;color:#6B5F4A;">以前改格子标签就行，现在得整块搬到另一层。所以要补一个「把选区移到某层」的工具，不然返工成本很高。</div>
+</div>
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:14px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:9px;">姐姐的旧数据怎么办</div>
+<div style="font-size:11px;line-height:1.9;">
+她现在的 part 矩阵里只有 8 种：hair / head / eyes / mouth / coat / top / pants / shoes。<br>
+迁移脚本按部件反推：每个部件生成一层，把该部件的格子复制进去，层序按原图层顺序。<br>
+<span style="color:#35705A;">8 种部件 → 8 层，一个像素都不用重画。</span>coat 和 top 原来在同一层里互补，拆开后仍不重叠，视觉完全一致。
+</div>
+</div>
+
+<div style="margin-top:20px;border-top:1px solid #E4E3DD;padding-top:14px;">
+<div style="font-size:13px;font-weight:600;margin-bottom:9px;">工作量</div>
+<div style="font-size:11px;line-height:2.1;">
+<span style="display:inline-block;width:212px;color:#5F6670;">数据模型改（层带 part/seq，去掉矩阵）</span>0.5 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">新建层选部件弹窗</span>0.5 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">侧栏按角色分组折叠</span>0.5 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">选区搬到指定层</span>1 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">姐姐 8 层迁移脚本</span>0.5 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">部件表 11 → 16</span>0.5 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">部件锚点</span>0.5 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">帧管理</span>2 天<br>
+<span style="display:inline-block;width:212px;color:#5F6670;">运行时按层合成 + 动效</span>2 天<br>
+<span style="font-weight:600;">合计 8 人日</span><span style="color:#5F6670;">（比逐格标记方案少 1 天，因为拆分笔刷不用做了）</span>
+</div>
+</div>
+
+</div>
+</div>
+</html>

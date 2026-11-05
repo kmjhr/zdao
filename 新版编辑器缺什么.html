@@ -1,0 +1,130 @@
+<html style="margin:0;padding:0;">
+<title>这一版缺什么</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:830px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">已经做完了七成，但卡在最后一步</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">4460 行，201KB。之前列的「必须」几乎全在，问题换成了另一种：<b style="color:#1A1B1C;">能配不能看</b>。</div>
+
+<div style="margin-top:18px;font-size:13px;font-weight:600;margin-bottom:4px;">已实现的（有代码证据）</div>
+
+<div style="display:grid;grid-template-columns:1fr 96px;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;margin-top:9px;">
+<div style="background:#fff;padding:7px 9px;font-size:11px;">17 部件表（含锚点、上限、分类）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">555–571</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">三档初始层（2 / 8 / 17）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">580–582</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">层锁定（含锁定时拦截上色、拦截搬层）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">1907 · 3217</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">撤销 / 重做</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">btnUndo · pushUndo</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">选区搬到指定层（带隐藏/锁定原因提示）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">3823–3926</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">层合并</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">btnMergeLayer</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">普通版 / 专业版 + 首次进专业版的风险确认</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">4143–4168</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">每部件设置项，且分 tier（normal / pro）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">3409+</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">26 个动效，launch 标记首版 14 个</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">3369–3396</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">四个性格预设</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">3400–3406</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">每层独立绑动效</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">normalizeAnimation</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">「这层加一帧」（把当前层像素存成素材）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">4233</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">自动保存 + v1/v2 存档迁移 + 导入导出</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">1363 · 2722</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">旧数据的部件同义词映射（眉毛/袖/左右手都能认）</div><div style="background:#fff;padding:7px 6px;font-size:10px;text-align:right;color:#B9B6AC;font-family:monospace;">1062–1092</div>
+</div>
+
+<div style="margin-top:22px;background:#FDF0F0;border-left:3px solid #A14E50;padding:12px 14px;">
+<div style="font-size:12px;font-weight:600;margin-bottom:7px;">最要紧的一处：试播是假的</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+第 4229 行，点「试播」只弹一个 toast：<code style="font-size:10px;">试播「呼吸」3000ms（编辑器最小预览；真实播放由演绎系统负责）</code>。<br>
+也就是说<b style="color:#A14E50;">玩家花了半小时把 17 层配好，看不到这个东西能不能动</b>。<br>
+整套部件系统的全部价值就是「能动」。配得再对，看不见就等于不存在——玩家不会相信一个只有提示文字的功能。<br>
+这不是完善度问题，是<b>验收不了</b>。所有动效配置、性格、锚点，都要靠这个窗口验证对错。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">还缺的，按「不补会怎样」排序</div>
+
+<div style="display:grid;gap:8px;margin-top:9px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;border-left:3px solid #A14E50;">
+<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;">
+<span style="font-size:12px;font-weight:600;">① 真正的预览台</span>
+<span style="font-size:10px;padding:2px 7px;background:#FDF0F0;color:#A14E50;border-radius:9px;">最该先做</span>
+</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+底部一条横条，点一下播一次、再点钉住一帧、长按循环。与主画布同缩放。<br>
+至少先做四个常驻 + 走路 + 挥手：<b>呼吸（躯干平移）、眨眼（眼睛压扁）、走路（腿绕锚点旋）、挥手（臂绕肩旋）</b>。这四个都是程序化变换，不需要美术素材，一天能出来。<br>
+做完这一条，前面所有配置才有意义。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;border-left:3px solid #A14E50;">
+<div style="font-size:12px;font-weight:600;">② 帧只能加，不能回改</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+现在「这层加一帧」是把当前层像素<b>快照</b>存成素材（4233 行），存完就没有入口了。<br>
+玩家画完第 2 帧发现第 1 帧要改，<b style="color:#A14E50;">改不了</b>——只能重加一帧，越堆越多。<br>
+要补：层内帧标签页（帧1 / 帧2 / 帧3），点哪个就把哪一帧载回画布继续画，画完自动存回。<br>
+这是基础操作，不是高级功能。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">③ 官方帧素材是占位</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+6 个内置帧（闭眼 / 张嘴 / 笑嘴 / O 嘴 / 挑眉 / 压眉）的备注都写着「内置占位，待接官方素材」——<b>它们现在没有像素</b>。<br>
+所以「眨眼」在预览里根本闭不下去。得真画这 6 张，每张只有 3–5 格，但必须是真人手画。
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:12px;font-weight:600;">④ 没有任何运行时变换代码</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:5px;">
+26 个动效都只有 <code style="font-size:10px;">how</code> 一句文字描述（「躯干轻微起伏，幅度 0–2」），没有一行实现。<br>
+第 4073 行也写明了<b>「逐帧播放 / 时间轴合成由演绎系统负责」</b>——这是把最难的部分推给了不存在的系统。
+</div>
+</div>
+
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">便利工具还差这几样</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin-top:9px;">
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">多草稿</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">现在只有一个 AUTOSAVE_KEY，等于每次新建都在覆盖上一个。做一个要几小时，这条不补，第一个 OC 做完就等于第二个没地方放。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">整层偏移</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">整层画偏一格，现在只能重画。比「搬到指定层」更高频。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">复制层 + 水平镜像</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">左右对称的部件有 arm / leg / sleeve 各一对加鞋。画好左腿复制成右腿，能省一半工。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">魔棒（按连通块选）</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">有矩形选区了，但搬整只手臂手框框不准。像素画本来分离，连通块往往正好是一只手。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">空层标记 + 完成度</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">17 层里找不出哪个没画。草稿列表也没有「完成 8/17」。</div>
+</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 12px;">
+<div style="font-size:11px;font-weight:600;">挪到 IndexedDB</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:4px;">现在用 localStorage，一个角色 230KB 明文，5MB 撑不到 20 个。而且写入是同步的，存一次卡一下画布。</div>
+</div>
+
+</div>
+
+<div style="margin-top:24px;background:#F0F8F3;border:1px solid #CFE6D9;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#35705A;margin-bottom:6px;">如果只能补三样</div>
+<div style="font-size:11px;line-height:2.0;color:#2F5B49;">
+<b>1. 预览台能真播四个常驻动效</b> —— 让「能动」这件事变成眼见为实。<br>
+<b>2. 帧能切回来改</b> —— 否则加帧是个单向陷阱。<br>
+<b>3. 多草稿</b> —— 否则做久了不敢开第二个。<br>
+其余都是锦上添花。没有前三条，这一版看起来完整，但玩家做一遍会发现<b>看不到成果、改不了错、没地方存第二个</b>。
+</div>
+</div>
+
+</div>
+</div>
+</html>

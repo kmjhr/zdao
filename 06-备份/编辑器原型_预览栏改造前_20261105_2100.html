@@ -1,0 +1,4496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>纸上岛 · 人物形象编辑器</title>
+<style>
+:root{
+  --ink:#1d1b16;
+  --ink-soft:#49453b;
+  --paper:#e9e3d5;
+  --panel:#faf7ee;
+  --panel2:#f0ebde;
+  --line:#c7bfab;
+  --accent:#ff5a2e;
+  --accent-dark:#c93a13;
+  --teal:#149e82;
+  --yellow:#ffd23f;
+  --danger:#df4433;
+  --muted:#7c776b;
+  --font:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;
+  --mono:Consolas,"Courier New","Microsoft YaHei",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:13px;overflow:hidden;-webkit-font-smoothing:antialiased}
+button{font-family:var(--font)}
+#app{height:100vh;display:grid;grid-template-columns:68px minmax(0,1fr) 334px;grid-template-rows:56px minmax(0,1fr) 30px}
+
+/* ---------- 顶栏 ---------- */
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:9px;padding:0 12px;background:var(--panel);border-bottom:2px solid var(--ink);overflow:hidden}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:.04em;white-space:nowrap}
+.brand-mark{display:inline-grid;place-items:center;width:26px;height:26px;background:var(--ink);color:var(--yellow);font:700 14px var(--mono);box-shadow:2px 2px 0 var(--accent)}
+.size-badge{border:2px solid var(--ink);background:var(--panel2);font:700 11px var(--mono);padding:5px 9px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+.size-badge:hover{background:var(--yellow)}
+.top-spacer{flex:1}
+.topgroup{display:flex;gap:5px;align-items:center}
+.topgroup.sep-left{padding-left:9px;border-left:1px dashed var(--line)}
+.btn{border:2px solid var(--ink);background:var(--panel);color:var(--ink);font:700 12px var(--font);padding:5px 10px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;white-space:nowrap}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.active{background:var(--accent);color:#fff;border-color:var(--ink)}
+.btn.ghost{background:var(--panel2)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:2px 2px 0 var(--ink)}
+.icon-btn{width:32px;height:30px;border:2px solid var(--ink);background:var(--panel);box-shadow:2px 2px 0 var(--ink);cursor:pointer;font:700 15px var(--mono);line-height:1;padding:0}
+.icon-btn:hover{background:var(--yellow)}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+.icon-btn:active{transform:translate(2px,2px);box-shadow:none}
+.zoombox{display:flex;align-items:center;border:2px solid var(--ink);background:var(--panel);box-shadow:2px 2px 0 var(--ink);height:30px}
+.zoombox button{width:26px;height:26px;border:0;background:transparent;cursor:pointer;font:700 14px var(--mono)}
+.zoombox button:hover{background:var(--yellow)}
+.zoombox .zlabel{min-width:46px;text-align:center;font:700 11px var(--mono);border-left:1px dashed var(--line);border-right:1px dashed var(--line);padding:0 3px}
+.zoombox .zfit{width:auto;padding:0 7px;font-size:11px;font-family:var(--font)}
+.save-status{font:700 10px var(--mono);color:var(--muted);min-width:86px;text-align:right;white-space:nowrap}
+
+/* ---------- 左侧工具栏 ---------- */
+.toolrail{background:var(--panel2);border-right:2px solid var(--ink);padding:9px 7px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;overflow-x:hidden}
+.tool-btn{position:relative;height:51px;flex:0 0 auto;border:2px solid var(--ink);background:var(--panel);cursor:pointer;box-shadow:2px 2px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0}
+.tool-btn .ticon{font:700 17px var(--mono);line-height:1}
+.tool-btn .tname{font:700 10px var(--font);line-height:1.15}
+.tool-btn .tkey{position:absolute;top:1px;right:3px;font:700 8px var(--mono);color:var(--muted)}
+.tool-btn:hover{background:var(--yellow)}
+.tool-btn.active{background:var(--ink);color:var(--yellow)}
+.tool-btn.active .tkey{color:#bfb8a7}
+.tool-btn.active:hover{background:var(--ink)}
+.rail-sep{height:1px;background:var(--line);margin:2px 0;border-bottom:1px dashed rgba(0,0,0,.15)}
+.color-chip{height:52px;flex:0 0 auto;border:2px solid var(--ink);background:var(--panel);cursor:pointer;box-shadow:2px 2px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px}
+.color-chip .cc-swatch{width:26px;height:20px;border:2px solid var(--ink);background:#fff}
+.color-chip .cc-code{font:700 9px var(--mono)}
+.rail-note{font:9px/1.35 var(--font);color:var(--muted);text-align:center;padding:2px 0}
+
+/* ---------- 画布区 ---------- */
+.stage{position:relative;overflow:hidden;background:
+  radial-gradient(circle at 1px 1px,rgba(0,0,0,.07) 1px,transparent 1.3px) 0 0/16px 16px,
+  #ded7c7;min-width:0}
+#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.layer-chip{position:absolute;top:9px;left:9px;background:rgba(29,27,22,.92);color:#fff;font:700 10px var(--mono);padding:4px 8px;border:1px solid rgba(255,255,255,.35);pointer-events:none;max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.marker-banner{position:absolute;top:9px;left:50%;transform:translateX(-50%);z-index:5;display:none;align-items:center;gap:8px;background:var(--ink);color:#fff;border:2px solid #fff;box-shadow:4px 4px 0 rgba(0,0,0,.35);padding:5px 9px;max-width:88%}
+.marker-banner .mb-dot{width:12px;height:12px;border:1px solid #fff;flex:0 0 auto}
+.marker-banner .mb-text{font:700 11px var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.marker-banner .mb-btn{border:1px solid #fff;background:transparent;color:#fff;font:700 10px var(--font);padding:2px 6px;cursor:pointer}
+.marker-banner .mb-btn:hover{background:var(--accent)}
+.stage.marker-mode .marker-banner{display:flex}
+.stage.marker-mode::after{content:"";position:absolute;inset:0;border:3px solid var(--accent);pointer-events:none;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55), inset 0 0 28px rgba(255,90,46,.22);z-index:4}
+.canvas-hint{position:absolute;right:10px;bottom:9px;background:rgba(250,247,238,.86);border:1px solid rgba(29,27,22,.35);color:var(--ink-soft);font:10px/1.5 var(--mono);padding:3px 7px;pointer-events:none;max-width:62%}
+.anchor-tip{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:none;background:var(--yellow);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:5px 10px;font:700 11px var(--font);z-index:6}
+.anchor-tip.show{display:block}
+
+/* ---------- 右侧面板 ---------- */
+.side{background:var(--panel);border-left:2px solid var(--ink);display:flex;flex-direction:column;min-height:0;min-width:0}
+.tabs{display:flex;border-bottom:2px solid var(--ink);flex:0 0 auto}
+.tab{flex:1;border:0;border-right:1px solid var(--line);background:var(--panel2);font:700 12px var(--font);padding:8px 0;cursor:pointer;color:var(--ink-soft)}
+.tab:last-child{border-right:0}
+.tab.active{background:var(--yellow);color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.tabpane{display:none;flex:1;min-height:0;overflow-y:auto;padding:10px}
+.tabpane.active{display:block}
+.panel-head{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.panel-title{font:800 13px var(--font);letter-spacing:.04em;flex:1}
+.mini-btn{border:2px solid var(--ink);background:var(--panel2);font:700 10px var(--font);padding:3px 7px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.mini-btn:hover{background:var(--yellow)}
+.mini-btn:active{transform:translate(1px,1px);box-shadow:none}
+.panel-note{font:10px/1.55 var(--font);color:var(--muted);border-top:1px dashed var(--line);padding-top:7px;margin-top:9px}
+
+/* 色板 */
+.pal-search{display:flex;gap:5px;margin-bottom:5px}
+.pal-search input{flex:1;min-width:0;border:2px solid var(--ink);background:#fff;padding:6px 7px;font:12px var(--mono)}
+.pal-search input::placeholder{color:#aaa}
+.pal-msg{min-height:17px;font:10px/1.4 var(--font);color:var(--muted);margin-bottom:5px}
+.pal-msg.ok{color:var(--teal)}
+.pal-msg.err{color:var(--danger);font-weight:700}
+.pal-current{display:flex;align-items:center;gap:7px;border:2px solid var(--ink);background:var(--panel2);padding:6px 7px;margin-bottom:7px}
+.pal-current .pcs{width:30px;height:26px;border:2px solid var(--ink);background:#fff;flex:0 0 auto}
+.pal-current .pctext{flex:1;min-width:0;font:10px/1.35 var(--mono)}
+.pal-current .pctext b{display:block;font-size:12px}
+.pal-current button{border:2px solid var(--ink);background:var(--panel);font:700 10px var(--font);padding:4px 6px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.pal-current button:hover{background:var(--yellow)}
+.pal-meta{border:2px dashed var(--ink-soft);padding:6px 7px;margin-bottom:8px;background:#fff8dc}
+.pal-meta .pm-title{display:flex;align-items:center;gap:5px;font:800 11px var(--font);margin-bottom:3px}
+.pal-meta .badge{background:var(--danger);color:#fff;font:700 8px var(--font);padding:1px 4px;letter-spacing:.05em}
+.pal-meta .pm-note{font:9px/1.45 var(--font);color:var(--ink-soft);margin-bottom:4px}
+.pal-meta .pm-row{display:flex;gap:6px;align-items:center;font:9px var(--mono);color:var(--muted)}
+.pal-meta .pm-row button{margin-left:auto;border:1px solid var(--ink);background:var(--panel);font:700 9px var(--font);padding:2px 5px;cursor:pointer}
+.recent-wrap{margin-bottom:8px}
+.recent-wrap .rw-title{font:700 9px var(--font);color:var(--muted);margin-bottom:3px;letter-spacing:.08em}
+.recent-strip{display:flex;gap:3px;flex-wrap:wrap;min-height:18px}
+.recent-strip .rs{width:20px;height:18px;border:1px solid var(--ink);cursor:pointer;padding:0}
+.series-group{margin-bottom:9px}
+.series-head{display:flex;align-items:center;gap:6px;font:700 11px var(--font);margin-bottom:4px}
+.series-head .sdot{flex:1;height:1px;background:var(--line)}
+.series-head .scount{font:9px var(--mono);color:var(--muted)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px}
+.swatch{position:relative;height:38px;border:2px solid var(--ink);cursor:pointer;padding:0;overflow:hidden;background:#ccc}
+.swatch:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--ink)}
+.swatch .sname{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.9);color:#1d1b16;font:700 8px var(--mono);text-align:center;padding:1px 0;border-top:1px solid rgba(0,0,0,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swatch.active{outline:3px solid var(--accent);outline-offset:2px;box-shadow:2px 2px 0 var(--ink)}
+.swatch.missing{background-image:repeating-linear-gradient(45deg,#ff00aa 0 5px,#1d1b16 5px 10px)}
+.section-label{font:800 10px var(--font);letter-spacing:.1em;color:var(--muted);margin:8px 0 5px;display:flex;align-items:center;gap:6px}
+.section-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* 图层 */
+.layer-list{display:flex;flex-direction:column;gap:5px}
+.layer-row{display:flex;align-items:center;gap:3px;border:2px solid var(--ink);background:var(--panel);padding:4px 5px;box-shadow:2px 2px 0 rgba(29,27,22,.18);cursor:pointer}
+.layer-row.active{background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
+.layer-row:hover{background:#fffdf4}
+.layer-row.active:hover{background:var(--yellow)}
+.layer-eye{width:22px;height:22px;border:1px solid var(--ink);background:var(--panel2);cursor:pointer;font:11px var(--mono);padding:0;flex:0 0 auto}
+.layer-eye.off{color:#aaa;background:#e7e2d6}
+.layer-name{font:700 11px var(--font);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text}
+.layer-count{font:8px var(--mono);color:var(--muted);flex:0 0 auto}
+.layer-row input[type=range]{width:56px;flex:0 0 auto;accent-color:var(--accent);margin:0}
+.layer-row .ops{font:8px var(--mono);color:var(--muted);width:22px;text-align:right;flex:0 0 auto}
+.layer-row .lbtn{width:18px;height:20px;border:1px solid var(--ink);background:var(--panel2);font:10px var(--mono);padding:0;cursor:pointer;flex:0 0 auto}
+.layer-row .lbtn:hover{background:var(--accent);color:#fff}
+.layer-foot{display:flex;gap:6px;margin-top:9px}
+.layer-foot .btn{flex:1;font-size:11px;padding:6px 4px}
+
+/* 部件 */
+.part-current{border:2px solid var(--ink);background:var(--panel2);padding:7px;margin-bottom:8px}
+.part-current.empty{color:var(--muted);font:10px/1.5 var(--font);text-align:center}
+.part-current .pc-head{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.part-current .pc-dot{width:14px;height:14px;border:2px solid var(--ink);flex:0 0 auto}
+.part-current .pc-name{font:800 12px var(--font);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.part-current .pc-type{font:9px var(--mono);color:var(--muted)}
+.part-current .pc-stats{font:9px/1.4 var(--mono);color:var(--muted);margin-bottom:5px}
+.part-current .pc-actions{display:flex;gap:3px;flex-wrap:wrap}
+.part-current .pc-actions button{border:1px solid var(--ink);background:var(--panel);font:700 9px var(--font);padding:2px 5px;cursor:pointer}
+.part-current .pc-actions button:hover{background:var(--yellow)}
+.part-toggles{display:flex;gap:5px;margin-bottom:8px}
+.part-toggles button{flex:1;border:2px solid var(--ink);background:var(--panel);font:700 10px var(--font);padding:4px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.part-toggles button.on{background:var(--teal);color:#fff}
+.part-list{display:flex;flex-direction:column;gap:3px}
+.part-row{display:flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--panel);padding:3px 4px;cursor:pointer;border-left:4px solid transparent}
+.part-row:hover{background:#fffdf4}
+.part-row.active{border:1px solid var(--ink);border-left:4px solid var(--accent);background:var(--yellow)}
+.part-row .pr-dot{width:10px;height:10px;flex:0 0 auto;border:1px solid var(--ink)}
+.part-row .pr-name{font:700 10px var(--font);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.part-row .pr-meta{font:8px var(--mono);color:var(--muted);flex:0 0 auto}
+.part-row .pr-eye{width:18px;height:18px;border:1px solid var(--ink);background:var(--panel2);font:9px var(--mono);padding:0;cursor:pointer;flex:0 0 auto}
+.part-row .pr-eye.off{color:#aaa}
+.part-row.hidden-ancestor{opacity:.55;font-style:italic}
+.part-empty{padding:12px;text-align:center;color:var(--muted);font:10px/1.6 var(--font);border:1px dashed var(--line)}
+
+/* 图层即部件（v2） */
+.layer-search{display:flex;gap:5px;margin:0 0 7px}
+.layer-search input{flex:1;min-width:0;border:2px solid var(--ink);background:#fff;padding:5px 7px;font:11px var(--font)}
+.layer-search .ls-clear{width:26px;border:2px solid var(--ink);background:var(--panel2);font:11px var(--mono);cursor:pointer;padding:0}
+.layer-group{display:flex;align-items:center;gap:5px;margin:7px 0 3px;font:800 9px var(--font);letter-spacing:.08em;color:var(--muted);cursor:pointer;user-select:none}
+.layer-group .lg-count{margin-left:auto;font:9px var(--mono);letter-spacing:0}
+.layer-row{gap:4px;padding:4px 5px}
+.layer-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.layer-top{display:flex;align-items:center;gap:4px;min-width:0}
+.layer-name{flex:1;min-width:0}
+.layer-badge{font:700 8px var(--font);padding:1px 4px;border:1px solid var(--ink);background:#EDEFF3;flex:0 0 auto;white-space:nowrap}
+.layer-badge.cat-cloth{background:#FDF3E3;color:#9A6A2F}
+.layer-badge.cat-acc{background:#F6EFF8;color:#6B5A7A}
+.layer-btns{display:flex;gap:2px;flex:0 0 auto}
+.layer-bar{display:flex;align-items:center;gap:5px}
+.layer-bar input[type=range]{width:auto;flex:1;margin:0}
+.layer-bar .ops{width:30px;font-size:8px}
+.layer-name-input{flex:1;min-width:0;border:2px solid var(--accent);background:#fff;font:700 11px var(--font);padding:2px 4px}
+.type-grid{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 10px}
+.type-chip{border:2px solid var(--ink);background:#EDEFF3;font:700 10px var(--font);padding:5px 8px;cursor:pointer;box-shadow:2px 2px 0 rgba(29,27,22,.25);color:var(--ink)}
+.type-chip[data-cat="cloth"]{background:#FDF3E3}
+.type-chip[data-cat="acc"]{background:#F6EFF8}
+.type-chip.selected{background:var(--yellow);box-shadow:2px 2px 0 var(--ink);outline:2px solid var(--accent)}
+.type-chip.disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+.type-chip .tc-count{font:9px var(--mono);color:var(--muted);margin-left:4px}
+.type-note{padding:7px 9px;background:#fff8dc;border:2px dashed var(--ink-soft);font:10px/1.5 var(--font);color:var(--ink-soft)}
+.type-note b{color:var(--ink)}
+
+/* v3：选区 / 部件设置 / 动效 / 分档 */
+.selbar{position:absolute;top:36px;left:9px;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:5px;background:rgba(250,247,238,.96);border:2px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.25);padding:5px 7px;max-width:calc(100% - 18px)}
+.selbar .sel-info{font:700 9px var(--mono);color:var(--ink-soft);white-space:nowrap}
+.selbar .sel-check{display:flex;align-items:center;gap:3px;font:700 9px var(--font);white-space:nowrap;cursor:pointer}
+.selbar .sel-check input{width:13px;height:13px;accent-color:var(--accent)}
+.selbar .mini-btn{padding:2px 6px;font-size:9px}
+.layer-motion{margin-top:2px;font:700 8px/1.3 var(--font);color:var(--muted);cursor:pointer;display:flex;gap:4px;align-items:center}
+.layer-motion:hover{color:var(--accent)}
+.layer-motion .lm-lock{color:var(--danger)}
+.edition-badge{border:1px solid var(--ink);background:#ffe9c7;font:700 9px var(--font);padding:1px 5px}
+.edition-switch{display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.edition-switch .mini-btn.on{background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
+.edition-state{font:9px var(--mono);color:var(--muted);margin-left:auto}
+.settings-body{display:flex;flex-direction:column;gap:8px}
+.sec{border:2px solid var(--ink);background:#fff}
+.sec-head{display:flex;align-items:center;gap:5px;background:var(--panel2);border-bottom:1px solid var(--line);padding:5px 7px;font:800 10px var(--font);letter-spacing:.04em}
+.sec-body{padding:6px 7px}
+.tier-tag{margin-left:auto;border:1px solid var(--ink);background:#ffe9c7;font:700 8px var(--font);padding:0 4px}
+.tier-hint{font:9px/1.5 var(--font);color:var(--muted);background:#fff8dc;border:1px dashed var(--line);padding:4px 6px}
+.set-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px dotted rgba(0,0,0,.08)}
+.set-row:last-child{border-bottom:0}
+.set-label{flex:0 0 66px;font:700 9px var(--font);color:var(--ink-soft)}
+.set-ctl{flex:1;min-width:0;display:flex;align-items:center;gap:4px}
+.set-ctl input[type=range]{flex:1;min-width:0;margin:0;accent-color:var(--accent)}
+.set-ctl select,.set-ctl input[type=text],.set-ctl input[type=number]{flex:1;min-width:0;border:1px solid var(--ink);background:#fff;font:9px var(--font);padding:2px 4px}
+.set-ctl input[type=number]{max-width:82px}
+.set-check{display:flex;align-items:center;gap:4px;font:9px var(--font);cursor:pointer}
+.set-check input{width:13px;height:13px;accent-color:var(--accent)}
+.set-val{flex:0 0 auto;font:700 9px var(--mono);color:var(--accent-dark);min-width:24px;text-align:right}
+.set-desc{font:8px/1.5 var(--font);color:var(--muted);padding:2px 0 4px}
+.set-note{font:9px var(--mono);color:var(--muted)}
+.set-order{display:flex;gap:4px;align-items:center;flex-wrap:wrap;font:9px var(--mono);color:var(--ink-soft)}
+.set-order .mini-btn{padding:2px 6px;font-size:9px}
+.sb-part{display:flex;align-items:center;gap:5px;font:11px var(--font);padding:4px 6px;background:var(--panel2);border:2px solid var(--ink)}
+.sb-part b{font-size:12px}
+.sb-part .sb-xy{margin-left:auto;font:9px var(--mono);color:var(--muted)}
+.p-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.p-chip{border:2px solid var(--ink);background:var(--panel2);font:700 9px var(--font);padding:3px 7px;cursor:pointer;box-shadow:2px 2px 0 rgba(29,27,22,.2)}
+.p-chip.active{background:var(--yellow);box-shadow:2px 2px 0 var(--ink);outline:1px solid var(--accent)}
+.act-row{display:flex;align-items:center;gap:5px;padding:3px 0;border-bottom:1px dotted rgba(0,0,0,.08);cursor:pointer}
+.act-row.off{opacity:.5;cursor:not-allowed}
+.act-row input{width:13px;height:13px;accent-color:var(--accent);flex:0 0 auto}
+.act-name{font:700 9px var(--font);flex:0 0 auto}
+.act-trig{font:8px var(--font);color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge-off{font:700 7px var(--font);background:var(--danger);color:#fff;padding:0 3px;flex:0 0 auto}
+.asset-row{display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px dotted rgba(0,0,0,.08);font:8px var(--font)}
+.asset-src{font:700 7px var(--mono);padding:0 3px;border:1px solid var(--ink);background:var(--panel2);text-transform:uppercase}
+.asset-src.builtin{background:#E3F7D0}
+.asset-src.imported{background:#DFF6FF}
+.asset-src.custom{background:#FFE3EC}
+.asset-name{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-type{color:var(--muted)}
+.asset-miss{color:#fff;background:var(--danger);font-weight:700;padding:0 3px}
+.asset-warn{margin-top:4px;padding:4px 6px;border:2px solid var(--danger);background:#ffe1dc;color:#7a130a;font:8px/1.5 var(--font)}
+.part-empty{padding:12px;text-align:center;color:var(--muted);font:10px/1.6 var(--font);border:1px dashed var(--line)}
+
+/* 状态栏 */
+.statusbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 11px;background:var(--ink);color:#e9e4d6;font:10px var(--mono);overflow:hidden;white-space:nowrap}
+.statusbar .sb{display:flex;align-items:center;gap:4px}
+.statusbar .sb-key{color:#a29c8b}
+.statusbar .sb-val{color:#fff}
+.statusbar .sb-msg{margin-left:auto;color:#c7c0ac;overflow:hidden;text-overflow:ellipsis}
+
+/* 通用 */
+input[type=range]{accent-color:var(--accent)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#b8b09c;border:2px solid var(--panel)}
+::-webkit-scrollbar-track{background:var(--panel2)}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font:700 10px var(--font);color:var(--ink-soft);letter-spacing:.04em}
+.field input,.field select{border:2px solid var(--ink);background:#fff;padding:6px 8px;font:12px var(--font);color:var(--ink)}
+.field input[type=color]{padding:2px;height:34px;cursor:pointer}
+.field .hint{font:9px/1.4 var(--font);color:var(--muted)}
+.field-row{display:flex;gap:8px}
+.field-row .field{flex:1;min-width:0}
+.checkline{display:flex;align-items:center;gap:6px;font:11px var(--font);margin-bottom:8px;cursor:pointer}
+.checkline input{width:15px;height:15px;accent-color:var(--accent)}
+.modal-overlay{position:fixed;inset:0;z-index:80;background:rgba(19,17,13,.58);display:flex;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(470px,94vw);max-height:88vh;background:var(--panel);border:3px solid var(--ink);box-shadow:8px 8px 0 rgba(0,0,0,.35);display:flex;flex-direction:column}
+.modal-head{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:2px solid var(--ink);background:var(--yellow)}
+.modal-head .mh-title{font:800 14px var(--font);flex:1}
+.modal-head .mh-x{width:24px;height:24px;border:2px solid var(--ink);background:var(--panel);cursor:pointer;font:700 12px var(--mono);padding:0}
+.modal-body{padding:12px;overflow:auto;font:12px/1.5 var(--font)}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end;padding:10px 12px;border-top:2px solid var(--ink);flex-wrap:wrap;background:var(--panel2)}
+.modal-actions .btn{font-size:11px}
+.modal-error{display:none;margin:0 12px 10px;padding:5px 8px;background:#ffe1dc;border:2px solid var(--danger);color:#7a130a;font:700 10px/1.4 var(--font)}
+.modal-error.show{display:block}
+.toast{position:fixed;left:50%;bottom:45px;transform:translate(-50%,14px);z-index:120;background:var(--ink);color:#fff;border:2px solid #fff;box-shadow:4px 4px 0 rgba(0,0,0,.35);padding:7px 13px;font:700 11px/1.4 var(--font);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;max-width:80vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.warn{background:var(--accent);border-color:#fff}
+.toast.err{background:var(--danger);border-color:#fff}
+.toast.ok{background:var(--teal);border-color:#fff}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">◧</span><span>纸上岛 · 形象编辑器</span></div>
+    <button class="size-badge" id="btnSize" title="修改画布尺寸">32 × 32</button>
+    <div class="top-spacer"></div>
+    <div class="topgroup">
+      <button class="btn" id="btnNew" title="新建空白作品">新建</button>
+      <button class="btn" id="btnImport" title="导入本编辑器导出的 JSON">导入</button>
+      <button class="btn" id="btnExport" title="导出 PNG 或 JSON">导出</button>
+    </div>
+    <div class="topgroup sep-left">
+      <button class="icon-btn" id="btnUndo" title="撤销 Ctrl+Z" disabled>↶</button>
+      <button class="icon-btn" id="btnRedo" title="重做 Ctrl+Shift+Z / Ctrl+Y" disabled>↷</button>
+    </div>
+    <div class="topgroup sep-left">
+      <button class="btn active" id="btnGrid" title="网格总开关">网格</button>
+      <button class="btn active" id="btnMajor" title="5×5 粗线独立开关">粗线</button>
+      <button class="btn" id="btnNums" title="行列号（默认关）">行列号</button>
+    </div>
+    <div class="topgroup sep-left">
+      <div class="zoombox">
+        <button id="zoomOut" title="缩小">−</button>
+        <span class="zlabel" id="zoomLabel">100%</span>
+        <button id="zoomIn" title="放大">+</button>
+        <button class="zfit" id="btnFit" title="适配窗口">适配</button>
+      </div>
+    </div>
+    <div class="save-status" id="saveStatus">未保存</div>
+  </header>
+
+  <aside class="toolrail">
+    <button class="tool-btn active" data-tool="brush"><span class="ticon">✎</span><span class="tname">画笔</span><span class="tkey">B</span></button>
+    <button class="tool-btn" data-tool="bucket"><span class="ticon">▣</span><span class="tname">油漆桶</span><span class="tkey">F</span></button>
+    <button class="tool-btn" data-tool="eraser"><span class="ticon">▢</span><span class="tname">橡皮</span><span class="tkey">E</span></button>
+    <button class="tool-btn" data-tool="eyedropper"><span class="ticon">⌖</span><span class="tname">吸管</span><span class="tkey">I</span></button>
+    <button class="tool-btn" data-tool="select"><span class="ticon">▦</span><span class="tname">选区</span><span class="tkey">M</span></button>
+    <div class="rail-sep"></div>
+    <button class="tool-btn" data-tool="pan"><span class="ticon">✥</span><span class="tname">平移</span><span class="tkey">空格</span></button>
+    <div class="rail-sep"></div>
+    <button class="color-chip" id="colorChip" title="当前色号，点击打开色板">
+      <span class="cc-swatch" id="ccSwatch"></span>
+      <span class="cc-code" id="ccCode">未选色</span>
+    </button>
+    <div class="rail-note">图层即部件<br>滚轮缩放 · 右键平移</div>
+  </aside>
+
+  <main class="stage" id="stage">
+    <div class="layer-chip" id="layerChip">图层 1</div>
+    <canvas id="board"></canvas>
+    <div class="selbar hidden" id="selBar">
+      <span class="sel-info" id="selInfo">未选择（拖拽框选）</span>
+      <label class="sel-check"><input type="checkbox" id="selOnly"> 仅选区</label>
+      <button class="mini-btn" data-sel="all">全选</button>
+      <button class="mini-btn" data-sel="invert">反选/还原</button>
+      <button class="mini-btn" data-sel="clear">清除</button>
+      <button class="mini-btn" data-sel="move" title="Ctrl+Shift+M">移到层</button>
+      <button class="mini-btn" data-sel="copy">复制到层</button>
+      <button class="mini-btn" data-sel="new">移入新层</button>
+    </div>
+    <div class="anchor-tip" id="anchorTip">锚点拾取：点击画布上的格子设置锚点（Esc 取消）</div>
+    <div class="canvas-hint" id="canvasHint">图层即部件 · 一格一豆 · 5×5 粗线原点固定在左上角</div>
+  </main>
+
+  <aside class="side">
+    <div class="tabs">
+      <button class="tab active" data-tab="palette">色板</button>
+      <button class="tab" data-tab="layers">图层</button>
+      <button class="tab" data-tab="settings">设置</button>
+      <button class="tab" data-tab="character">角色</button>
+    </div>
+    <div class="tabpane active" id="pane-palette">
+      <div class="pal-search">
+        <input id="palSearch" placeholder="输入色号定位：C24 / H2 / D20" autocomplete="off" spellcheck="false">
+        <button class="mini-btn" id="btnPalFind">定位</button>
+      </div>
+      <div class="pal-msg" id="palMsg">支持完整编号、前缀与忽略空格/大小写匹配。</div>
+      <div class="pal-current">
+        <span class="pcs" id="pcSwatch"></span>
+        <span class="pctext"><b id="pcCode">未选色</b><span id="pcName">先在色板中选择一个色号</span></span>
+        <button id="btnFillCell" title="给画布上最后点击的格子直接填色">填到上次点击格</button>
+      </div>
+      <div class="pal-meta">
+        <div class="pm-title">MARD 色号表 <span class="badge">示例色 · 非官方</span></div>
+        <div class="pm-note" id="palNote">示例色，需替换为官方 MARD 色表；色号与 RGB 均为占位示例。</div>
+        <div class="pm-row"><span id="palSource">内联示例数据</span><button id="btnPalReplace">载入色表文件…</button></div>
+        <input type="file" id="paletteFile" accept=".json,application/json" class="hidden">
+      </div>
+      <div class="recent-wrap">
+        <div class="rw-title">最近使用</div>
+        <div class="recent-strip" id="recentStrip"></div>
+      </div>
+      <div id="palSeries"></div>
+      <div class="panel-note">色号只记录编号与来源版本；未命中不会误上色。导入缺失色号会标为“缺失色号”，不做静默近似。</div>
+    </div>
+    <div class="tabpane" id="pane-layers">
+      <div class="panel-head"><span class="panel-title">图层 = 部件</span><button class="mini-btn" id="btnAddLayer">＋ 新建</button></div>
+      <div class="layer-search">
+        <input id="layerSearch" placeholder="搜索显示名 / 部件类型" autocomplete="off" spellcheck="false">
+        <button class="ls-clear" id="btnLayerSearchClear" title="清空搜索">✕</button>
+      </div>
+      <div class="layer-list" id="layerList"></div>
+      <div class="layer-foot">
+        <button class="btn ghost" id="btnMergeLayer">合并向下</button>
+        <button class="btn ghost" id="btnDelLayer">删除</button>
+      </div>
+      <div class="panel-note">建层时必须选择部件类型，类型不可改；双击层名改显示名。头/躯干不可删到 0；衣服层可隐藏或删光，用来表达脱穿。⌖ 设置该层锚点。</div>
+    </div>
+    <div class="tabpane" id="pane-settings">
+      <div class="panel-head">
+        <span class="panel-title">这一层的设置</span>
+        <span class="edition-badge" id="layerScopeBadge">只作用于当前层</span>
+      </div>
+      <div class="settings-body" id="settingsBody"></div>
+      <div class="panel-note">只显示与当前图层相关的项：外观、运动、系统、动效挂载。性格 / 动作 / 表情 / 动效素材属于整个角色，在「角色」页。</div>
+    </div>
+    <div class="tabpane" id="pane-character">
+      <div class="panel-head">
+        <span class="panel-title">这一个人的设置</span>
+        <span class="edition-badge" id="editionBadge">普通版</span>
+      </div>
+      <div class="edition-switch">
+        <button class="mini-btn" id="btnEditionNormal">普通版</button>
+        <button class="mini-btn" id="btnEditionPro">专业版</button>
+        <span class="edition-state" id="editionState">已关闭</span>
+      </div>
+      <div class="settings-body" id="characterBody"></div>
+      <div class="panel-note">性格 / 动作 / 表情 / 动效素材都属于整个人，与当前选中哪一层无关。切换档位只影响显示，不重置已填参数。</div>
+    </div>
+  </aside>
+
+  <footer class="statusbar">
+    <span class="sb"><span class="sb-key">坐标</span><span class="sb-val" id="stCoord">—</span></span>
+    <span class="sb"><span class="sb-key">图层</span><span class="sb-val" id="stLayer">—</span></span>
+    <span class="sb"><span class="sb-key">色号</span><span class="sb-val" id="stColor">—</span></span>
+    <span class="sb"><span class="sb-key">部件</span><span class="sb-val" id="stPart">—</span></span>
+    <span class="sb"><span class="sb-key">锚点</span><span class="sb-val" id="stAnchor">—</span></span>
+    <span class="sb"><span class="sb-key">工具</span><span class="sb-val" id="stTool">画笔</span></span>
+    <span class="sb"><span class="sb-key">撤销</span><span class="sb-val" id="stUndo">0/50</span></span>
+    <span class="sb-msg" id="stMsg">准备就绪</span>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+<div id="modalRoot"></div>
+<input type="file" id="importFile" accept=".json,application/json" class="hidden">
+
+<script type="application/json" id="paletteData">
+{
+  "color_system": "MARD",
+  "palette_version": "sample-1",
+  "source": "示例数据（非官方 MARD 色表）",
+  "verified": false,
+  "note": "示例色，需替换为官方 MARD 色表并核实授权；色号仅为占位示例，不代表官方真实色值。",
+  "series": [
+    { "id": "H", "name": "灰白系" },
+    { "id": "G", "name": "棕肤系" },
+    { "id": "E", "name": "粉色系" },
+    { "id": "F", "name": "红色系" },
+    { "id": "A", "name": "橙黄系" },
+    { "id": "B", "name": "绿色系" },
+    { "id": "C", "name": "蓝青系" },
+    { "id": "D", "name": "紫色系" }
+  ],
+  "colors": [
+    { "code": "H1", "name": "示例白", "hex": "#FCFCFA", "series": "H" },
+    { "code": "H2", "name": "示例米白", "hex": "#E8E6E1", "series": "H" },
+    { "code": "H3", "name": "示例浅灰", "hex": "#CFCDC6", "series": "H" },
+    { "code": "H4", "name": "示例灰", "hex": "#A8A6A0", "series": "H" },
+    { "code": "H5", "name": "示例深灰", "hex": "#7B7A76", "series": "H" },
+    { "code": "H6", "name": "示例炭灰", "hex": "#4A4946", "series": "H" },
+    { "code": "H7", "name": "示例黑", "hex": "#1F1E1C", "series": "H" },
+    { "code": "G1", "name": "示例浅肤", "hex": "#F5D9C4", "series": "G" },
+    { "code": "G2", "name": "示例肤", "hex": "#EFC3A8", "series": "G" },
+    { "code": "G3", "name": "示例深肤", "hex": "#D9A57E", "series": "G" },
+    { "code": "G4", "name": "示例浅棕", "hex": "#B57A50", "series": "G" },
+    { "code": "G5", "name": "示例棕", "hex": "#8A5432", "series": "G" },
+    { "code": "G6", "name": "示例深棕", "hex": "#5E3A22", "series": "G" },
+    { "code": "G7", "name": "示例黑棕", "hex": "#3A2517", "series": "G" },
+    { "code": "E1", "name": "示例浅粉", "hex": "#FFE3EC", "series": "E" },
+    { "code": "E2", "name": "示例粉", "hex": "#FFB6C9", "series": "E" },
+    { "code": "E3", "name": "示例桃粉", "hex": "#F0789A", "series": "E" },
+    { "code": "E4", "name": "示例玫红", "hex": "#C9456B", "series": "E" },
+    { "code": "F1", "name": "示例浅红", "hex": "#FFE0DC", "series": "F" },
+    { "code": "F2", "name": "示例珊瑚红", "hex": "#FF9A8F", "series": "F" },
+    { "code": "F3", "name": "示例红", "hex": "#F04444", "series": "F" },
+    { "code": "F4", "name": "示例深红", "hex": "#C42525", "series": "F" },
+    { "code": "F5", "name": "示例暗红", "hex": "#8A1616", "series": "F" },
+    { "code": "F6", "name": "示例酒红", "hex": "#5C0F0F", "series": "F" },
+    { "code": "A1", "name": "示例浅黄", "hex": "#FFF4C2", "series": "A" },
+    { "code": "A2", "name": "示例黄", "hex": "#FFD966", "series": "A" },
+    { "code": "A3", "name": "示例橙", "hex": "#FFA726", "series": "A" },
+    { "code": "A4", "name": "示例深橙", "hex": "#E8730C", "series": "A" },
+    { "code": "A5", "name": "示例焦糖", "hex": "#B85000", "series": "A" },
+    { "code": "B1", "name": "示例浅绿", "hex": "#E3F7D0", "series": "B" },
+    { "code": "B2", "name": "示例黄绿", "hex": "#A8E06C", "series": "B" },
+    { "code": "B3", "name": "示例绿", "hex": "#4CAF50", "series": "B" },
+    { "code": "B4", "name": "示例深绿", "hex": "#207A38", "series": "B" },
+    { "code": "B5", "name": "示例墨绿", "hex": "#0E4C22", "series": "B" },
+    { "code": "C1", "name": "示例浅青", "hex": "#DFF6FF", "series": "C" },
+    { "code": "C2", "name": "示例青", "hex": "#9ADCF0", "series": "C" },
+    { "code": "C3", "name": "示例天蓝", "hex": "#4FB3D9", "series": "C" },
+    { "code": "C4", "name": "示例蓝", "hex": "#2478B5", "series": "C" },
+    { "code": "C5", "name": "示例深蓝", "hex": "#133F7A", "series": "C" },
+    { "code": "C6", "name": "示例藏蓝", "hex": "#0A2347", "series": "C" },
+    { "code": "D1", "name": "示例浅紫", "hex": "#F0E4FA", "series": "D" },
+    { "code": "D2", "name": "示例紫", "hex": "#C9A8E8", "series": "D" },
+    { "code": "D3", "name": "示例深紫", "hex": "#9861C9", "series": "D" },
+    { "code": "D4", "name": "示例暗紫", "hex": "#5E3590", "series": "D" },
+    { "code": "D5", "name": "示例午夜紫", "hex": "#34204F", "series": "D" }
+  ]
+}
+
+</script>
+<script>
+'use strict';
+
+/* ============================================================
+ * 拼豆式人物形象编辑器 · v2「图层即部件」
+ * 数据模型 / 渲染 / 交互分离；零外部依赖。
+ * ============================================================ */
+
+/* ---------------- 基础工具 ---------------- */
+function $(sel, root) { return (root || document).querySelector(sel); }
+function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function clampInt(v, min, max) { v = parseInt(v, 10); return isFinite(v) ? Math.max(min, Math.min(max, v)) : min; }
+function uid(prefix) { return (prefix || '') + Math.random().toString(36).slice(2, 8) + '_' + Date.now().toString(36).slice(-4); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]); }); }
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+function hexToRgba(hex, a) {
+  var m = /^#([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return 'rgba(128,128,128,' + a + ')';
+  var n = parseInt(m[1], 16);
+  return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+function isColorHex(v) { return typeof v === 'string' && /^#([0-9a-f]{6}|[0-9a-f]{3})$/i.test(v); }
+
+/* ---------------- 常量 ---------------- */
+var BASE_CELL = 16;
+var ZOOM_MIN = 0.5, ZOOM_MAX = 8;
+var UNDO_LIMIT = 50;
+var MAX_LAYERS = 64;
+var FORMAT_ID = 'papersisland.avatar.editor.v3';
+var EDITOR_VERSION = 'layer-part-v3';
+var DICTIONARY_VERSION = 'parts-17-v1';
+var AUTOSAVE_KEY = 'papersisland.editor.autosave.v2';
+var LEGACY_AUTOSAVE_KEY = 'papersisland.editor.autosave.v1';
+var PALETTE_KEY = 'papersisland.editor.palette.v1';
+
+var PART_CATEGORIES = [
+  { id: 'base', name: '本体', hint: '脸 / 发 / 五官 / 躯干 / 四肢' },
+  { id: 'cloth', name: '衣服', hint: '上衣 / 外套 / 裤子 / 鞋 / 袖' },
+  { id: 'acc', name: '饰品', hint: '发饰 / 配饰' }
+];
+
+// 17 个预设部件类型（与《需要什么部件-17个清单》逐项对齐，顺序不变）
+var PART_TYPES = [
+  { id: 'head', name: '头', cat: 'base', max: 4, anchor: [0.5, 0.46], desc: '脸与耳，本体必备' },
+  { id: 'hair', name: '头发', cat: 'base', max: 4, anchor: [0.5, 0.28], desc: '含刘海，可多层分前后发' },
+  { id: 'brow', name: '眉毛', cat: 'base', max: 4, anchor: [0.5, 0.44], desc: '挑眉 / 皱眉 = 不同实例' },
+  { id: 'eyes', name: '眼睛', cat: 'base', max: 4, anchor: [0.5, 0.47], desc: '睁眼 / 闭眼 = 不同实例' },
+  { id: 'mouth', name: '嘴巴', cat: 'base', max: 4, anchor: [0.5, 0.56], desc: '说话 / 张嘴 = 不同实例' },
+  { id: 'torso', name: '躯干', cat: 'base', max: 4, anchor: [0.5, 0.62], desc: '腰锚点，本体必备' },
+  { id: 'arm_l', name: '左臂', cat: 'base', max: 4, anchor: [0.3, 0.42], desc: '含左手，可做抬手' },
+  { id: 'arm_r', name: '右臂', cat: 'base', max: 4, anchor: [0.7, 0.42], desc: '含右手，可做抬手' },
+  { id: 'leg_l', name: '左腿', cat: 'base', max: 4, anchor: [0.4, 0.7], desc: '含左脚，可做走路' },
+  { id: 'leg_r', name: '右腿', cat: 'base', max: 4, anchor: [0.6, 0.7], desc: '含右脚，可做走路' },
+  { id: 'top', name: '上衣', cat: 'cloth', max: 4, anchor: [0.5, 0.62], desc: '可隐藏 / 删除 = 脱下' },
+  { id: 'coat', name: '外套', cat: 'cloth', max: 4, anchor: [0.5, 0.62], desc: '可隐藏 / 删除 = 脱下' },
+  { id: 'pants', name: '裤子', cat: 'cloth', max: 4, anchor: [0.5, 0.7], desc: '可隐藏 / 删除 = 脱下' },
+  { id: 'shoes', name: '鞋', cat: 'cloth', max: 4, anchor: [0.5, 0.92], desc: '脚部衣物' },
+  { id: 'sleeve_l', name: '左袖', cat: 'cloth', max: 4, anchor: [0.3, 0.42], desc: '袖子跟随左臂' },
+  { id: 'sleeve_r', name: '右袖', cat: 'cloth', max: 4, anchor: [0.7, 0.42], desc: '袖子跟随右臂' },
+  { id: 'acc', name: '饰品', cat: 'acc', max: 8, anchor: [0.5, 0.5], desc: '发饰 / 手持物 / 其他' }
+];
+
+var TYPE_MAP = {};
+PART_TYPES.forEach(function (t) { TYPE_MAP[t.id] = t; });
+var CAT_MAP = {};
+PART_CATEGORIES.forEach(function (c) { CAT_MAP[c.id] = c; });
+
+var PRESETS = {
+  minimal: { key: 'minimal', name: '极简 · 2 层', ids: ['head', 'torso'], desc: '只有头与躯干，最快开始' },
+  standard: { key: 'standard', name: '标准 · 8 层（推荐）', ids: ['head', 'torso', 'leg_l', 'leg_r', 'arm_l', 'arm_r', 'eyes', 'mouth'], desc: '头、躯干、腿、臂、眼、嘴' },
+  full: { key: 'full', name: '全套 · 17 层', ids: ['head', 'torso', 'leg_l', 'leg_r', 'arm_l', 'arm_r', 'eyes', 'brow', 'mouth', 'hair', 'top', 'coat', 'pants', 'shoes', 'sleeve_l', 'sleeve_r', 'acc'], desc: '17 个预设类型各建一层' }
+};
+
+var TOOL_NAMES = { brush: '画笔', bucket: '油漆桶', eraser: '橡皮', eyedropper: '吸管', pan: '平移', select: '选区' };
+
+/* ---------------- 全局状态 ---------------- */
+var palette = null;
+var colorIndex = {};
+var artwork = null;
+var currentLayerId = null;
+var currentColor = null;
+var tool = 'brush';
+var showGrid = true;
+var showMajor = true;
+var showNumbers = false;
+var view = { zoom: 1, panX: 0, panY: 0 };
+var undoStack = [];
+var redoStack = [];
+var strokeSnapshot = false;
+var drag = null;
+var spaceDown = false;
+var hoverCell = null;
+var lastClickedCell = null;
+var anchorPickMode = false;
+var anchorLayerId = null;
+var isModalOpen = false;
+var recentColors = [];
+var collapsedCats = {};
+var layerFilter = '';
+var booted = false;
+var opacityUndoPending = {};
+var rafPending = false;
+var saveTimer = null;
+var board = null;
+
+/* ============================================================
+ * 色表（MARD 编号；色值为示例，不冒充官方）
+ * ============================================================ */
+function normalizePalette(raw) {
+  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.colors)) return null;
+  var colors = [];
+  var seen = {};
+  raw.colors.forEach(function (c) {
+    if (!c || typeof c.code !== 'string') return;
+    var code = c.code.replace(/\s+/g, '').toUpperCase();
+    if (!code || seen[code]) return;
+    seen[code] = true;
+    var hex = isColorHex(c.hex) ? c.hex.toLowerCase() : null;
+    colors.push({
+      code: code,
+      name: String(c.name || code),
+      hex: hex,
+      series: String(c.series || code.charAt(0)).toUpperCase()
+    });
+  });
+  if (!colors.length) return null;
+  var series = Array.isArray(raw.series) ? raw.series.filter(function (s) { return s && s.id; }).map(function (s) {
+    return { id: String(s.id).toUpperCase(), name: String(s.name || s.id) };
+  }) : [];
+  if (!series.length) {
+    var ids = [];
+    colors.forEach(function (c) { if (ids.indexOf(c.series) < 0) ids.push(c.series); });
+    series = ids.map(function (id) { return { id: id, name: id + ' 系列' }; });
+  }
+  return {
+    palette_version: String(raw.palette_version || 'sample-1'),
+    source: String(raw.source || '内联示例数据'),
+    verified: !!raw.verified,
+    note: String(raw.note || '示例色，需替换为官方 MARD 色表。'),
+    series: series,
+    colors: colors
+  };
+}
+
+function readInlinePalette() {
+  var el = $('#paletteData');
+  if (!el) return null;
+  try { return JSON.parse(el.textContent); } catch (e) { return null; }
+}
+
+function loadPalette() {
+  var stored = null;
+  try {
+    var raw = localStorage.getItem(PALETTE_KEY);
+    if (raw) stored = normalizePalette(JSON.parse(raw));
+  } catch (e) { stored = null; }
+  if (stored) { palette = stored; palette.fromLocal = true; }
+  else {
+    // 完全内联读取，不发任何网络 / 文件请求，保证断网与 file:// 下可用
+    palette = normalizePalette(readInlinePalette()) || {
+      palette_version: 'none', source: '无可用色表', verified: false, note: '未加载到色表', series: [], colors: []
+    };
+  }
+  rebuildColorIndex();
+}
+
+function rebuildColorIndex() {
+  colorIndex = {};
+  if (!palette) return;
+  palette.colors.forEach(function (c) { colorIndex[c.code] = c; });
+}
+
+function colorInfo(code) {
+  if (!code) return null;
+  var c = colorIndex[code];
+  if (c) return c;
+  var extra = artwork && artwork.extra_colors && artwork.extra_colors[code];
+  if (extra && isColorHex(extra)) return { code: code, name: code, hex: extra, series: code.charAt(0), extra: true };
+  return null;
+}
+
+function hexForCode(code) {
+  var c = colorInfo(code);
+  return c ? c.hex : null;
+}
+
+function paletteSourceText() {
+  if (!palette) return '未加载';
+  return (palette.fromLocal ? '本机载入 · ' : '') + palette.source + ' · ' + palette.palette_version;
+}
+
+function setPalMsg(text, kind) {
+  var el = $('#palMsg');
+  if (!el) return;
+  el.className = 'pal-msg' + (kind ? ' ' + kind : '');
+  el.textContent = text;
+}
+
+function selectColor(code) {
+  var c = colorInfo(code);
+  if (!c) { setPalMsg('色表里没有「' + esc(code) + '」，未改变当前色', 'err'); return false; }
+  currentColor = c.code;
+  touchRecent(c.code);
+  refreshPaletteUI();
+  updateStatus();
+  return true;
+}
+
+function touchRecent(code) {
+  var idx = recentColors.indexOf(code);
+  if (idx >= 0) recentColors.splice(idx, 1);
+  recentColors.unshift(code);
+  if (recentColors.length > 12) recentColors.length = 12;
+}
+
+function locateColor() {
+  var input = $('#palSearch');
+  var q = (input ? input.value : '').replace(/\s+/g, '').toUpperCase();
+  if (!q) { setPalMsg('请输入完整色号或前缀，例如 H7、C24', 'err'); return; }
+  if (!palette || !palette.colors.length) { setPalMsg('当前没有可用色表', 'err'); return; }
+
+  var exact = colorIndex[q];
+  if (exact) {
+    selectColor(exact.code);
+    setPalMsg('已定位 ' + exact.code + ' · ' + exact.name + (palette.verified ? '' : '（示例色）'), 'ok');
+    return;
+  }
+  var prefix = palette.colors.filter(function (c) { return c.code.indexOf(q) === 0; });
+  if (prefix.length === 1) { selectColor(prefix[0].code); setPalMsg('前缀匹配 ' + q + ' → ' + prefix[0].code, 'ok'); return; }
+  if (prefix.length > 1) {
+    selectColor(prefix[0].code);
+    setPalMsg('前缀「' + q + '」命中 ' + prefix.length + ' 个色号，已选第一个 ' + prefix[0].code + '；继续输入可缩小范围', 'ok');
+    return;
+  }
+  var fuzzy = palette.colors.filter(function (c) {
+    return c.code.indexOf(q) >= 0 || (c.name && c.name.toUpperCase().indexOf(q) >= 0);
+  });
+  if (fuzzy.length) {
+    selectColor(fuzzy[0].code);
+    setPalMsg('模糊匹配「' + q + '」命中 ' + fuzzy.length + ' 个，已选第一个 ' + fuzzy[0].code, 'ok');
+    return;
+  }
+  setPalMsg('未找到色号「' + q + '」。请检查编号，或载入官方 MARD 色表；当前色未改变。', 'err');
+}
+
+/* ---------------- 色板 UI ---------------- */
+function refreshPaletteUI() {
+  if (!$('#palSeries')) return;
+  var activeCode = currentColor;
+  var groups = {};
+  var order = [];
+  if (palette) {
+    palette.colors.forEach(function (c) {
+      if (!groups[c.series]) { groups[c.series] = []; order.push(c.series); }
+      groups[c.series].push(c);
+    });
+  }
+  var seriesOrder = palette ? palette.series.map(function (s) { return s.id; }) : [];
+  seriesOrder.forEach(function (id) { if (groups[id] && order.indexOf(id) < 0) order.push(id); });
+  order.forEach(function (id) { if (seriesOrder.indexOf(id) < 0) seriesOrder.push(id); });
+
+  var html = '';
+  seriesOrder.forEach(function (sid) {
+    var list = groups[sid] || [];
+    if (!list.length) return;
+    var meta = null;
+    if (palette) palette.series.forEach(function (s) { if (s.id === sid) meta = s; });
+    html += '<div class="series-group"><div class="series-head">' +
+      '<span>' + esc(meta ? meta.name : sid) + '</span><span class="sdot"></span><span class="scount">' + list.length + '</span></div>' +
+      '<div class="swatches">';
+    list.forEach(function (c) {
+      var cls = 'swatch' + (c.code === activeCode ? ' active' : '') + (!c.hex ? ' missing' : '');
+      var bg = c.hex ? 'background:' + c.hex : '';
+      html += '<button class="' + cls + '" data-code="' + esc(c.code) + '" style="' + bg + '" title="' +
+        esc(c.code + ' · ' + c.name + '（示例色，非官方色值）') + '"><span class="sname">' + esc(c.code) + '</span></button>';
+    });
+    html += '</div></div>';
+  });
+  $('#palSeries').innerHTML = html || '<div class="part-empty">色表为空</div>';
+
+  // 当前色
+  var info = currentColor ? colorInfo(currentColor) : null;
+  var pcs = $('#pcSwatch');
+  if (pcs) pcs.style.background = info && info.hex ? info.hex : 'repeating-linear-gradient(45deg,#ff00aa 0 4px,#1d1b16 4px 8px)';
+  if ($('#pcCode')) $('#pcCode').textContent = currentColor || '未选色';
+  if ($('#pcName')) $('#pcName').textContent = info ? info.name + ' · ' + info.code : '先在色板中选择一个色号';
+
+  // 最近使用
+  if ($('#recentStrip')) {
+    if (!recentColors.length) {
+      $('#recentStrip').innerHTML = '<span style="font:9px var(--font);color:var(--muted)">还没有使用色号</span>';
+    } else {
+      $('#recentStrip').innerHTML = recentColors.map(function (code) {
+        var c = colorInfo(code);
+        return '<button class="rs" data-code="' + esc(code) + '" title="' + esc(code) + '" style="background:' + (c && c.hex ? c.hex : '#ff00aa') + '"></button>';
+      }).join('');
+    }
+  }
+
+  if ($('#palSource')) $('#palSource').textContent = paletteSourceText();
+  if ($('#palNote')) $('#palNote').textContent = palette ? palette.note : '未加载色表';
+  if ($('#ccSwatch')) $('#ccSwatch').style.background = info && info.hex ? info.hex : '#ddd';
+  if ($('#ccCode')) $('#ccCode').textContent = currentColor || '未选色';
+  if ($('#stColor')) $('#stColor').textContent = currentColor || '—';
+}
+
+function applyPaletteReplacement(raw) {
+  var next = normalizePalette(raw);
+  if (!next || !next.colors.length) return false;
+  next.fromLocal = true;
+  palette = next;
+  rebuildColorIndex();
+  currentColor = null;
+  refreshPaletteUI();
+  requestRender();
+  updateStatus();
+  return true;
+}
+
+/* ============================================================
+ * 数据模型：一个图层 = 一个部件实例
+ * ============================================================ */
+function partType(id) { return TYPE_MAP[id] || null; }
+function typeName(id) { var t = partType(id); return t ? t.name : String(id); }
+function typeCat(id) { var t = partType(id); return t ? t.cat : 'acc'; }
+
+function layerLabelFor(typeId, index) {
+  var n = typeName(typeId);
+  return index <= 1 ? n : n + index;
+}
+
+function defaultAnchor(typeId, size) {
+  var t = partType(typeId) || TYPE_MAP.acc;
+  return { x: t.anchor[0] * size, y: t.anchor[1] * size };
+}
+
+function makeEmptyPixels(n) {
+  var arr = new Array(n);
+  for (var i = 0; i < n; i++) arr[i] = null;
+  return arr;
+}
+
+function makeLayer(size, typeId, index, opt) {
+  opt = opt || {};
+  var def = layerLabelFor(typeId, index);
+  var rawName = opt.display_name != null && String(opt.display_name).trim() !== '' ? String(opt.display_name).trim() : def;
+  var display = rawName.slice(0, 16);
+  return {
+    id: opt.id || uid('L'),
+    part_type: typeId,
+    part_index: index,
+    display_name: display,
+    label_custom: !!opt.label_custom || display !== def,
+    visible: opt.visible !== false,
+    active: opt.active !== false,
+    opacity: isFinite(opt.opacity) ? clamp(Number(opt.opacity), 0, 1) : 1,
+    anchor: opt.anchor && isFinite(opt.anchor.x) && isFinite(opt.anchor.y)
+      ? { x: clamp(Number(opt.anchor.x), 0, size), y: clamp(Number(opt.anchor.y), 0, size) }
+      : defaultAnchor(typeId, size),
+    settings: normalizeLayerSettings(typeId, opt.settings),
+    locked: !!opt.locked,
+    animation: normalizeAnimation(opt.animation),
+    pixels: opt.pixels || makeEmptyPixels(size * size)
+  };
+}
+
+function createArtwork(size, presetKey) {
+  size = clampInt(size, 8, 40);
+  var preset = PRESETS[presetKey] || PRESETS.standard;
+  var art = {
+    format: FORMAT_ID,
+    version: 3,
+    size: size,
+    grid: { minor: 1, major: 5, major_origin: [0, 0] },
+    color_system: {
+      name: 'MARD',
+      palette_version: palette ? palette.palette_version : 'sample-1',
+      source: palette ? palette.source : '示例数据（非官方 MARD 色表）',
+      verified: palette ? !!palette.verified : false
+    },
+    extra_colors: {},
+    character: defaultCharacter(),
+    motion_assets: defaultMotionAssets(),
+    layers: [],
+    updated_at: Date.now()
+  };
+  var n = size * size;
+  preset.ids.forEach(function (id, i) {
+    art.layers.push(makeLayer(size, id, 1, { pixels: makeEmptyPixels(n) }));
+  });
+  return art;
+}
+
+function normalizeCode(v) {
+  if (v == null || v === '') return null;
+  if (v === 'transparent') return 'transparent';
+  var s = String(v).replace(/\s+/g, '').toUpperCase();
+  return /^[A-Z0-9_-]{1,8}$/.test(s) ? s : null;
+}
+
+function normalizePixels(arr, n) {
+  var out = makeEmptyPixels(n);
+  if (!Array.isArray(arr)) return out;
+  for (var i = 0; i < n; i++) out[i] = normalizeCode(arr[i]);
+  return out;
+}
+
+function normalizeV2(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  var size = clampInt(raw.size, 8, 40);
+  if (!size) return null;
+  var src = Array.isArray(raw.layers) ? raw.layers : [];
+  if (!src.length) return null;
+  var art = {
+    format: FORMAT_ID,
+    version: 3,
+    size: size,
+    grid: { minor: 1, major: 5, major_origin: [0, 0] },
+    color_system: {
+      name: String((raw.color_system && raw.color_system.name) || 'MARD'),
+      palette_version: String((raw.color_system && raw.color_system.palette_version) || (palette ? palette.palette_version : 'sample-1')),
+      source: String((raw.color_system && raw.color_system.source) || (palette ? palette.source : '示例数据（非官方 MARD 色表）')),
+      verified: !!(raw.color_system && raw.color_system.verified)
+    },
+    extra_colors: {},
+    character: normalizeCharacter(raw.character),
+    motion_assets: normalizeAssets(raw.motion_assets, size),
+    layers: [],
+    updated_at: Date.now()
+  };
+  if (raw.extra_colors && typeof raw.extra_colors === 'object') {
+    Object.keys(raw.extra_colors).forEach(function (k) {
+      var v = raw.extra_colors[k];
+      if (isColorHex(v)) art.extra_colors[normalizeCode(k)] = String(v).toLowerCase();
+    });
+  }
+  var usedIds = {};
+  var usedIndices = {};
+  var n = size * size;
+  src.forEach(function (l) {
+    if (!l || typeof l !== 'object') return;
+    var typeId = TYPE_MAP[l.part_type] ? l.part_type : 'acc';
+    var id = typeof l.id === 'string' && l.id ? l.id : uid('L');
+    if (usedIds[id]) id = uid('L');
+    usedIds[id] = true;
+    var idx = Number(l.part_index);
+    if (!isFinite(idx) || idx < 1) idx = (usedIndices[typeId] || 0) + 1;
+    usedIndices[typeId] = Math.max(usedIndices[typeId] || 0, idx);
+    art.layers.push(makeLayer(size, typeId, idx, {
+      id: id,
+      display_name: typeof l.display_name === 'string' ? l.display_name : l.name,
+      label_custom: !!l.label_custom,
+      visible: l.visible !== false,
+      active: l.active !== false,
+      opacity: l.opacity,
+      anchor: l.anchor || l.pivot,
+      settings: l.settings || l.part_settings,
+      locked: !!l.locked,
+      animation: l.animation,
+      pixels: normalizePixels(l.pixels, n)
+    }));
+  });
+  renumberAll(art);
+  ensureRequiredLayers(art);
+  return art;
+}
+
+function ensureRequiredLayers(art, warnings) {
+  var need = ['head', 'torso'];
+  need.forEach(function (id, i) {
+    var has = art.layers.some(function (l) { return l.part_type === id; });
+    if (!has) {
+      var layer = makeLayer(art.size, id, 1, { display_name: layerLabelFor(id, 1) });
+      if (id === 'torso') art.layers.push(layer); else art.layers.unshift(layer);
+      if (warnings) warnings.push('缺少必备部件「' + typeName(id) + '」，已补一个空层');
+    }
+  });
+}
+
+function layersOfType(typeId, art) {
+  art = art || artwork;
+  return art.layers.filter(function (l) { return l.part_type === typeId; });
+}
+
+function countOfType(typeId) { return layersOfType(typeId).length; }
+
+function canCreateType(typeId) {
+  var t = partType(typeId);
+  if (!t) return false;
+  return countOfType(typeId) < t.max;
+}
+
+function nextPartIndex(typeId) {
+  var list = layersOfType(typeId);
+  var max = 0;
+  list.forEach(function (l) { if (l.part_index > max) max = l.part_index; });
+  return max + 1;
+}
+
+function renumberType(art, typeId) {
+  var list = art.layers.filter(function (l) { return l.part_type === typeId; }).slice();
+  list.sort(function (a, b) { return a.part_index - b.part_index; });
+  list.forEach(function (l, i) {
+    l.part_index = i + 1;
+    if (!l.label_custom) l.display_name = layerLabelFor(typeId, i + 1);
+  });
+}
+
+function renumberAll(art) {
+  var ids = [];
+  art.layers.forEach(function (l) { if (ids.indexOf(l.part_type) < 0) ids.push(l.part_type); });
+  ids.forEach(function (id) { renumberType(art, id); });
+}
+
+function currentLayer() {
+  if (!artwork) return null;
+  for (var i = 0; i < artwork.layers.length; i++) if (artwork.layers[i].id === currentLayerId) return artwork.layers[i];
+  return artwork.layers[artwork.layers.length - 1] || null;
+}
+
+function layerById(id) {
+  if (!artwork) return null;
+  for (var i = 0; i < artwork.layers.length; i++) if (artwork.layers[i].id === id) return artwork.layers[i];
+  return null;
+}
+
+function buildPartsIndex(art) {
+  var out = {};
+  PART_TYPES.forEach(function (t) { out[t.id] = []; });
+  art.layers.forEach(function (l) {
+    if (!out[l.part_type]) out[l.part_type] = [];
+    out[l.part_type].push({
+      layer_id: l.id,
+      part_index: l.part_index,
+      display_name: l.display_name,
+      visible: l.visible,
+      active: l.active !== false,
+      anchor: { x: Math.round(l.anchor.x * 100) / 100, y: Math.round(l.anchor.y * 100) / 100 },
+      locked: !!l.locked,
+      motion_id: l.animation && l.animation.motion_id ? l.animation.motion_id : '',
+      settings: Object.assign({}, l.settings || {})
+    });
+  });
+  return out;
+}
+
+function serializeArtwork() { return JSON.stringify(artwork); }
+
+/* ---------------- 旧版（格子级部件标记）迁移 ---------------- */
+var OLD_TYPE_MAP = {
+  head: 'head', face: 'head',
+  hair: 'hair', bangs: 'hair',
+  brow_l: 'brow', brow_r: 'brow', brow: 'brow',
+  eye_l: 'eyes', eye_r: 'eyes', eyes: 'eyes', eye: 'eyes',
+  nose: 'head', ear_l: 'head', ear_r: 'head', ear: 'head',
+  mouth: 'mouth',
+  body: 'torso', torso: 'torso', upper_body: 'torso', upper: 'torso',
+  coat: 'coat', jacket: 'coat',
+  lower_body: 'pants', pants: 'pants',
+  top: 'top', shirt: 'top',
+  shoes: 'shoes', shoe: 'shoes',
+  sleeve_l: 'sleeve_l', sleeve_r: 'sleeve_r', sleeve: 'sleeve_l',
+  arm_l: 'arm_l', arm_r: 'arm_r', hand_l: 'arm_l', hand_r: 'arm_r',
+  leg_l: 'leg_l', leg_r: 'leg_r', foot_l: 'leg_l', foot_r: 'leg_r',
+  accessory: 'acc', acc: 'acc', hat: 'acc', scarf: 'acc', glasses: 'acc', glasses_l: 'acc', glasses_r: 'acc'
+};
+
+function guessTypeByName(name) {
+  var s = String(name || '');
+  if (/袖.*左|左.*袖/.test(s)) return 'sleeve_l';
+  if (/袖.*右|右.*袖/.test(s)) return 'sleeve_r';
+  if (/外套/.test(s)) return 'coat';
+  if (/上衣/.test(s)) return 'top';
+  if (/裤/.test(s)) return 'pants';
+  if (/鞋/.test(s)) return 'shoes';
+  if (/头发|发|刘海/.test(s)) return 'hair';
+  if (/眉/.test(s)) return 'brow';
+  if (/眼/.test(s)) return 'eyes';
+  if (/嘴|口/.test(s)) return 'mouth';
+  if (/头|脸|耳|鼻/.test(s)) return 'head';
+  if (/躯|身体|上身/.test(s)) return 'torso';
+  if (/左臂|左手|左膀/.test(s)) return 'arm_l';
+  if (/右臂|右手|右膀/.test(s)) return 'arm_r';
+  if (/左腿|左脚/.test(s)) return 'leg_l';
+  if (/右腿|右脚/.test(s)) return 'leg_r';
+  if (/饰|发卡|发夹|帽|围巾|眼镜/.test(s)) return 'acc';
+  return null;
+}
+
+function mapOldType(type, fallbackName) {
+  var key = String(type || '').toLowerCase();
+  if (OLD_TYPE_MAP[key]) return OLD_TYPE_MAP[key];
+  var guessed = guessTypeByName(fallbackName);
+  if (guessed) return guessed;
+  var guessed2 = guessTypeByName(type);
+  return guessed2 || 'acc';
+}
+
+function oldAnchor(part, size) {
+  if (part && part.pivot && isFinite(part.pivot.x) && isFinite(part.pivot.y)) {
+    return { x: clamp(Number(part.pivot.x), 0, size), y: clamp(Number(part.pivot.y), 0, size) };
+  }
+  return null;
+}
+
+function isLegacyArtwork(raw) {
+  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.layers)) return false;
+  if (Array.isArray(raw.parts) && raw.parts.length) return true;
+  if (raw.cell_membership && typeof raw.cell_membership === 'object') return true;
+  return !!(raw.layers.length && raw.layers.some(function (l) { return !l || !l.part_type; }));
+}
+
+function migrateLegacy(raw) {
+  var warnings = [];
+  var size = clampInt(raw.size, 8, 40) || 32;
+  var n = size * size;
+  var oldLayers = Array.isArray(raw.layers) ? raw.layers.slice() : [];
+  var oldParts = Array.isArray(raw.parts) ? raw.parts.slice() : [];
+  var byLayer = {};
+
+  var upperWarned = false;
+  oldParts.forEach(function (p) {
+    if (!p || typeof p !== 'object') return;
+    if (String(p.dictionary_type || '').toLowerCase() === 'upper' && !upperWarned) {
+      upperWarned = true;
+      warnings.push('旧版「upper」按整体归入「躯干」（未拆分上衣），需要独立上衣请新建上衣层重画');
+    }
+    var refs = Array.isArray(p.layer_refs) ? p.layer_refs : [];
+    refs.forEach(function (r) {
+      if (!r || typeof r.layer_id !== 'string' || !Array.isArray(r.cells)) return;
+      (byLayer[r.layer_id] = byLayer[r.layer_id] || []).push({ part: p, cells: r.cells });
+    });
+  });
+
+  var candidates = [];
+  oldLayers.forEach(function (ol) {
+    if (!ol || typeof ol !== 'object') return;
+    var pixels = normalizePixels(ol.pixels, n);
+    var refs = byLayer[ol.id] || [];
+    var layerVisible = ol.visible !== false;
+    var layerOpacity = isFinite(ol.opacity) ? clamp(Number(ol.opacity), 0, 1) : 1;
+
+    if (refs.length > 1) {
+      warnings.push('图层「' + (ol.name || ol.id) + '」有 ' + refs.length + ' 个旧部件，已按部件拆成多张图层（像素按格复制）');
+      var covered = new Uint8Array(n);
+      refs.forEach(function (r) {
+        var np = makeEmptyPixels(n);
+        r.cells.forEach(function (c) {
+          if (!c || !isFinite(c.x) || !isFinite(c.y)) return;
+          var x = clampInt(c.x, 0, size - 1), y = clampInt(c.y, 0, size - 1);
+          np[y * size + x] = pixels[y * size + x];
+          covered[y * size + x] = 1;
+        });
+        candidates.push({
+          typeId: mapOldType(r.part.dictionary_type, r.part.name || ol.name),
+          display_name: r.part.name || ol.name,
+          label_custom: true,
+          visible: layerVisible && r.part.visible !== false,
+          opacity: layerOpacity,
+          anchor: oldAnchor(r.part, size),
+          pixels: np,
+          source: ol.name || ol.id
+        });
+      });
+      var rest = makeEmptyPixels(n);
+      var hasRest = false;
+      for (var i = 0; i < n; i++) {
+        if (!covered[i] && pixels[i] !== null && pixels[i] !== 'transparent') { rest[i] = pixels[i]; hasRest = true; }
+      }
+      if (hasRest) {
+        candidates.push({
+          typeId: guessTypeByName(ol.name) || 'acc',
+          display_name: (ol.name || '未归属') + ' · 未归属像素',
+          label_custom: true,
+          visible: layerVisible,
+          opacity: layerOpacity,
+          pixels: rest,
+          source: ol.name || ol.id
+        });
+        warnings.push('图层「' + (ol.name || ol.id) + '」中有未标记格，已单独成层，避免像素丢失');
+      }
+    } else if (refs.length === 1) {
+      candidates.push({
+        typeId: mapOldType(refs[0].part.dictionary_type, refs[0].part.name || ol.name),
+        display_name: refs[0].part.name || ol.name,
+        label_custom: true,
+        visible: layerVisible && refs[0].part.visible !== false,
+        opacity: layerOpacity,
+        anchor: oldAnchor(refs[0].part, size),
+        pixels: pixels,
+        source: ol.name || ol.id
+      });
+    } else {
+      var guessed = guessTypeByName(ol.name);
+      var typeGuess = guessed || 'acc';
+      candidates.push({
+        typeId: typeGuess,
+        display_name: ol.name || typeName(typeGuess),
+        label_custom: !!ol.name,
+        visible: layerVisible,
+        opacity: layerOpacity,
+        pixels: pixels,
+        source: ol.name || ol.id
+      });
+      if (!guessed) warnings.push('图层「' + (ol.name || ol.id) + '」没有部件信息，按「饰品」处理');
+    }
+  });
+
+  if (!candidates.length) return null;
+
+  var art = {
+    format: FORMAT_ID,
+    version: 3,
+    size: size,
+    grid: { minor: 1, major: 5, major_origin: [0, 0] },
+    color_system: {
+      name: 'MARD',
+      palette_version: palette ? palette.palette_version : 'sample-1',
+      source: '旧版迁移',
+      verified: false
+    },
+    extra_colors: {},
+    character: defaultCharacter(),
+    motion_assets: defaultMotionAssets(),
+    layers: [],
+    updated_at: Date.now()
+  };
+  if (raw.extra_colors && typeof raw.extra_colors === 'object') {
+    Object.keys(raw.extra_colors).forEach(function (k) {
+      if (isColorHex(raw.extra_colors[k])) art.extra_colors[normalizeCode(k)] = String(raw.extra_colors[k]).toLowerCase();
+    });
+  }
+
+  var counts = {};
+  candidates.forEach(function (c) {
+    var t = partType(c.typeId) || TYPE_MAP.acc;
+    var idx = (counts[t.id] || 0) + 1;
+    if (idx > t.max) {
+      if (t.id !== 'acc' && (counts.acc || 0) < TYPE_MAP.acc.max) {
+        warnings.push('「' + typeName(t.id) + '」超过 ' + t.max + ' 层上限，额外实例已归入「饰品」');
+        t = TYPE_MAP.acc;
+        idx = (counts.acc || 0) + 1;
+      } else {
+        var target = null;
+        for (var k = art.layers.length - 1; k >= 0; k--) {
+          if (art.layers[k].part_type === t.id) { target = art.layers[k]; break; }
+        }
+        if (target) {
+          warnings.push('「' + typeName(t.id) + '」已达上限，多出的像素合并进最后一个同类型层');
+          for (var i = 0; i < n; i++) if (c.pixels[i] !== null) target.pixels[i] = c.pixels[i];
+          return;
+        }
+        t = TYPE_MAP.acc;
+        idx = (counts.acc || 0) + 1;
+      }
+    }
+    counts[t.id] = idx;
+
+    var layer = makeLayer(size, t.id, idx, {
+      display_name: c.display_name,
+      label_custom: c.label_custom,
+      visible: c.visible,
+      opacity: c.opacity,
+      anchor: c.anchor,
+      pixels: c.pixels
+    });
+    art.layers.push(layer);
+  });
+
+  ensureRequiredLayers(art, warnings);
+
+  renumberAll(art);
+  return { artwork: art, warnings: warnings };
+}
+
+/* ============================================================
+ * 撤销 / 自动保存
+ * ============================================================ */
+function updateUndoButtons() {
+  var u = $('#btnUndo'), r = $('#btnRedo');
+  if (u) u.disabled = undoStack.length === 0;
+  if (r) r.disabled = redoStack.length === 0;
+  if ($('#stUndo')) $('#stUndo').textContent = undoStack.length + '/' + UNDO_LIMIT;
+}
+
+function pushUndo() {
+  if (!artwork) return;
+  undoStack.push(serializeArtwork());
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+  redoStack.length = 0;
+  updateUndoButtons();
+}
+
+function ensureStrokeSnapshot() {
+  if (!strokeSnapshot) { pushUndo(); strokeSnapshot = true; }
+}
+
+function afterStateRestore() {
+  if (!artwork) return;
+  if (!layerById(currentLayerId)) {
+    currentLayerId = artwork.layers.length ? artwork.layers[artwork.layers.length - 1].id : null;
+  }
+  invalidateLayerCaches();
+  refreshAllUI();
+  requestRender();
+  scheduleAutosave();
+}
+
+function undo() {
+  if (!undoStack.length) { toast('没有可撤销的操作', 'warn'); return; }
+  redoStack.push(serializeArtwork());
+  var snapshot = undoStack.pop();
+  try {
+    var next = normalizeV2(JSON.parse(snapshot));
+    if (!next) throw new Error('快照无效');
+    artwork = next;
+    strokeSnapshot = false;
+    afterStateRestore();
+    setStatusMessage('已撤销');
+  } catch (e) { toast('撤销失败：' + e.message, 'err'); }
+}
+
+function redo() {
+  if (!redoStack.length) { toast('没有可重做的操作', 'warn'); return; }
+  undoStack.push(serializeArtwork());
+  var snapshot = redoStack.pop();
+  try {
+    var next = normalizeV2(JSON.parse(snapshot));
+    if (!next) throw new Error('快照无效');
+    artwork = next;
+    strokeSnapshot = false;
+    afterStateRestore();
+    setStatusMessage('已重做');
+  } catch (e) { toast('重做失败：' + e.message, 'err'); }
+}
+
+function setSaveStatus(text) {
+  var el = $('#saveStatus');
+  if (el) el.textContent = text;
+}
+
+function scheduleAutosave() {
+  if (!booted) return;
+  setSaveStatus('待保存…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveAutosave, 450);
+}
+
+function saveAutosave() {
+  if (!artwork) return;
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+      artwork: JSON.parse(serializeArtwork()),
+      current_layer_id: currentLayerId,
+      saved_at: Date.now()
+    }));
+    var d = new Date();
+    setSaveStatus('已保存 ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()));
+  } catch (e) {
+    setSaveStatus('自动保存失败');
+  }
+}
+
+function commitChange(msg) {
+  updateUndoButtons();
+  scheduleAutosave();
+  requestRender();
+  if (msg) setStatusMessage(msg);
+}
+
+/* ============================================================
+ * 视图与渲染
+ * ============================================================ */
+var dpr = 1;
+
+function stageMetrics() {
+  var stage = $('#stage');
+  return { w: stage.clientWidth, h: stage.clientHeight };
+}
+
+function syncCanvasBox() {
+  if (!board) return;
+  var stage = $('#stage');
+  var w = stage.clientWidth, h = stage.clientHeight;
+  if (w <= 0 || h <= 0) return;
+  dpr = window.devicePixelRatio || 1;
+  var pw = Math.round(w * dpr), ph = Math.round(h * dpr);
+  if (board.width !== pw || board.height !== ph) {
+    board.width = pw;
+    board.height = ph;
+  }
+}
+
+function cellEdges(x, y, cell) {
+  return {
+    x: Math.round(x * cell),
+    y: Math.round(y * cell),
+    w: Math.round((x + 1) * cell) - Math.round(x * cell),
+    h: Math.round((y + 1) * cell) - Math.round(y * cell)
+  };
+}
+
+function fitView() {
+  if (!artwork) return;
+  var m = stageMetrics();
+  var boardPx = artwork.size * BASE_CELL;
+  var pad = 36;
+  var z = Math.min((m.w - pad * 2) / boardPx, (m.h - pad * 2) / boardPx);
+  view.zoom = clamp(Math.round(z * 100) / 100, ZOOM_MIN, ZOOM_MAX);
+  var W = artwork.size * BASE_CELL * view.zoom;
+  var H = W;
+  view.panX = Math.round((m.w - W) / 2);
+  view.panY = Math.round((m.h - H) / 2);
+  updateZoomLabel();
+  requestRender();
+}
+
+function zoomAt(factor, mx, my) {
+  if (!artwork) return;
+  var before = BASE_CELL * view.zoom;
+  var wx = (mx - view.panX) / before;
+  var wy = (my - view.panY) / before;
+  view.zoom = clamp(view.zoom * factor, ZOOM_MIN, ZOOM_MAX);
+  var after = BASE_CELL * view.zoom;
+  view.panX = mx - wx * after;
+  view.panY = my - wy * after;
+  updateZoomLabel();
+  requestRender();
+}
+
+function updateZoomLabel() {
+  var el = $('#zoomLabel');
+  if (el) el.textContent = Math.round(view.zoom * 100) + '%';
+}
+
+function pointFromEvent(e) {
+  var r = board.getBoundingClientRect();
+  return { mx: e.clientX - r.left, my: e.clientY - r.top };
+}
+
+function cellFromPoint(mx, my) {
+  if (!artwork) return { x: 0, y: 0, inside: false };
+  var cell = BASE_CELL * view.zoom;
+  var x = Math.floor((mx - view.panX) / cell);
+  var y = Math.floor((my - view.panY) / cell);
+  return { x: x, y: y, inside: x >= 0 && y >= 0 && x < artwork.size && y < artwork.size };
+}
+
+function requestRender() {
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(function () { rafPending = false; renderBoard(); updateStatus(); });
+}
+
+function fillMissing(ctx, x, y, w, h) {
+  ctx.fillStyle = '#ff00aa';
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#1d1b16';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y + h);
+  ctx.lineTo(x + w, y);
+  ctx.stroke();
+}
+
+/* ---------------- 图层离屏缓存（脏层 / 脏区重绘 + 整幅合成缓存） ---------------- */
+var COMPOSE_MAX_EDGE = 3072; // 合成缓存单边像素上限；超过则退回逐层合成
+
+function invalidateLayerCaches() { layerCache = {}; composeCache = null; }
+
+function cachePaintRect(c, layer, x0, y0, x1, y1) {
+  var n = artwork.size, cs = c.cell, g = c.ctx;
+  x0 = Math.max(0, x0); y0 = Math.max(0, y0);
+  x1 = Math.min(n - 1, x1); y1 = Math.min(n - 1, y1);
+  if (x1 < x0 || y1 < y0) return;
+  g.clearRect(x0 * cs, y0 * cs, (x1 - x0 + 1) * cs, (y1 - y0 + 1) * cs);
+  for (var y = y0; y <= y1; y++) {
+    for (var x = x0; x <= x1; x++) {
+      var code = layer.pixels[y * n + x];
+      if (code === null || code === 'transparent') continue;
+      var hex = hexForCode(code);
+      if (hex) { g.fillStyle = hex; g.fillRect(x * cs, y * cs, cs, cs); }
+      else fillMissing(g, x * cs, y * cs, cs, cs);
+    }
+  }
+}
+
+function layerCacheFor(layer, n, cellDev) {
+  var cacheCell = Math.min(cellDev, 24); // 超高缩放时缓存封顶，合成用最近邻放大（不插值）
+  var sig = n + ':' + cacheCell;
+  var c = layerCache[layer.id];
+  if (!c || c.sig !== sig) {
+    var canvas = document.createElement('canvas');
+    canvas.width = n * cacheCell;
+    canvas.height = n * cacheCell;
+    c = { sig: sig, cell: cacheCell, canvas: canvas, ctx: canvas.getContext('2d'), dirty: null, full: true };
+    layerCache[layer.id] = c;
+  }
+  if (c.full) {
+    cachePaintRect(c, layer, 0, 0, n - 1, n - 1);
+    c.full = false;
+    c.dirty = null;
+  } else if (c.dirty) {
+    cachePaintRect(c, layer, c.dirty.x0, c.dirty.y0, c.dirty.x1, c.dirty.y1);
+    c.dirty = null;
+  }
+  return c;
+}
+
+function markComposeDirty(x0, y0, x1, y1) {
+  var c = composeCache;
+  if (!c) return;
+  if (!c.dirty) { c.dirty = { x0: x0, y0: y0, x1: x1, y1: y1 }; return; }
+  c.dirty.x0 = Math.min(c.dirty.x0, x0);
+  c.dirty.y0 = Math.min(c.dirty.y0, y0);
+  c.dirty.x1 = Math.max(c.dirty.x1, x1);
+  c.dirty.y1 = Math.max(c.dirty.y1, y1);
+}
+
+function markLayerDirty(layer, x0, y0, x1, y1) {
+  if (!layer || !artwork) return;
+  var n = artwork.size;
+  x0 = Math.max(0, Math.min(x0, x1)); y0 = Math.max(0, Math.min(y0, y1));
+  x1 = Math.min(n - 1, Math.max(x0, x1)); y1 = Math.min(n - 1, Math.max(y0, y1));
+  var c = layerCache[layer.id];
+  if (c) {
+    if (!c.dirty) c.dirty = { x0: x0, y0: y0, x1: x1, y1: y1 };
+    else {
+      c.dirty.x0 = Math.min(c.dirty.x0, x0);
+      c.dirty.y0 = Math.min(c.dirty.y0, y0);
+      c.dirty.x1 = Math.max(c.dirty.x1, x1);
+      c.dirty.y1 = Math.max(c.dirty.y1, y1);
+    }
+  }
+  markComposeDirty(x0, y0, x1, y1);
+}
+
+/* 纸张底 + 棋盘格缓存（仅随画布尺寸/缩放重建） */
+function ensureBgCache(n, cellDev) {
+  var c = bgCache;
+  if (c && c.n === n && c.cell === cellDev) return c;
+  var size = n * cellDev;
+  var canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  var g = canvas.getContext('2d');
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, 0, size, size);
+  g.fillStyle = 'rgba(29,27,22,0.055)';
+  for (var by = 0; by < n; by++) {
+    for (var bx = 0; bx < n; bx++) {
+      if ((bx + by) % 2 === 0) continue;
+      g.fillRect(bx * cellDev, by * cellDev, cellDev, cellDev);
+    }
+  }
+  bgCache = { n: n, cell: cellDev, canvas: canvas };
+  return bgCache;
+}
+
+function composeSig(n, cellDev) {
+  var s = n + ':' + cellDev;
+  for (var i = 0; i < artwork.layers.length; i++) {
+    var l = artwork.layers[i];
+    s += '|' + l.id + ':' + (l.visible ? 1 : 0) + ':' + clamp(l.opacity, 0, 1);
+  }
+  return s;
+}
+
+/* 只重算给定格范围内的一小块合成结果（拖笔 / 上色 / 移动都走这里） */
+function composeRect(cc, x0, y0, x1, y1) {
+  var n = cc.n, cellDev = cc.cell, g = cc.ctx;
+  x0 = Math.max(0, x0); y0 = Math.max(0, y0);
+  x1 = Math.min(n - 1, x1); y1 = Math.min(n - 1, y1);
+  if (x1 < x0 || y1 < y0) return;
+  var px = x0 * cellDev, py = y0 * cellDev;
+  var pw = (x1 - x0 + 1) * cellDev, ph = (y1 - y0 + 1) * cellDev;
+  g.clearRect(px, py, pw, ph);
+  if (!bgCache) ensureBgCache(n, cellDev);
+  g.drawImage(bgCache.canvas, px, py, pw, ph, px, py, pw, ph);
+  g.imageSmoothingEnabled = false;
+  for (var i = 0; i < artwork.layers.length; i++) {
+    var l = artwork.layers[i];
+    if (!l.visible) continue;
+    var op = clamp(l.opacity, 0, 1);
+    if (op <= 0) continue;
+    var lc = layerCacheFor(l, n, cellDev);
+    g.globalAlpha = op;
+    g.drawImage(lc.canvas, x0 * lc.cell, y0 * lc.cell, (x1 - x0 + 1) * lc.cell, (y1 - y0 + 1) * lc.cell, px, py, pw, ph);
+  }
+  g.globalAlpha = 1;
+}
+
+function ensureComposeCache(n, cellDev) {
+  var sig = composeSig(n, cellDev);
+  var cc = composeCache;
+  if (!cc || cc.n !== n || cc.cell !== cellDev) {
+    var size = n * cellDev;
+    var canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    var g = canvas.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    cc = { n: n, cell: cellDev, canvas: canvas, ctx: g, sig: sig, dirty: { x0: 0, y0: 0, x1: n - 1, y1: n - 1 } };
+    composeCache = cc;
+  } else if (cc.sig !== sig) {
+    cc.sig = sig;
+    cc.dirty = { x0: 0, y0: 0, x1: n - 1, y1: n - 1 };
+  }
+  if (cc.dirty) {
+    var r = cc.dirty;
+    cc.dirty = null;
+    composeRect(cc, r.x0, r.y0, r.x1, r.y1);
+  }
+  return cc;
+}
+
+function renderBoard() {
+  if (!board || !artwork) return;
+  syncCanvasBox();
+  var stage = $('#stage');
+  var cw = stage.clientWidth, ch = stage.clientHeight;
+  ctxClear();
+  function ctxClear() {
+    var g = board.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, cw, ch);
+  }
+  var ctx = board.getContext('2d');
+  var n = artwork.size;
+  var cellDev = Math.max(1, Math.round(BASE_CELL * view.zoom * dpr));
+  var cell = cellDev / dpr; // 网格 / 像素统一按整数设备像素对齐
+  var W = n * cell;
+  var ox = Math.round(view.panX * dpr) / dpr;
+  var oy = Math.round(view.panY * dpr) / dpr;
+
+  // 纸张底 + 像素层：背景一次 blit，图层合成结果一次 blit
+  ctx.save();
+  ctx.translate(ox, oy);
+  var useCompose = !previewState && n * cellDev <= COMPOSE_MAX_EDGE;
+  var bgc = useCompose ? ensureBgCache(n, cellDev) : null;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(-1, -1, W + 2, W + 2);
+  ctx.imageSmoothingEnabled = false;
+  if (useCompose) {
+    if (bgc) ctx.drawImage(bgc.canvas, 0, 0, W, W);
+    var cc = ensureComposeCache(n, cellDev);
+    ctx.drawImage(cc.canvas, 0, 0, W, W);
+  } else {
+    // 透明棋盘格
+    for (var by = 0; by < n; by++) {
+      for (var bx = 0; bx < n; bx++) {
+        if ((bx + by) % 2 === 0) continue;
+        ctx.fillStyle = 'rgba(29,27,22,0.055)';
+        ctx.fillRect(bx * cell, by * cell, cell, cell);
+      }
+    }
+    // 预览动画或超大画布：逐层直接合成
+    var i;
+    for (i = 0; i < artwork.layers.length; i++) {
+      var layer = artwork.layers[i];
+      if (!layer.visible) continue;
+      var pvx = 0;
+      if (previewState && previewState.layerId === layer.id) {
+        var pr = clamp((Date.now() - previewState.start) / previewState.dur, 0, 1);
+        pvx = Math.sin(pr * Math.PI * 4) * (1 - pr) * cell * (previewState.amp || 1);
+      }
+      var lc = layerCacheFor(layer, n, cellDev);
+      ctx.save();
+      if (pvx) ctx.translate(pvx, 0);
+      ctx.globalAlpha = clamp(layer.opacity, 0, 1);
+      ctx.drawImage(lc.canvas, 0, 0, lc.canvas.width, lc.canvas.height, 0, 0, W, W);
+      ctx.restore();
+    }
+  }
+  ctx.imageSmoothingEnabled = true;
+  ctx.globalAlpha = 1;
+
+  // 网格
+  if (showGrid) {
+    var minorAlpha = view.zoom < 1 ? 0 : view.zoom <= 2 ? 0.3 : view.zoom < 4 ? 0.6 : 1;
+    ctx.strokeStyle = 'rgba(24,22,17,' + minorAlpha + ')';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (i = 0; i <= n; i++) {
+      var p = Math.round(i * cell) + 0.5;
+      ctx.moveTo(p, 0); ctx.lineTo(p, W);
+      ctx.moveTo(0, p); ctx.lineTo(W, p);
+    }
+    ctx.stroke();
+  }
+  if (showGrid && showMajor) {
+    ctx.strokeStyle = '#1d1b16';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (i = 0; i <= n; i += 5) {
+      var pm = Math.round(i * cell) + 1;
+      ctx.moveTo(pm, 0); ctx.lineTo(pm, W);
+      ctx.moveTo(0, pm); ctx.lineTo(W, pm);
+    }
+    ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, W, W);
+  }
+
+  // 行列号
+  if (showGrid && showNumbers) {
+    ctx.font = '700 ' + Math.max(8, Math.min(11, cell * 0.55)) + 'px "Consolas", monospace';
+    ctx.fillStyle = 'rgba(29,27,22,.72)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (i = 0; i < n; i += 5) {
+      ctx.fillText(String(i + 1), i * cell + cell / 2, -10);
+      ctx.save();
+      ctx.translate(-12, i * cell + cell / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(String(i + 1), 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // 当前层锚点
+  var cur = currentLayer();
+  if (cur) {
+    var ax = cur.anchor.x * cell, ay = cur.anchor.y * cell;
+    ctx.strokeStyle = anchorPickMode ? '#ff5a36' : 'rgba(255,90,54,.9)';
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ax - 9, ay); ctx.lineTo(ax + 9, ay);
+    ctx.moveTo(ax, ay - 9); ctx.lineTo(ax, ay + 9);
+    ctx.stroke();
+    ctx.font = '700 9px "Consolas", monospace';
+    ctx.fillStyle = 'rgba(255,90,54,.95)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('锚' + Math.round(cur.anchor.x) + ',' + Math.round(cur.anchor.y), ax + 10, ay - 6);
+  }
+
+  // 选区（多矩形蚂蚁线）
+  if (selectionRects.length) {
+    ctx.fillStyle = selOnly ? 'rgba(255,90,54,.14)' : 'rgba(255,90,54,.07)';
+    for (i = 0; i < selectionRects.length; i++) {
+      var sr = selectionRects[i];
+      var sx = sr.x0 * cell, sy0 = sr.y0 * cell;
+      var sw = (sr.x1 - sr.x0 + 1) * cell, sh = (sr.y1 - sr.y0 + 1) * cell;
+      ctx.fillRect(sx, sy0, sw, sh);
+      ctx.save();
+      ctx.setLineDash([6, 4]);
+      ctx.lineDashOffset = -antsOffset;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ff5a36';
+      ctx.strokeRect(sx + 1, sy0 + 1, Math.max(1, sw - 2), Math.max(1, sh - 2));
+      ctx.restore();
+    }
+  }
+
+  // 悬停格
+  if (hoverCell && hoverCell.inside && !drag && !anchorPickMode) {
+    var hx = hoverCell.x, hy = hoverCell.y;
+    if (hx >= 0 && hy >= 0 && hx < n && hy < n) {
+      ctx.strokeStyle = '#ff5a36';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(Math.round(hx * cell) + 1, Math.round(hy * cell) + 1, Math.round(cell) - 2, Math.round(cell) - 2);
+    }
+  }
+  // 锚点拾取遮罩
+  if (anchorPickMode) {
+    ctx.strokeStyle = 'rgba(255,90,54,.7)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(1.5, 1.5, W - 3, W - 3);
+  }
+  ctx.restore();
+}
+
+
+
+/* ============================================================
+ * 通用 UI：提示 / 状态
+ * ============================================================ */
+var toastTimer = null;
+function toast(msg, kind) {
+  var el = $('#toast');
+  if (!el) return;
+  el.className = 'toast show' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { el.className = 'toast' + (kind ? ' ' + kind : ''); }, 2200);
+}
+
+function setStatusMessage(msg) {
+  var el = $('#stMsg');
+  if (el) el.textContent = msg || '';
+}
+
+function updateSizeBadge() {
+  var el = $('#btnSize');
+  if (el && artwork) el.textContent = artwork.size + ' × ' + artwork.size;
+}
+
+function updateStatus() {
+  if (!artwork) return;
+  var c = hoverCell && hoverCell.inside ? hoverCell : lastClickedCell;
+  if ($('#stCoord')) $('#stCoord').textContent = c && c.inside ? ((c.x + 1) + ',' + (c.y + 1)) : '—';
+  var l = currentLayer();
+  if ($('#stLayer')) $('#stLayer').textContent = l ? l.display_name : '—';
+  if ($('#stPart')) $('#stPart').textContent = l ? (typeName(l.part_type) + ' #' + l.part_index) : '—';
+  if ($('#stAnchor')) $('#stAnchor').textContent = l ? (Math.round(l.anchor.x) + ',' + Math.round(l.anchor.y)) : '—';
+  if ($('#stColor')) $('#stColor').textContent = currentColor || '—';
+  if ($('#stTool')) $('#stTool').textContent = TOOL_NAMES[tool] || tool;
+  if ($('#layerChip')) {
+    $('#layerChip').textContent = l
+      ? (l.display_name + ' · ' + typeName(l.part_type) + ' #' + l.part_index + (l.visible ? '' : '（隐藏）'))
+      : '无图层';
+  }
+}
+
+/* ============================================================
+ * 模态框
+ * ============================================================ */
+var modalState = null;
+
+function showModal(opts) {
+  opts = opts || {};
+  closeModal();
+  var root = $('#modalRoot');
+  if (!root) return null;
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  var box = document.createElement('div');
+  box.className = 'modal';
+  if (opts.width) box.style.width = opts.width;
+  box.innerHTML =
+    '<div class="modal-head"><span class="mh-title">' + esc(opts.title || '') + '</span>' +
+    '<button class="mh-x" type="button" title="关闭">✕</button></div>' +
+    '<div class="modal-body">' + (opts.body || '') + '</div>' +
+    '<div class="modal-error"></div>' +
+    '<div class="modal-actions"></div>';
+
+  var errEl = box.querySelector('.modal-error');
+  var api = {
+    root: box,
+    close: function () { closeModal(); },
+    setError: function (t) { errEl.textContent = t || ''; errEl.classList.toggle('show', !!t); },
+    setBody: function (html) { box.querySelector('.modal-body').innerHTML = html; }
+  };
+
+  (opts.buttons || []).forEach(function (b) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn' + (b.kind ? ' ' + b.kind : '') + (b.primary ? ' active' : '');
+    btn.textContent = b.label;
+    if (b.disabled) btn.disabled = true;
+    btn.addEventListener('click', function () {
+      var r = b.onClick ? b.onClick(api) : undefined;
+      if (r === false) return;
+      closeModal();
+    });
+    box.querySelector('.modal-actions').appendChild(btn);
+    if (b.primary) api.primary = btn;
+  });
+
+  box.querySelector('.mh-x').addEventListener('click', function () {
+    if (opts.dismissible === false) return;
+    closeModal();
+  });
+  overlay.addEventListener('mousedown', function (e) {
+    if (e.target === overlay && opts.dismissible !== false) closeModal();
+  });
+
+  overlay.appendChild(box);
+  root.appendChild(overlay);
+  modalState = { overlay: overlay, box: box, opts: opts };
+  isModalOpen = true;
+  if (opts.onMount) opts.onMount(api);
+  return api;
+}
+
+function closeModal() {
+  if (!modalState) { isModalOpen = false; return; }
+  var st = modalState;
+  modalState = null;
+  isModalOpen = false;
+  if (st.overlay.parentNode) st.overlay.parentNode.removeChild(st.overlay);
+  if (st.opts && typeof st.opts.onClose === 'function') st.opts.onClose();
+}
+
+/* ============================================================
+ * 绘制
+ * ============================================================ */
+function paintTargetLayer() {
+  var l = currentLayer();
+  if (!l) { toast('当前没有图层', 'err'); return null; }
+  if (!l.visible) { toast('「' + l.display_name + '」已隐藏，先点亮眼睛再画', 'warn'); return null; }
+  if (l.locked) { toast('「' + l.display_name + '」已锁定，先在设置页解锁再画', 'warn'); return null; }
+  return l;
+}
+
+function writeCell(layer, x, y, code) {
+  if (!layer || !artwork) return false;
+  var n = artwork.size;
+  if (x < 0 || y < 0 || x >= n || y >= n) return false;
+  if (selOnly && selectionRects.length && !cellInSelection(x, y)) return false;
+  var i = y * n + x;
+  if (layer.pixels[i] === code) return false;
+  layer.pixels[i] = code;
+  markLayerDirty(layer, x, y, x, y);
+  return true;
+}
+
+function strokeLine(layer, from, to, code) {
+  var dx = Math.abs(to.x - from.x), dy = Math.abs(to.y - from.y);
+  var sx = from.x < to.x ? 1 : -1, sy = from.y < to.y ? 1 : -1;
+  var err = dx - dy, x = from.x, y = from.y, guard = 0;
+  while (guard++ < 5000) {
+    writeCell(layer, x, y, code);
+    if (x === to.x && y === to.y) break;
+    var e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x += sx; }
+    if (e2 < dx) { err += dx; y += sy; }
+  }
+}
+
+function bucketFill(layer, x, y, code) {
+  var n = artwork.size;
+  if (x < 0 || y < 0 || x >= n || y >= n) return 0;
+  if (selOnly && selectionRects.length && !cellInSelection(x, y)) return 0;
+  var target = layer.pixels[y * n + x];
+  if (target === code) return 0;
+  var seen = new Uint8Array(n * n);
+  var stack = [x, y];
+  var count = 0;
+  var bx0 = n, by0 = n, bx1 = -1, by1 = -1;
+  while (stack.length) {
+    var cy = stack.pop(), cx = stack.pop();
+    if (cx < 0 || cy < 0 || cx >= n || cy >= n) continue;
+    if (selOnly && selectionRects.length && !cellInSelection(cx, cy)) continue;
+    var idx = cy * n + cx;
+    if (seen[idx]) continue;
+    seen[idx] = 1;
+    if (layer.pixels[idx] !== target) continue;
+    layer.pixels[idx] = code;
+    count++;
+    if (cx < bx0) bx0 = cx; if (cx > bx1) bx1 = cx;
+    if (cy < by0) by0 = cy; if (cy > by1) by1 = cy;
+    stack.push(cx + 1, cy, cx - 1, cy, cx, cy + 1, cx, cy - 1);
+  }
+  if (count) markLayerDirty(layer, bx0, by0, bx1, by1);
+  return count;
+}
+
+function pickColorAt(x, y) {
+  var n = artwork.size;
+  if (x < 0 || y < 0 || x >= n || y >= n) return null;
+  for (var i = artwork.layers.length - 1; i >= 0; i--) {
+    var l = artwork.layers[i];
+    if (!l.visible || !l.pixels) continue;
+    var code = l.pixels[y * n + x];
+    if (code && code !== 'transparent') return code;
+  }
+  return null;
+}
+
+/* ============================================================
+ * 图层 = 部件：CRUD
+ * ============================================================ */
+function setCurrentLayer(id) {
+  if (!layerById(id)) return;
+  currentLayerId = id;
+  renderLayerList();
+  renderSettings();
+  updateStatus();
+  requestRender();
+}
+
+function createLayerOfType(typeId) {
+  if (!artwork) return null;
+  if (!TYPE_MAP[typeId]) { toast('未知的部件类型', 'err'); return null; }
+  if (!canCreateType(typeId)) {
+    toast('「' + typeName(typeId) + '」已达 ' + TYPE_MAP[typeId].max + ' 层上限', 'err');
+    return null;
+  }
+  pushUndo();
+  var idx = nextPartIndex(typeId);
+  var layer = makeLayer(artwork.size, typeId, idx, { pixels: makeEmptyPixels(artwork.size * artwork.size) });
+  artwork.layers.push(layer);
+  currentLayerId = layer.id;
+  commitChange('已新建「' + layer.display_name + '」（' + typeName(typeId) + ' #' + idx + '）');
+  refreshAllUI();
+  return layer;
+}
+
+function sanitizeDisplayName(raw, layer) {
+  var def = layerLabelFor(layer.part_type, layer.part_index);
+  var s = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
+  if (!s) return { name: def, custom: false };
+  if (s.length > 16) s = s.slice(0, 16);
+  return { name: s, custom: s !== def };
+}
+
+function renameLayer(layer, raw) {
+  if (!layer) return false;
+  var next = sanitizeDisplayName(raw, layer);
+  if (next.name === layer.display_name) { layer.label_custom = next.custom; return false; }
+  pushUndo();
+  layer.display_name = next.name;
+  layer.label_custom = next.custom;
+  commitChange('已改名为「' + next.name + '」（部件类型仍是「' + typeName(layer.part_type) + '」）');
+  refreshAllUI();
+  return true;
+}
+
+function beginRename(layerId) {
+  var layer = layerById(layerId);
+  var row = $('.layer-row[data-layer-id="' + layerId + '"]');
+  if (!layer || !row) return;
+  var nameEl = row.querySelector('.layer-name');
+  if (!nameEl) return;
+  var input = document.createElement('input');
+  input.className = 'layer-name-input';
+  input.value = layer.display_name;
+  input.maxLength = 16;
+  input.setAttribute('autocomplete', 'off');
+  nameEl.replaceWith(input);
+  input.focus();
+  input.select();
+  var finished = false;
+  function finish(commit) {
+    if (finished) return;
+    finished = true;
+    if (commit) renameLayer(layer, input.value);
+    refreshAllUI();
+  }
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    e.stopPropagation();
+  });
+  input.addEventListener('blur', function () { finish(true); });
+}
+
+function toggleLayerVisible(id) {
+  var l = layerById(id);
+  if (!l) return;
+  pushUndo();
+  l.visible = !l.visible;
+  commitChange((l.visible ? '已显示「' : '已隐藏「') + l.display_name + '」');
+  refreshAllUI();
+}
+
+function moveLayer(id, dir) {
+  var i = artwork.layers.findIndex(function (l) { return l.id === id; });
+  if (i < 0) return;
+  var j = i + dir;
+  if (j < 0 || j >= artwork.layers.length) { toast('已经到顶/到底了', 'warn'); return; }
+  pushUndo();
+  var tmp = artwork.layers[i];
+  artwork.layers[i] = artwork.layers[j];
+  artwork.layers[j] = tmp;
+  commitChange('已调整图层顺序');
+  refreshAllUI();
+}
+
+function deleteCurrentLayer() {
+  var l = currentLayer();
+  if (!l) { toast('当前没有图层', 'warn'); return; }
+  if ((l.part_type === 'head' || l.part_type === 'torso') && countOfType(l.part_type) <= 1) {
+    toast('「' + typeName(l.part_type) + '」是必备部件，不能删到 0；可先建另一层再删', 'err');
+    return;
+  }
+  pushUndo();
+  var i = artwork.layers.indexOf(l);
+  var removedName = l.display_name;
+  artwork.layers.splice(i, 1);
+  renumberType(artwork, l.part_type);
+  var next = artwork.layers[Math.min(i, artwork.layers.length - 1)];
+  currentLayerId = next ? next.id : null;
+  commitChange('已删除「' + removedName + '」，同类型剩余实例已重排序号');
+  refreshAllUI();
+}
+
+function mergeDown() {
+  var l = currentLayer();
+  if (!l) return;
+  var i = artwork.layers.indexOf(l);
+  if (i <= 0) { toast('下面没有图层可合并', 'warn'); return; }
+  var under = artwork.layers[i - 1];
+  if (under.part_type !== l.part_type) {
+    toast('只能合并同类型图层（当前「' + typeName(l.part_type) + '」，下面是「' + typeName(under.part_type) + '」）', 'err');
+    return;
+  }
+  pushUndo();
+  var n = artwork.size * artwork.size;
+  for (var k = 0; k < n; k++) if (l.pixels[k] !== null) under.pixels[k] = l.pixels[k];
+  artwork.layers.splice(i, 1);
+  renumberType(artwork, l.part_type);
+  currentLayerId = under.id;
+  commitChange('已合并到「' + under.display_name + '」');
+  refreshAllUI();
+}
+
+function openAddLayerModal() {
+  if (!artwork) return;
+  var selected = null;
+  var body =
+    '<div class="type-grid" id="typeGrid">' +
+    PART_TYPES.map(function (t) {
+      var c = countOfType(t.id);
+      var full = c >= t.max;
+      return '<button type="button" class="type-chip" data-type="' + t.id + '" data-cat="' + t.cat + '"' + (full ? ' disabled' : '') + '>' +
+        esc(t.name) + '<span class="tc-count">' + c + '/' + t.max + '</span></button>';
+    }).join('') +
+    '</div>' +
+    '<div class="type-note" id="typeNote">请选择一个部件类型。未选择时不能创建图层；取消不会产生空图层。</div>';
+
+  var api = showModal({
+    title: '新建图层 · 选择部件类型',
+    width: 'min(520px,96vw)',
+    body: body,
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: '创建图层', primary: true, disabled: true, onClick: function (a) {
+        if (!selected) { a.setError('必须先选择一个部件类型'); return false; }
+        var layer = createLayerOfType(selected);
+        if (!layer) { a.setError('创建失败，请重试'); return false; }
+        return true;
+      } }
+    ],
+    onMount: function (a) {
+      var noteEl = a.root.querySelector('#typeNote');
+      var chips = Array.prototype.slice.call(a.root.querySelectorAll('.type-chip'));
+      function describe(t) {
+        var c = countOfType(t.id);
+        var left = t.max - c;
+        var nextName = layerLabelFor(t.id, c + 1);
+        return '<b>' + esc(t.name) + '</b>（' + esc(CAT_MAP[t.cat].name) + '）· ' + esc(t.desc) +
+          '<br>已建 ' + c + ' 层，上限 ' + t.max + '，还能建 ' + left + ' 层。新建后显示名：<b>' + esc(nextName) + '</b>。';
+      }
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          if (chip.disabled) return;
+          selected = chip.getAttribute('data-type');
+          chips.forEach(function (c) { c.classList.toggle('selected', c === chip); });
+          noteEl.innerHTML = describe(TYPE_MAP[selected]);
+          if (a.primary) a.primary.disabled = false;
+          a.setError('');
+        });
+      });
+    }
+  });
+  return api;
+}
+
+function startAnchorPick() {
+  var l = currentLayer();
+  if (!l) { toast('当前没有图层', 'warn'); return; }
+  anchorPickMode = true;
+  anchorLayerId = l.id;
+  var tip = $('#anchorTip');
+  if (tip) { tip.textContent = '锚点拾取：点击画布设置「' + l.display_name + '」的锚点（Esc 取消）'; tip.classList.add('show'); }
+  requestRender();
+  setStatusMessage('锚点拾取中…');
+}
+
+function cancelAnchorPick() {
+  anchorPickMode = false;
+  anchorLayerId = null;
+  var tip = $('#anchorTip');
+  if (tip) tip.classList.remove('show');
+  requestRender();
+  setStatusMessage('已取消锚点拾取');
+}
+
+function applyAnchorAt(cell) {
+  var l = layerById(anchorLayerId) || currentLayer();
+  if (!l || !cell.inside) return;
+  pushUndo();
+  l.anchor = { x: cell.x + 0.5, y: cell.y + 0.5 };
+  cancelAnchorPick();
+  commitChange('「' + l.display_name + '」锚点设为 (' + (cell.x + 1) + ', ' + (cell.y + 1) + ')');
+  refreshAllUI();
+}
+
+/* ============================================================
+ * 图层列表 UI
+ * ============================================================ */
+function pixelCount(layer) {
+  var c = 0;
+  for (var i = 0; i < layer.pixels.length; i++) {
+    var v = layer.pixels[i];
+    if (v !== null && v !== 'transparent') c++;
+  }
+  return c;
+}
+
+function layerRowHtml(layer) {
+  var active = layer.id === currentLayerId;
+  var t = partType(layer.part_type) || TYPE_MAP.acc;
+  var count = pixelCount(layer);
+  var pct = Math.round(clamp(layer.opacity, 0, 1) * 100);
+  var mo = layer.animation && layer.animation.motion_id ? motionById(layer.animation.motion_id) : null;
+  return '<div class="layer-row' + (active ? ' active' : '') + '" data-layer-id="' + esc(layer.id) + '">' +
+    '<button type="button" class="layer-eye' + (layer.visible ? '' : ' off') + '" data-act="toggle" title="显示 / 隐藏（隐藏 = 脱下或收起）">' + (layer.visible ? '◉' : '◌') + '</button>' +
+    '<div class="layer-mid">' +
+      '<div class="layer-top">' +
+        '<span class="layer-name" data-act="name" title="双击改名（只改显示名）">' + esc(layer.display_name) + '</span>' +
+        '<span class="layer-badge cat-' + t.cat + '" title="部件类型（只读）">' + esc(t.name) + (layer.part_index > 1 ? ' #' + layer.part_index : '') + '</span>' +
+        '<span class="layer-count" title="已上色格子数">' + count + '</span>' +
+      '</div>' +
+      '<div class="layer-bar">' +
+        '<input type="range" min="0" max="100" step="1" value="' + pct + '" data-act="opacity" title="图层不透明度">' +
+        '<span class="ops">' + pct + '%</span>' +
+        '<div class="layer-btns">' +
+          (edition === 'pro' ? '<button type="button" class="lbtn" data-act="anchor" title="设置锚点（旋转 / 位移中心）">⌖</button>' : '') +
+          '<button type="button" class="lbtn" data-act="up" title="上移一层">↑</button>' +
+          '<button type="button" class="lbtn" data-act="down" title="下移一层">↓</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="layer-motion" data-act="motion" title="打开该部件的动效与设置">' +
+        '<span>' + (mo ? '动效：' + esc(mo.name) : '动效：无') + '</span>' +
+        (layer.locked ? '<span class="lm-lock">· 锁定</span>' : '') +
+        (mo && !mo.launch ? '<span class="lm-lock">· 未开放</span>' : '') +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function matchesFilter(layer, q) {
+  if (!q) return true;
+  var s = q.toLowerCase();
+  return layer.display_name.toLowerCase().indexOf(s) >= 0 ||
+    typeName(layer.part_type).toLowerCase().indexOf(s) >= 0 ||
+    layer.part_type.toLowerCase().indexOf(s) >= 0 ||
+    (typeName(layer.part_type) + layer.part_index).toLowerCase().indexOf(s) >= 0;
+}
+
+function renderLayerList() {
+  var el = $('#layerList');
+  if (!el || !artwork) return;
+  var q = (layerFilter || '').trim();
+
+  if (q) {
+    var hits = artwork.layers.filter(function (l) { return matchesFilter(l, q); });
+    if (!hits.length) {
+      el.innerHTML = '<div class="part-empty">没有匹配「' + esc(q) + '」的图层。<br>可搜显示名、部件类型（如 头发 / hair）。</div>';
+      return;
+    }
+    el.innerHTML = '<div class="layer-group" style="cursor:default">搜索结果 <span class="lg-count">' + hits.length + ' / ' + artwork.layers.length + '</span></div>' +
+      hits.slice().reverse().map(layerRowHtml).join('');
+    return;
+  }
+
+  var html = '';
+  PART_CATEGORIES.forEach(function (cat) {
+    var list = artwork.layers.filter(function (l) { return typeCat(l.part_type) === cat.id; });
+    if (!list.length) return;
+    var collapsed = !!collapsedCats[cat.id];
+    html += '<div class="layer-group" data-cat="' + cat.id + '">' +
+      '<span>' + (collapsed ? '▸' : '▾') + ' ' + esc(cat.name) + '</span>' +
+      '<span class="lg-count">' + list.length + ' 层</span></div>';
+    if (!collapsed) html += list.slice().reverse().map(layerRowHtml).join('');
+  });
+  if (!html) html = '<div class="part-empty">还没有图层。<br>点「＋ 新建」并选择一个部件类型。</div>';
+  el.innerHTML = html;
+}
+
+/* ============================================================
+ * 新建 / 改尺寸
+ * ============================================================ */
+var SIZE_OPTIONS = [16, 24, 32, 40];
+
+function presetOptionsHtml(current) {
+  return Object.keys(PRESETS).map(function (k) {
+    var p = PRESETS[k];
+    return '<label class="checkline"><input type="radio" name="preset" value="' + k + '"' + (k === (current || 'standard') ? ' checked' : '') + '>' +
+      '<span><b>' + esc(p.name) + '</b> — ' + esc(p.desc) + '</span></label>';
+  }).join('');
+}
+
+function openNewModal() {
+  var body =
+    '<div class="field"><label>画布尺寸</label><select id="newSize">' +
+    SIZE_OPTIONS.map(function (s) { return '<option value="' + s + '"' + (s === 32 ? ' selected' : '') + '>' + s + ' × ' + s + '</option>'; }).join('') +
+    '</select><span class="hint">一格一豆；5×5 粗线原点固定在左上角。</span></div>' +
+    '<div class="field"><label>初始层预设</label><div id="presetBox">' + presetOptionsHtml('standard') + '</div>' +
+    '<span class="hint">预设只包含本体部件；衣服（上衣 / 外套 / 裤子 / 鞋 / 袖）可在建好后按需新建，并可随时隐藏或删除。</span></div>' +
+    '<div class="type-note">新建会替换当前作品；请先导出需要保留的内容。头与躯干会自动保留（至少各 1 层）。</div>';
+  showModal({
+    title: '新建作品',
+    body: body,
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: '新建', primary: true, onClick: function (a) {
+        var size = parseInt(a.root.querySelector('#newSize').value, 10);
+        var preset = a.root.querySelector('input[name=preset]:checked').value;
+        bootArtwork(createArtwork(size, preset), '已新建 ' + size + '×' + size + ' 作品');
+        return true;
+      } }
+    ]
+  });
+}
+
+function openSizeModal() {
+  var body =
+    '<div class="field"><label>画布尺寸</label><select id="sizeSel">' +
+    SIZE_OPTIONS.map(function (s) { return '<option value="' + s + '"' + (artwork.size === s ? ' selected' : '') + '>' + s + ' × ' + s + '</option>'; }).join('') +
+    '</select><span class="hint">图层与部件类型全部保留；超出新尺寸的像素会被裁掉（可先导出备份）。</span></div>' +
+    '<div class="type-note">缩小会裁掉右侧与下侧的格子；放大时新区域为空白。</div>';
+  showModal({
+    title: '修改画布尺寸',
+    body: body,
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: '应用', primary: true, onClick: function (a) {
+        var size = parseInt(a.root.querySelector('#sizeSel').value, 10);
+        if (size === artwork.size) return true;
+        var lost = resizeArtwork(size);
+        commitChange('尺寸已改为 ' + size + '×' + size + (lost ? '（裁掉 ' + lost + ' 个已上色格）' : ''));
+        fitView();
+        refreshAllUI();
+        return true;
+      } }
+    ]
+  });
+}
+
+function resizeArtwork(newSize) {
+  var oldSize = artwork.size;
+  var lost = 0;
+  pushUndo();
+  artwork.layers.forEach(function (l) {
+    var np = makeEmptyPixels(newSize * newSize);
+    for (var y = 0; y < newSize; y++) {
+      for (var x = 0; x < newSize; x++) {
+        if (x < oldSize && y < oldSize) {
+          np[y * newSize + x] = l.pixels[y * oldSize + x];
+        }
+      }
+    }
+    for (var oy = 0; oy < oldSize; oy++) {
+      for (var ox = 0; ox < oldSize; ox++) {
+        if (ox >= newSize || oy >= newSize) {
+          var v = l.pixels[oy * oldSize + ox];
+          if (v !== null && v !== 'transparent') lost++;
+        }
+      }
+    }
+    l.pixels = np;
+    l.anchor = { x: clamp(l.anchor.x, 0, newSize), y: clamp(l.anchor.y, 0, newSize) };
+  });
+  artwork.size = newSize;
+  return lost;
+}
+
+/* ============================================================
+ * 导出
+ * ============================================================ */
+function buildExportPayload() {
+  if (!artwork) return null;
+  var partSettings = {};
+  var animations = [];
+  artwork.layers.forEach(function (l) {
+    partSettings[l.part_type + '#' + l.part_index] = {
+      layer_id: l.id,
+      display_name: l.display_name,
+      locked: !!l.locked,
+      settings: Object.assign({}, l.settings || {})
+    };
+    if (l.animation) {
+      animations.push({
+        layer_id: l.id,
+        part_type: l.part_type,
+        part_index: l.part_index,
+        motion_id: l.animation.motion_id,
+        trigger: l.animation.trigger,
+        duration_ms: l.animation.duration_ms,
+        loop: !!l.animation.loop,
+        asset_ref: l.animation.asset_ref || '',
+        enabled: l.animation.enabled !== false
+      });
+    }
+  });
+  return {
+    format: FORMAT_ID,
+    version: 3,
+    editor_version: EDITOR_VERSION,
+    dictionary_version: DICTIONARY_VERSION,
+    exported_at: new Date().toISOString(),
+    size: artwork.size,
+    grid: { minor: 1, major: 5, major_origin: [0, 0] },
+    color_system: {
+      name: artwork.color_system.name,
+      palette_version: artwork.color_system.palette_version,
+      source: artwork.color_system.source,
+      verified: false
+    },
+    extra_colors: Object.assign({}, artwork.extra_colors),
+    layers: artwork.layers.map(function (l) {
+      return {
+        id: l.id,
+        part_type: l.part_type,
+        part_index: l.part_index,
+        display_name: l.display_name,
+        label_custom: !!l.label_custom,
+        visible: !!l.visible,
+        active: l.active !== false,
+        opacity: Math.round(l.opacity * 1000) / 1000,
+        anchor: { x: Math.round(l.anchor.x * 100) / 100, y: Math.round(l.anchor.y * 100) / 100 },
+        locked: !!l.locked,
+        settings: Object.assign({}, l.settings || {}),
+        animation: l.animation ? Object.assign({}, l.animation) : null,
+        pixels: l.pixels.slice()
+      };
+    }),
+    parts: buildPartsIndex(artwork),
+    part_settings: partSettings,
+    animations: animations,
+    motion_assets: (artwork.motion_assets || []).map(function (a) {
+      return {
+        id: a.id,
+        name: a.name,
+        source: a.source,
+        part_type: a.part_type,
+        frame_index: a.frame_index,
+        status: a.status,
+        note: a.note || '',
+        pixels: a.pixels ? a.pixels.slice() : null
+      };
+    }),
+    character: Object.assign({}, artwork.character || {}),
+    edition_used: edition,
+    part_dictionary: PART_TYPES.map(function (t) {
+      return { id: t.id, name: t.name, category: t.cat, max: t.max, anchor_norm: t.anchor };
+    }),
+    palette: palette ? {
+      palette_version: palette.palette_version,
+      source: palette.source,
+      verified: false,
+      colors: palette.colors
+    } : null,
+    updated_at: Date.now()
+  };
+}
+
+function buildExportCanvas(opt) {
+  opt = opt || {};
+  var n = artwork.size;
+  var cell = BASE_CELL;
+  var scale = clampInt(opt.scale || 2, 1, 4);
+  var margin = opt.numbers ? 22 : 0;
+  var w = (n * cell + margin * 2) * scale;
+  var canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = w;
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  var W = n * cell;
+
+  if (!opt.transparent) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w / scale, w / scale);
+  }
+  ctx.save();
+  ctx.translate(margin, margin);
+
+  for (var li = 0; li < artwork.layers.length; li++) {
+    var layer = artwork.layers[li];
+    if (!layer.visible) continue;
+    ctx.globalAlpha = clamp(layer.opacity, 0, 1);
+    for (var y = 0; y < n; y++) {
+      for (var x = 0; x < n; x++) {
+        var code = layer.pixels[y * n + x];
+        if (code === null || code === 'transparent') continue;
+        var hex = hexForCode(code);
+        var e = cellEdges(x, y, cell);
+        if (hex) { ctx.fillStyle = hex; ctx.fillRect(e.x, e.y, e.w, e.h); }
+        else { fillMissing(ctx, e.x, e.y, e.w, e.h); }
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  if (opt.grid) {
+    ctx.strokeStyle = 'rgba(24,22,17,.28)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var i = 0; i <= n; i++) {
+      var p = Math.round(i * cell) + 0.5;
+      ctx.moveTo(p, 0); ctx.lineTo(p, W);
+      ctx.moveTo(0, p); ctx.lineTo(W, p);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = '#1d1b16';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (i = 0; i <= n; i += 5) {
+      var pm = Math.round(i * cell) + 1;
+      ctx.moveTo(pm, 0); ctx.lineTo(pm, W);
+      ctx.moveTo(0, pm); ctx.lineTo(W, pm);
+    }
+    ctx.stroke();
+  }
+
+  if (opt.numbers) {
+    ctx.font = '700 9px "Consolas", monospace';
+    ctx.fillStyle = 'rgba(29,27,22,.75)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (i = 0; i < n; i += 5) {
+      ctx.fillText(String(i + 1), i * cell + cell / 2, -11);
+      ctx.save();
+      ctx.translate(-11, i * cell + cell / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(String(i + 1), 0, 0);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+  return canvas;
+}
+
+function download(filename, content, mime) {
+  var blob = content instanceof Blob ? content : new Blob([content], { type: mime || 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+    URL.revokeObjectURL(url);
+    if (a.parentNode) a.parentNode.removeChild(a);
+  }, 1200);
+}
+
+function exportJSONFile() {
+  var payload = buildExportPayload();
+  if (!payload) return;
+  var stamp = new Date();
+  var name = 'avatar-' + artwork.size + 'x' + artwork.size + '-' +
+    stamp.getFullYear() + pad2(stamp.getMonth() + 1) + pad2(stamp.getDate()) + '-' +
+    pad2(stamp.getHours()) + pad2(stamp.getMinutes()) + '.json';
+  download(name, JSON.stringify(payload, null, 2), 'application/json');
+  toast('已导出 v3 JSON（' + payload.layers.length + ' 层，含 part_settings / animations / motion_assets）', 'ok');
+}
+
+function openExportModal() {
+  var body =
+    '<div class="field"><label>PNG 选项</label>' +
+      '<label class="checkline"><input type="checkbox" id="expGrid" checked> 包含网格与 5×5 粗线</label>' +
+      '<label class="checkline"><input type="checkbox" id="expNums"> 包含行列号</label>' +
+      '<label class="checkline"><input type="checkbox" id="expAlpha"> 透明背景</label>' +
+    '</div>' +
+    '<div class="field"><label>放大倍数</label><select id="expScale">' +
+      '<option value="1">1×（' + (artwork.size * 16) + ' px）</option>' +
+      '<option value="2" selected>2×（' + (artwork.size * 32) + ' px）</option>' +
+      '<option value="3">3×（' + (artwork.size * 48) + ' px）</option>' +
+    '</select></div>' +
+    '<div class="type-note"><b>JSON（v3）</b> 携带每层的 <b>part_type / part_index / display_name</b>、每格色号、图层顺序、<b>settings（部件可设置项）</b> 与 <b>animation（动效挂载）</b>；顶层附 <b>parts</b> 索引、<b>part_settings</b>（按「类型#实例」寻址）、<b>animations</b>、<b>motion_assets</b> 与 <b>character</b>（性格 / 动作表情）。v1 / v2 文件导入时会提示并按 v3 补全默认值，像素与图层不丢。</div>';
+  showModal({
+    title: '导出',
+    body: body,
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: '导出 JSON', kind: 'ghost', onClick: function () { exportJSONFile(); return true; } },
+      { label: '导出 PNG', primary: true, onClick: function (a) {
+        var canvas = buildExportCanvas({
+          grid: a.root.querySelector('#expGrid').checked,
+          numbers: a.root.querySelector('#expNums').checked,
+          transparent: a.root.querySelector('#expAlpha').checked,
+          scale: parseInt(a.root.querySelector('#expScale').value, 10)
+        });
+        var stamp = new Date();
+        var name = 'avatar-' + artwork.size + 'x' + artwork.size + '-' + pad2(stamp.getHours()) + pad2(stamp.getMinutes()) + '.png';
+        canvas.toBlob(function (blob) {
+          download(name, blob, 'image/png');
+          toast('已导出 PNG（' + canvas.width + '×' + canvas.height + '）', 'ok');
+        }, 'image/png');
+        return true;
+      } }
+    ]
+  });
+}
+
+/* ============================================================
+ * 导入 / 旧版迁移
+ * ============================================================ */
+function applyArtwork(art, msg) {
+  artwork = art;
+  currentLayerId = art.layers.length ? art.layers[art.layers.length - 1].id : null;
+  undoStack.length = 0;
+  redoStack.length = 0;
+  strokeSnapshot = false;
+  anchorPickMode = false;
+  selection = null; selectionRects = []; selectionInvertedFrom = null;
+  invalidateLayerCaches();
+  var tip = $('#anchorTip');
+  if (tip) tip.classList.remove('show');
+  fitView();
+  refreshAllUI();
+  scheduleAutosave();
+  setStatusMessage(msg);
+  toast(msg, 'ok');
+}
+
+function showLegacyModal(res, src, note) {
+  var warnings = res.warnings.concat();
+  var counts = {};
+  res.artwork.layers.forEach(function (l) {
+    counts[l.part_type] = (counts[l.part_type] || 0) + 1;
+  });
+  var lines = Object.keys(counts).map(function (k) {
+    return typeName(k) + ' ×' + counts[k];
+  }).join('、');
+  var body =
+    '<div class="type-note"><b>这是旧版文件（格子级部件标记）。</b><br>' +
+      esc(note || '旧版把部件标记记在格子上，新版改为「一个图层 = 一个部件实例」。导入需要做结构迁移，下面是降级说明：') +
+    '</div>' +
+    '<div class="field"><label>迁移结果：' + res.artwork.layers.length + ' 层</label><div style="font:10px/1.6 var(--mono);color:var(--ink-soft)">' + esc(lines || '（无）') + '</div></div>' +
+    '<div class="field"><label>降级提示（' + warnings.length + ' 条）</label>' +
+      (warnings.length
+        ? '<ul style="margin:0;padding-left:16px;font:10px/1.7 var(--font);color:var(--ink-soft)">' + warnings.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>'
+        : '<div style="font:10px var(--font);color:var(--muted)">没有结构性丢失，像素与图层顺序已保留。</div>') +
+    '</div>' +
+    '<div class="type-note">旧版标注的「格子属于哪个部件」已按 old → new 类型映射尽量还原；无法判断的归入「饰品」，不会静默丢弃像素。' +
+    '旧版没有显示名与序号概念，迁移后会生成「类型 + 序号」并保留原名作为显示名。</div>';
+  showModal({
+    title: '导入旧版文件 · 需要迁移',
+    width: 'min(560px,96vw)',
+    body: body,
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: '迁移并导入', primary: true, onClick: function () {
+        applyArtwork(res.artwork, '旧版文件已迁移导入（' + res.warnings.length + ' 条降级提示）');
+        return true;
+      } }
+    ]
+  });
+}
+
+function importObject(raw, sourceLabel) {
+  var src = raw;
+  if (raw && typeof raw === 'object' && raw.artwork && typeof raw.artwork === 'object') src = raw.artwork;
+
+  if (isLegacyArtwork(src)) {
+    var res = migrateLegacy(src);
+    if (!res) { toast('旧版文件无法迁移：没有可用的图层', 'err'); return false; }
+    showLegacyModal(res, src, sourceLabel ? ('来源：' + sourceLabel) : null);
+    return true;
+  }
+  var art = normalizeV2(src);
+  if (!art) {
+    toast('无法识别的 JSON：既不是 v2/v3（图层带 part_type），也不是可迁移的旧版结构', 'err');
+    return false;
+  }
+  var ver = Number(src.version || 2);
+  if (ver < 3) {
+    showUpgradeModal(art, ver, sourceLabel);
+    return true;
+  }
+  applyArtwork(art, '已导入 ' + art.layers.length + ' 层（v3 · 部件设置 + 动效）');
+  return true;
+}
+
+function showUpgradeModal(art, ver, sourceLabel) {
+  var withAnim = art.layers.filter(function (l) { return !!l.animation; }).length;
+  showModal({
+    title: '导入 v' + ver + ' 文件 · 升级到 v3',
+    width: 'min(540px,96vw)',
+    body:
+      '<div class="type-note"><b>这是 v' + ver + ' 文件（只有图层与像素）。</b><br>' +
+      'v3 新增「部件设置 / 动效挂载 / 动效素材 / 性格」字段。导入时会按部件类型补默认值，' +
+      '<b>图层、显示名、序号、像素、锚点、不透明度全部保留，不丢数据</b>。</div>' +
+      '<div class="field"><label>补全结果</label><div style="font:10px/1.6 var(--mono);color:var(--ink-soft)">' +
+      art.layers.length + ' 层 · 已补部件设置 ' + art.layers.length + ' 条 · 动效 ' + withAnim + ' 条 · 内置素材 ' + (art.motion_assets || []).length + ' 条</div></div>' +
+      '<div class="type-note">补全的项都是文档默认值（如发色常飘、主用手、步幅 2）；可在「设置」页逐条改。' +
+      (sourceLabel ? '<br>来源：' + esc(sourceLabel) : '') + '</div>',
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: '补全并导入', primary: true, onClick: function () {
+        applyArtwork(art, '已导入并升级到 v3（' + art.layers.length + ' 层，默认设置已补全）');
+        return true;
+      } }
+    ]
+  });
+}
+
+function handleImportFile(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    try {
+      var json = JSON.parse(String(reader.result));
+      importObject(json, file.name);
+    } catch (e) {
+      toast('JSON 解析失败：' + e.message, 'err');
+    }
+  };
+  reader.onerror = function () { toast('文件读取失败', 'err'); };
+  reader.readAsText(file, 'utf-8');
+}
+
+/* ============================================================
+ * 自动保存恢复
+ * ============================================================ */
+var pendingLegacyAutosave = null;
+
+function restoreAutosave() {
+  try {
+    var rawV2 = localStorage.getItem(AUTOSAVE_KEY);
+    if (rawV2) {
+      var wrap = JSON.parse(rawV2);
+      var art = normalizeV2(wrap.artwork || wrap);
+      if (art) {
+        artwork = art;
+        currentLayerId = (wrap.current_layer_id && art.layers.some(function (l) { return l.id === wrap.current_layer_id; }))
+          ? wrap.current_layer_id
+          : (art.layers.length ? art.layers[art.layers.length - 1].id : null);
+        return '已恢复上次自动保存';
+      }
+    }
+  } catch (e) { /* 忽略损坏的自动保存 */ }
+
+  try {
+    var rawV1 = localStorage.getItem(LEGACY_AUTOSAVE_KEY);
+    if (rawV1) {
+      var old = JSON.parse(rawV1);
+      var src = old.artwork || old;
+      if (isLegacyArtwork(src)) {
+        var res = migrateLegacy(src);
+        if (res) pendingLegacyAutosave = res;
+      }
+    }
+  } catch (e) { /* 忽略 */ }
+  return null;
+}
+
+/* ============================================================
+ * 交互：画布
+ * ============================================================ */
+function onPointerDown(e) {
+  if (!artwork || !board) return;
+  var p = pointFromEvent(e);
+  var cell = cellFromPoint(p.mx, p.my);
+
+  if (e.button === 2 || e.button === 1) {
+    drag = { mode: 'pan', mx: p.mx, my: p.my, panX: view.panX, panY: view.panY };
+    e.preventDefault();
+    return;
+  }
+  if (e.button !== 0) return;
+
+  if (anchorPickMode) {
+    if (cell.inside) applyAnchorAt(cell);
+    else cancelAnchorPick();
+    e.preventDefault();
+    return;
+  }
+
+  if (tool === 'select') {
+    if (!cell.inside) { clearSelection(); return; }
+    drag = { mode: 'select', sx: cell.x, sy: cell.y };
+    selectionInvertedFrom = null;
+    selectionRects = [{ x0: cell.x, y0: cell.y, x1: cell.x, y1: cell.y }];
+    selection = { x0: cell.x, y0: cell.y, x1: cell.x, y1: cell.y };
+    startAnts();
+    syncSelBar();
+    requestRender();
+    return;
+  }
+
+  if (spaceDown || tool === 'pan') {
+    drag = { mode: 'pan', mx: p.mx, my: p.my, panX: view.panX, panY: view.panY };
+    board.style.cursor = 'grabbing';
+    return;
+  }
+
+  if (tool === 'eyedropper') {
+    if (!cell.inside) return;
+    var code = pickColorAt(cell.x, cell.y);
+    if (code) { selectColor(code); setStatusMessage('吸管取色：' + code); }
+    else toast('这一格没有颜色', 'warn');
+    return;
+  }
+
+  if (tool === 'bucket') {
+    var layer = paintTargetLayer();
+    if (!layer || !cell.inside) return;
+    if (!currentColor) { toast('先在色板选一个色号', 'warn'); return; }
+    pushUndo();
+    strokeSnapshot = false;
+    var changed = bucketFill(layer, cell.x, cell.y, currentColor);
+    lastClickedCell = cell;
+    if (changed) commitChange('已填充 ' + changed + ' 格'); else updateUndoButtons();
+    scheduleAutosave();
+    requestRender();
+    return;
+  }
+
+  if (tool === 'brush' || tool === 'eraser') {
+    var l2 = paintTargetLayer();
+    if (!l2 || !cell.inside) return;
+    var paintCode = tool === 'eraser' ? null : currentColor;
+    if (tool === 'brush' && !paintCode) { toast('先在色板选一个色号', 'warn'); return; }
+    ensureStrokeSnapshot();
+    drag = { mode: 'paint', last: { x: cell.x, y: cell.y }, code: paintCode };
+    writeCell(l2, cell.x, cell.y, paintCode);
+    lastClickedCell = cell;
+    hoverCell = cell;
+    requestRender();
+  }
+}
+
+function onPointerMove(e) {
+  if (!artwork || !board) return;
+  var p = pointFromEvent(e);
+  var cell = cellFromPoint(p.mx, p.my);
+
+  if (drag && drag.mode === 'pan') {
+    view.panX = drag.panX + (p.mx - drag.mx);
+    view.panY = drag.panY + (p.my - drag.my);
+    requestRender();
+    return;
+  }
+
+  if (drag && drag.mode === 'select') {
+    if (selection) {
+      var n0 = artwork.size;
+      var cx = clampInt(cell.x, 0, n0 - 1), cy2 = clampInt(cell.y, 0, n0 - 1);
+      var rx0 = Math.min(drag.sx, cx), ry0 = Math.min(drag.sy, cy2);
+      var rx1 = Math.max(drag.sx, cx), ry1 = Math.max(drag.sy, cy2);
+      selectionRects = [{ x0: rx0, y0: ry0, x1: rx1, y1: ry1 }];
+      selection = { x0: rx0, y0: ry0, x1: rx1, y1: ry1 };
+      syncSelBar();
+    }
+    hoverCell = cell;
+    requestRender();
+    return;
+  }
+
+  if (drag && drag.mode === 'paint') {
+    var l = currentLayer();
+    if (l && cell.inside) {
+      strokeLine(l, drag.last, cell, drag.code);
+      drag.last = { x: cell.x, y: cell.y };
+    }
+    lastClickedCell = cell.inside ? cell : lastClickedCell;
+    hoverCell = cell;
+    requestRender();
+    return;
+  }
+
+  var changed = !hoverCell || !cell.inside !== !hoverCell.inside || (cell.inside && (!hoverCell || hoverCell.x !== cell.x || hoverCell.y !== cell.y));
+  if (changed) {
+    hoverCell = cell;
+    updateStatus();
+    requestRender();
+  }
+}
+
+function onPointerUp() {
+  if (!drag) return;
+  if (drag.mode === 'paint') {
+    strokeSnapshot = false;
+    scheduleAutosave();
+    setStatusMessage('已修改「' + (currentLayer() ? currentLayer().display_name : '') + '」');
+    refreshLayerListCountsOnly();
+  }
+  if (drag.mode === 'select' && selectionRects.length) {
+    var si = selectionInfo();
+    setStatusMessage('选区 ' + si.w + '×' + si.h + ' · ' + si.cells + ' 格' + (si.rects > 1 ? ' / ' + si.rects + ' 块' : '') + '（Esc 取消；移到层 Ctrl+Shift+M）');
+  }
+  drag = null;
+  if (board) board.style.cursor = '';
+}
+
+function refreshLayerListCountsOnly() {
+  // 笔画结束后只刷新计数与状态，避免整表重建影响手感
+  if (!artwork) return;
+  var rows = $$('#layerList .layer-row');
+  rows.forEach(function (row) {
+    var l = layerById(row.getAttribute('data-layer-id'));
+    if (!l) return;
+    var cnt = row.querySelector('.layer-count');
+    if (cnt) cnt.textContent = pixelCount(l);
+  });
+}
+
+function onWheel(e) {
+  if (!artwork) return;
+  e.preventDefault();
+  var p = pointFromEvent(e);
+  var factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  zoomAt(factor, p.mx, p.my);
+}
+
+/* ============================================================
+ * 键盘
+ * ============================================================ */
+function isTypingTarget(t) {
+  if (!t) return false;
+  var tag = (t.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || !!t.isContentEditable;
+}
+
+function onKeyDown(e) {
+  if (isModalOpen) {
+    if (e.key === 'Escape') {
+      if (modalState && modalState.opts && modalState.opts.dismissible !== false) {
+        e.preventDefault();
+        closeModal();
+      }
+    }
+    return;
+  }
+  if (isTypingTarget(e.target)) return;
+
+  var k = e.key;
+  if (e.ctrlKey || e.metaKey) {
+    if (e.shiftKey && k.toLowerCase() === 'm') { e.preventDefault(); openMoveModal('move'); return; }
+    if (k.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+    if (k.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+    if (k.toLowerCase() === 's') { e.preventDefault(); saveAutosave(); toast('已保存到本机自动保存', 'ok'); return; }
+    return;
+  }
+
+  if (k === ' ' && !spaceDown) { spaceDown = true; e.preventDefault(); return; }
+  if (k === 'Escape') {
+    if (anchorPickMode) cancelAnchorPick();
+    else if (selection) clearSelection();
+    return;
+  }
+  if (k === 'z' && e.shiftKey) { redo(); return; }
+  var key = k.toLowerCase();
+  if (key === 'b') setTool('brush');
+  else if (key === 'f' || key === 'g') setTool('bucket');
+  else if (key === 'e') setTool('eraser');
+  else if (key === 'i') setTool('eyedropper');
+  else if (key === 'm') setTool('select');
+  else if (key === 'h') setTool('pan');
+  else if (k === '+' || k === '=') { var m = stageMetrics(); zoomAt(1.15, m.w / 2, m.h / 2); }
+  else if (k === '-') { var m2 = stageMetrics(); zoomAt(1 / 1.15, m2.w / 2, m2.h / 2); }
+  else if (k === '0') fitView();
+}
+
+function onKeyUp(e) {
+  if (e.key === ' ') spaceDown = false;
+}
+
+/* ============================================================
+ * 工具 / 面板
+ * ============================================================ */
+function setTool(t) {
+  tool = t;
+  $$('.tool-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tool') === t); });
+  updateStatus();
+  if (board) board.style.cursor = t === 'pan' ? 'grab' : t === 'eyedropper' ? 'copy' : 'crosshair';
+  syncSelBar();
+}
+
+function switchTab(name) {
+  $$('.tab').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === name); });
+  $$('.tabpane').forEach(function (p) { p.classList.toggle('active', p.id === 'pane-' + name); });
+  if (name === 'settings') renderSettings();
+  if (name === 'character') renderCharacter();
+}
+
+function refreshAllUI() {
+  updateSizeBadge();
+  refreshPaletteUI();
+  renderLayerList();
+  renderSettings();
+  renderCharacter();
+  syncSelBar();
+  updateUndoButtons();
+  updateStatus();
+  if ($('#palSource')) $('#palSource').textContent = paletteSourceText();
+}
+
+/* ============================================================
+ * 事件绑定
+ * ============================================================ */
+function bindEvents() {
+  board = $('#board');
+
+  $$('.tool-btn').forEach(function (b) {
+    b.addEventListener('click', function () { setTool(b.getAttribute('data-tool')); });
+  });
+
+  $('#btnGrid').addEventListener('click', function () {
+    showGrid = !showGrid;
+    this.classList.toggle('active', showGrid);
+    requestRender();
+  });
+  $('#btnMajor').addEventListener('click', function () {
+    showMajor = !showMajor;
+    this.classList.toggle('active', showMajor);
+    requestRender();
+  });
+  $('#btnNums').addEventListener('click', function () {
+    showNumbers = !showNumbers;
+    this.classList.toggle('active', showNumbers);
+    requestRender();
+  });
+
+  $('#btnUndo').addEventListener('click', undo);
+  $('#btnRedo').addEventListener('click', redo);
+  $('#btnNew').addEventListener('click', openNewModal);
+  $('#btnSize').addEventListener('click', openSizeModal);
+  $('#btnExport').addEventListener('click', openExportModal);
+  $('#btnImport').addEventListener('click', function () { $('#importFile').click(); });
+  $('#importFile').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    handleImportFile(f);
+    e.target.value = '';
+  });
+
+  $('#zoomIn').addEventListener('click', function () { var m = stageMetrics(); zoomAt(1.2, m.w / 2, m.h / 2); });
+  $('#zoomOut').addEventListener('click', function () { var m = stageMetrics(); zoomAt(1 / 1.2, m.w / 2, m.h / 2); });
+  $('#btnFit').addEventListener('click', fitView);
+
+  // 色板
+  $('#palSeries').addEventListener('click', function (e) {
+    var btn = e.target.closest('.swatch');
+    if (!btn) return;
+    selectColor(btn.getAttribute('data-code'));
+    setPalMsg('已选择 ' + btn.getAttribute('data-code'), 'ok');
+  });
+  $('#recentStrip').addEventListener('click', function (e) {
+    var btn = e.target.closest('.rs');
+    if (!btn) return;
+    selectColor(btn.getAttribute('data-code'));
+  });
+  $('#btnPalFind').addEventListener('click', locateColor);
+  $('#palSearch').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); locateColor(); }
+  });
+  $('#colorChip').addEventListener('click', function () { switchTab('palette'); $('#palSearch').focus(); });
+  $('#btnFillCell').addEventListener('click', function () {
+    if (!lastClickedCell || !lastClickedCell.inside) { toast('先在画布上点一个格子', 'warn'); return; }
+    var l = paintTargetLayer();
+    if (!l) return;
+    if (!currentColor) { toast('先在色板选一个色号', 'warn'); return; }
+    pushUndo();
+    writeCell(l, lastClickedCell.x, lastClickedCell.y, currentColor);
+    commitChange('已填入 ' + currentColor + ' @ (' + (lastClickedCell.x + 1) + ',' + (lastClickedCell.y + 1) + ')');
+    refreshLayerListCountsOnly();
+  });
+  $('#btnPalReplace').addEventListener('click', function () { $('#paletteFile').click(); });
+  $('#paletteFile').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var json = JSON.parse(String(reader.result));
+        if (!applyPaletteReplacement(json)) { toast('色表格式不正确：需要 colors 数组', 'err'); return; }
+        try { localStorage.setItem(PALETTE_KEY, JSON.stringify(json)); } catch (err) { /* 忽略容量问题 */ }
+        toast('已载入本机色表（' + palette.colors.length + ' 色）', 'ok');
+        refreshAllUI();
+      } catch (err) { toast('色表 JSON 解析失败：' + err.message, 'err'); }
+    };
+    reader.readAsText(f, 'utf-8');
+  });
+
+  // 图层
+  $('#btnAddLayer').addEventListener('click', openAddLayerModal);
+  $('#btnDelLayer').addEventListener('click', deleteCurrentLayer);
+  $('#btnMergeLayer').addEventListener('click', mergeDown);
+
+  $('#layerSearch').addEventListener('input', function () {
+    layerFilter = this.value;
+    renderLayerList();
+  });
+  $('#btnLayerSearchClear').addEventListener('click', function () {
+    layerFilter = '';
+    $('#layerSearch').value = '';
+    renderLayerList();
+  });
+
+  $('#layerList').addEventListener('click', function (e) {
+    var row = e.target.closest('.layer-row');
+    if (!row) {
+      var g = e.target.closest('.layer-group');
+      if (g && g.getAttribute('data-cat')) {
+        var cat = g.getAttribute('data-cat');
+        collapsedCats[cat] = !collapsedCats[cat];
+        renderLayerList();
+      }
+      return;
+    }
+    var id = row.getAttribute('data-layer-id');
+    var actEl = e.target.closest('[data-act]');
+    var act = actEl ? actEl.getAttribute('data-act') : null;
+    if (!act || act === 'name') { setCurrentLayer(id); return; }
+    if (act === 'toggle') { toggleLayerVisible(id); return; }
+    if (act === 'up') { setCurrentLayer(id); moveLayer(id, 1); return; }
+    if (act === 'down') { setCurrentLayer(id); moveLayer(id, -1); return; }
+    if (act === 'anchor') { setCurrentLayer(id); startAnchorPick(); return; }
+    if (act === 'motion') { setCurrentLayer(id); switchTab('settings'); renderSettings(); return; }
+  });
+
+  $('#layerList').addEventListener('dblclick', function (e) {
+    var nameEl = e.target.closest('.layer-name');
+    if (!nameEl) return;
+    var row = nameEl.closest('.layer-row');
+    if (!row) return;
+    e.preventDefault();
+    beginRename(row.getAttribute('data-layer-id'));
+  });
+
+  $('#layerList').addEventListener('input', function (e) {
+    var range = e.target;
+    if (!range || !range.getAttribute || range.getAttribute('data-act') !== 'opacity') return;
+    var row = range.closest('.layer-row');
+    var l = row ? layerById(row.getAttribute('data-layer-id')) : null;
+    if (!l) return;
+    if (!opacityUndoPending[l.id]) { pushUndo(); opacityUndoPending[l.id] = true; }
+    l.opacity = clamp(parseInt(range.value, 10) / 100, 0, 1);
+    var ops = row.querySelector('.ops');
+    if (ops) ops.textContent = Math.round(l.opacity * 100) + '%';
+    requestRender();
+  });
+  $('#layerList').addEventListener('change', function (e) {
+    var range = e.target;
+    if (!range || !range.getAttribute || range.getAttribute('data-act') !== 'opacity') return;
+    var row = range.closest('.layer-row');
+    var id = row && row.getAttribute('data-layer-id');
+    if (id) delete opacityUndoPending[id];
+    scheduleAutosave();
+    setStatusMessage('已调整不透明度');
+  });
+
+  $$('.tab').forEach(function (b) {
+    b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
+  });
+
+  // 选区工具条
+  $('#selBar').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-sel]');
+    if (!btn) return;
+    var act = btn.getAttribute('data-sel');
+    if (act === 'all') selectAllCells();
+    else if (act === 'invert') invertSelection();
+    else if (act === 'clear') clearSelection();
+    else if (act === 'move') openMoveModal('move');
+    else if (act === 'copy') openMoveModal('copy');
+    else if (act === 'new') openMoveModal('new');
+  });
+  $('#selOnly').addEventListener('change', function () {
+    selOnly = this.checked;
+    requestRender();
+    setStatusMessage(selOnly ? '仅选区已开启：上色只作用于选区内的格子' : '仅选区已关闭：可画整层');
+  });
+
+  // 普通版 / 专业版
+  $('#btnEditionNormal').addEventListener('click', function () { setEdition('normal'); });
+  $('#btnEditionPro').addEventListener('click', function () { setEdition('pro', true); });
+
+  // 部件设置面板（委托；面板内容会随图层重建）
+  var setBody = $('.side');
+
+  function setAnimField(key, value) {
+    var l = currentLayer();
+    if (!l || !l.animation) return;
+    if (l.animation[key] === value) return;
+    pushUndo();
+    l.animation[key] = value;
+    commitChange('已更新「' + l.display_name + '」的动效参数');
+    renderSettings();
+  }
+
+  setBody.addEventListener('input', function (e) {
+    var el = e.target;
+    if (!el.getAttribute || el.getAttribute('data-set') !== 'range') return;
+    var show = el.closest('.set-row') && el.closest('.set-row').querySelector('[data-show="' + el.getAttribute('data-key') + '"]');
+    if (show) show.textContent = el.value;
+  });
+
+  setBody.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.id === 'motionAssetFile') {
+      handleAssetFile(el.files && el.files[0]);
+      el.value = '';
+      return;
+    }
+    var act = el.getAttribute('data-act');
+    if (act === 'action') {
+      if (!artwork || !artwork.character) return;
+      pushUndo();
+      artwork.character.actions[el.value] = el.checked;
+      commitChange('已' + (el.checked ? '开启' : '关闭') + '「' + motionById(el.value).name + '」');
+      return;
+    }
+    if (act === 'tune') {
+      if (!artwork || !artwork.character) return;
+      pushUndo();
+      artwork.character.tune = parseInt(el.value, 10);
+      commitChange('性格收放：' + artwork.character.tune + ' 档');
+      return;
+    }
+    var l = currentLayer();
+    if (!l) return;
+    var k = el.getAttribute('data-set');
+    if (k) {
+      var val = el.type === 'checkbox' ? el.checked : el.value;
+      if (k === 'range') val = parseInt(el.value, 10);
+      if (k === 'color' && !val) val = null;
+      setLayerSetting(l, el.getAttribute('data-key'), val);
+      return;
+    }
+    var act = el.getAttribute('data-act');
+    if (!act) return;
+    if (act === 'visible') { toggleLayerVisible(l.id); return; }
+    if (act === 'active') {
+      pushUndo();
+      l.active = !l.active;
+      commitChange((l.active ? '已激活「' : '已收起「') + l.display_name + '」');
+      renderSettings(); renderLayerList(); return;
+    }
+    if (act === 'locked') {
+      pushUndo();
+      l.locked = !l.locked;
+      commitChange((l.locked ? '已锁定「' : '已解锁「') + l.display_name + '」');
+      renderSettings(); renderLayerList(); return;
+    }
+    if (act === 'anim-motion') { bindMotionToLayer(l.id, el.value); return; }
+    if (act === 'anim-trigger') { setAnimField('trigger', el.value); return; }
+    if (act === 'anim-duration') { setAnimField('duration_ms', clampInt(el.value, 100, 30000)); return; }
+    if (act === 'anim-loop') { setAnimField('loop', el.checked); return; }
+    if (act === 'anim-asset') { setAnimField('asset_ref', el.value); return; }
+  });
+
+  setBody.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'personality') {
+      var pid = btn.getAttribute('data-id');
+      if (!PERSONALITIES[pid] || !artwork || !artwork.character) return;
+      pushUndo();
+      artwork.character.personality = pid;
+      commitChange('性格：' + PERSONALITIES[pid].name + '（' + PERSONALITIES[pid].desc + '）');
+      renderCharacter();
+      return;
+    }
+    if (act === 'import-assets') { var fileInput = $('#motionAssetFile'); if (fileInput) fileInput.click(); return; }
+    var l = currentLayer();
+    if (!l) return;
+    if (act === 'visible') { toggleLayerVisible(l.id); return; }
+    if (act === 'active') {
+      pushUndo();
+      l.active = !l.active;
+      commitChange((l.active ? '已激活「' : '已收起「') + l.display_name + '」');
+      renderSettings(); renderLayerList(); return;
+    }
+    if (act === 'locked') {
+      pushUndo();
+      l.locked = !l.locked;
+      commitChange((l.locked ? '已锁定「' : '已解锁「') + l.display_name + '」');
+      renderSettings(); renderLayerList(); return;
+    }
+    if (act === 'front') { moveLayerToEdge(l.id, true); return; }
+    if (act === 'back') { moveLayerToEdge(l.id, false); return; }
+    if (act === 'anchor') { startAnchorPick(); return; }
+    if (act === 'preview') { previewMotion(); return; }
+    if (act === 'anim-clear') { clearMotion(l.id); return; }
+    if (act === 'add-frame') { addFrameFromLayer(); return; }
+  });
+
+  board.addEventListener('pointerdown', onPointerDown);
+  board.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  board.addEventListener('wheel', onWheel, { passive: false });
+  board.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  board.addEventListener('pointerleave', function () {
+    hoverCell = null;
+    updateStatus();
+    requestRender();
+  });
+
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup', onKeyUp);
+
+  window.addEventListener('resize', function () {
+    requestRender();
+  });
+}
+
+/* ============================================================
+ * 启动
+ * ============================================================ */
+function bootArtwork(art, msg) {
+  artwork = art;
+  currentLayerId = art.layers.length ? art.layers[art.layers.length - 1].id : null;
+  undoStack.length = 0;
+  redoStack.length = 0;
+  strokeSnapshot = false;
+  selection = null; selectionRects = []; selectionInvertedFrom = null;
+  invalidateLayerCaches();
+  fitView();
+  refreshAllUI();
+  scheduleAutosave();
+  setStatusMessage(msg || '准备就绪');
+  toast(msg || '准备就绪', 'ok');
+}
+
+function boot() {
+  loadPalette();
+  currentColor = palette && palette.colors.length ? palette.colors[0].code : null;
+  if (currentColor) touchRecent(currentColor);
+
+  bindEvents();
+
+  var restored = restoreAutosave();
+  if (restored) {
+    artwork = artwork || createArtwork(32, 'standard');
+  } else {
+    artwork = createArtwork(32, 'standard');
+    currentLayerId = artwork.layers[artwork.layers.length - 1].id;
+  }
+  if (!currentLayerId && artwork.layers.length) currentLayerId = artwork.layers[artwork.layers.length - 1].id;
+
+  drawSizeRun();
+  refreshAllUI();
+  fitView();
+  setTool('brush');
+
+  if (pendingLegacyAutosave) {
+    var res = pendingLegacyAutosave;
+    pendingLegacyAutosave = null;
+    showLegacyModal(res, null, '检测到旧版本机自动保存（格子级部件标记），需要迁移后才能使用。下方是降级说明；取消会保留旧数据但不会载入。');
+  } else if (restored) {
+    setStatusMessage(restored);
+  } else {
+    setStatusMessage('已新建 32×32 · 标准 8 层（头 / 躯干 / 腿 / 臂 / 眼 / 嘴）');
+  }
+
+  booted = true;
+  scheduleAutosave();
+}
+
+function drawSizeRun() {
+  if ($('#btnSize') && artwork) $('#btnSize').textContent = artwork.size + ' × ' + artwork.size;
+}
+
+/* ============================================================
+ * v3 扩展：选区 / 部件设置 / 动效 / 素材 / 分档
+ * 严格按五份规格落地；真实播放与调度交给演绎系统
+ * ============================================================ */
+var EDITION_KEY = 'papersisland.editor.edition.v1';
+var PRO_RISK_KEY = 'papersisland.editor.proRiskAck.v1';
+
+var MOTION_GROUPS = [
+  { id: 'idle', name: '常驻' },
+  { id: 'move', name: '移动' },
+  { id: 'action', name: '动作' },
+  { id: 'expression', name: '表情' }
+];
+
+// 26 条固定清单（常驻 4 / 移动 4 / 动作 10 / 表情 8），首版开放 14 条
+var MOTIONS = [
+  { id: 'breath', group: 'idle', name: '呼吸', parts: ['torso'], how: '躯干轻微起伏，幅度 0–2', launch: true, duration_ms: 3000, loop: true, estimated: false, trigger: '常驻循环' },
+  { id: 'blink', group: 'idle', name: '眨眼', parts: ['eyes'], how: '换闭眼帧后换回', launch: true, duration_ms: 300, loop: false, interval: [3000, 8000], estimated: false, trigger: '常驻随机 3–8 秒' },
+  { id: 'idle_sway', group: 'idle', name: '待机微晃', parts: ['torso', 'head', 'arm_l', 'arm_r'], how: '身体轻微左右晃，幅度由性格', launch: true, duration_ms: 1200, loop: true, estimated: true, trigger: '常驻偶发' },
+  { id: 'hair_flow', group: 'idle', name: '头发飘', parts: ['hair'], how: '发梢沿锚点轻摆，幅度/时机可设', launch: true, duration_ms: 1500, loop: true, estimated: true, trigger: '常驻 / 起风' },
+  { id: 'walk', group: 'move', name: '走路', parts: ['leg_l', 'leg_r', 'arm_l', 'arm_r', 'torso'], how: '8fps 循环，步幅步频由性格', launch: true, duration_ms: 1000, loop: true, fps: 8, estimated: false, trigger: '移动时自动，无需勾选' },
+  { id: 'run', group: 'move', name: '跑', parts: ['leg_l', 'leg_r', 'arm_l', 'arm_r', 'torso'], how: '10fps 循环，重心前倾', launch: false, duration_ms: 800, loop: true, fps: 10, estimated: false, trigger: '移动速度提高时自动' },
+  { id: 'turn', group: 'move', name: '转身', parts: ['head', 'torso', 'arm_l', 'arm_r', 'leg_l', 'leg_r', 'hair', 'top', 'coat', 'pants', 'shoes', 'sleeve_l', 'sleeve_r'], how: '整体水平镜像，分左右视图', launch: false, duration_ms: 400, loop: false, estimated: true, trigger: '移动方向反转时' },
+  { id: 'dragged', group: 'move', name: '被拖动', parts: ['head', 'torso', 'hair', 'arm_l', 'arm_r', 'leg_l', 'leg_r'], how: '四肢滞后摆动，头发拖曳', launch: false, duration_ms: 800, loop: true, estimated: true, trigger: '被玩家拖动时' },
+  { id: 'wave', group: 'action', name: '挥手', parts: ['arm_r'], how: '肩锚点摆动 2 次', launch: true, duration_ms: 1000, loop: false, estimated: true, trigger: '打招呼 / 点击' },
+  { id: 'sit', group: 'action', name: '坐下', parts: ['torso', 'leg_l', 'leg_r'], how: '腿折到坐姿', launch: true, duration_ms: 600, loop: false, estimated: true, trigger: '停留 >10s 且有坐处' },
+  { id: 'talk', group: 'action', name: '说话', parts: ['mouth'], how: '6fps 换嘴帧，配合气泡', launch: true, duration_ms: 1000, loop: true, fps: 6, estimated: false, trigger: '对话气泡期间' },
+  { id: 'pickup', group: 'action', name: '弯腰捡', parts: ['torso', 'arm_r', 'leg_l', 'leg_r'], how: '弯腰 + 伸手', launch: true, duration_ms: 1200, loop: false, estimated: true, trigger: '走近可捡物件' },
+  { id: 'lie', group: 'action', name: '躺下', parts: ['torso', 'leg_l', 'leg_r', 'arm_l', 'arm_r'], how: '整体旋转为躺姿', launch: true, duration_ms: 800, loop: false, estimated: true, trigger: '入夜且在家床上' },
+  { id: 'raise', group: 'action', name: '举起', parts: ['arm_l', 'arm_r'], how: '双臂上举', launch: false, duration_ms: 800, loop: false, estimated: true, trigger: '举起物件 / 庆祝' },
+  { id: 'door', group: 'action', name: '推门', parts: ['arm_r', 'torso'], how: '伸手推', launch: false, duration_ms: 700, loop: false, estimated: true, trigger: '门前停留' },
+  { id: 'eat', group: 'action', name: '吃东西', parts: ['mouth', 'arm_r'], how: '手到嘴边 + 嘴帧', launch: false, duration_ms: 1000, loop: true, estimated: true, trigger: '进食' },
+  { id: 'work', group: 'action', name: '做活', parts: ['arm_l', 'arm_r', 'torso'], how: '双手交替摆', launch: false, duration_ms: 1200, loop: true, estimated: true, trigger: '工作台前停留' },
+  { id: 'hug', group: 'action', name: '拥抱', parts: ['arm_l', 'arm_r', 'torso'], how: '双臂张合', launch: false, duration_ms: 1200, loop: false, estimated: true, trigger: '靠近其他角色' },
+  { id: 'smile', group: 'expression', name: '笑', parts: ['mouth', 'eyes', 'brow'], how: '换笑嘴 + 眯眼', launch: true, duration_ms: 600, loop: false, estimated: true, trigger: '心情好' },
+  { id: 'angry', group: 'expression', name: '生气', parts: ['brow', 'mouth', 'eyes'], how: '眉压低 + 嘴角下', launch: true, duration_ms: 600, loop: false, estimated: true, trigger: '心情差' },
+  { id: 'surprise', group: 'expression', name: '惊讶', parts: ['eyes', 'mouth', 'brow'], how: '睁大眼 + O 嘴', launch: true, duration_ms: 500, loop: false, estimated: true, trigger: '突发事件' },
+  { id: 'sleepy', group: 'expression', name: '困', parts: ['eyes', 'mouth'], how: '半闭眼 + 张嘴', launch: true, duration_ms: 700, loop: false, estimated: true, trigger: '夜深 / 体力低' },
+  { id: 'cry', group: 'expression', name: '哭', parts: ['eyes', 'mouth'], how: '换泪眼帧', launch: false, duration_ms: 700, loop: true, estimated: true, trigger: '心情极差' },
+  { id: 'shy', group: 'expression', name: '害羞', parts: ['head', 'eyes'], how: '低头 + 脸红', launch: false, duration_ms: 700, loop: false, estimated: true, trigger: '被夸 / 靠近' },
+  { id: 'confused', group: 'expression', name: '困惑', parts: ['brow', 'mouth', 'head'], how: '一眉高一眉低', launch: false, duration_ms: 700, loop: false, estimated: true, trigger: '信息不足' },
+  { id: 'afraid', group: 'expression', name: '害怕', parts: ['eyes', 'mouth', 'torso'], how: '缩身 + 瞪眼', launch: false, duration_ms: 800, loop: false, estimated: true, trigger: '危险靠近' }
+];
+var MOTION_MAP = {};
+MOTIONS.forEach(function (m) { MOTION_MAP[m.id] = m; });
+
+var PERSONALITIES = {
+  lively: { id: 'lively', name: '活泼', turn: 2, swing: 3, step: '快', breath: 2, blink: '频繁', hair: '中', desc: '幅度大、步频快、爱眨眼' },
+  gentle: { id: 'gentle', name: '温和', turn: 1, swing: 1, step: '中', breath: 1, blink: '正常', hair: '轻', desc: '动作柔和、节奏平稳' },
+  lazy: { id: 'lazy', name: '慵懒', turn: 0, swing: 0, step: '慢', breath: 1, blink: '少', hair: '无', desc: '动作少、步频慢、发不飘' },
+  tense: { id: 'tense', name: '紧绷', turn: 0, swing: 0, step: '中', breath: 0, blink: '频繁', hair: '无', desc: '呼吸浅、动作克制' }
+};
+var PERSONALITY_KEYS = ['lively', 'gentle', 'lazy', 'tense'];
+
+// 部件可设置项（严格按《部件可设置项》，不发明字段；tier=pro 为专业版新增细项）
+var SETTING_SCHEMA = {
+  head: [
+    { key: 'face_tint', label: '肤色', type: 'color', tier: 'normal', default: 'G2', desc: '记录换色色号，实际换色由演绎系统按色号渲染。' },
+    { key: 'turn_amp', label: '转头幅度', type: 'range', min: 0, max: 2, step: 1, unit: '格', tier: 'pro', default: 1 },
+    { key: 'tilt_amp', label: '倾斜', type: 'range', min: 0, max: 2, step: 1, unit: '格', tier: 'pro', default: 0 }
+  ],
+  hair: [
+    { key: 'flow_amp', label: '飘动幅度', type: 'range', min: 0, max: 3, step: 1, tier: 'pro', default: 1 },
+    { key: 'flow_when', label: '何时飘', type: 'select', tier: 'normal', default: 'always', options: [['always', '常飘'], ['wind', '起风'], ['walk', '走路']] },
+    { key: 'dual_color', label: '双色渐变', type: 'toggle', tier: 'normal', default: false, desc: '文档列出的发色开关；渐变效果由演绎系统渲染。' }
+  ],
+  brow: [
+    { key: 'base_height', label: '基准高度', type: 'select', tier: 'normal', default: 'mid', options: [['low', '低'], ['mid', '中'], ['high', '高']] }
+  ],
+  eyes: [
+    { key: 'highlight', label: '高光', type: 'toggle', tier: 'normal', default: true },
+    { key: 'blink_freq', label: '眨眼频率', type: 'select', tier: 'pro', default: 'normal', options: [['rare', '少'], ['normal', '正常'], ['often', '频繁']] }
+  ],
+  mouth: [
+    { key: 'base_shape', label: '基准嘴型', type: 'select', tier: 'normal', default: 'flat', options: [['flat', '平'], ['smile', '微笑'], ['down', '下垂']] },
+    { key: 'talk_speed', label: '说话速度', type: 'select', tier: 'pro', default: 'normal', options: [['slow', '慢'], ['normal', '正常'], ['fast', '快']] }
+  ],
+  torso: [
+    { key: 'breath_amp', label: '呼吸幅度', type: 'range', min: 0, max: 2, step: 1, tier: 'pro', default: 1 }
+  ],
+  arm_l: [
+    { key: 'swing_amp', label: '摆臂幅度', type: 'range', min: 0, max: 3, step: 1, tier: 'pro', default: 1 },
+    { key: 'main_hand', label: '主用手', type: 'toggle', tier: 'normal', default: false }
+  ],
+  arm_r: [
+    { key: 'swing_amp', label: '摆臂幅度', type: 'range', min: 0, max: 3, step: 1, tier: 'pro', default: 1 },
+    { key: 'main_hand', label: '主用手', type: 'toggle', tier: 'normal', default: true }
+  ],
+  leg_l: [
+    { key: 'stride', label: '步幅', type: 'range', min: 1, max: 4, step: 1, tier: 'pro', default: 2 },
+    { key: 'step_freq', label: '步频', type: 'select', tier: 'pro', default: 'normal', options: [['slow', '慢'], ['normal', '中'], ['fast', '快']] }
+  ],
+  leg_r: [
+    { key: 'stride', label: '步幅', type: 'range', min: 1, max: 4, step: 1, tier: 'pro', default: 2 },
+    { key: 'step_freq', label: '步频', type: 'select', tier: 'pro', default: 'normal', options: [['slow', '慢'], ['normal', '中'], ['fast', '快']] }
+  ],
+  top: [
+    { key: 'color_main', label: '主色', type: 'color', tier: 'normal', default: null },
+    { key: 'color_sub', label: '副色', type: 'color', tier: 'normal', default: null },
+    { key: 'hem_swing', label: '下摆摆动', type: 'select', tier: 'normal', default: 'light', options: [['none', '无'], ['light', '轻'], ['heavy', '重']] }
+  ],
+  coat: [
+    { key: 'hem_swing', label: '下摆摆动', type: 'select', tier: 'normal', default: 'light', options: [['none', '无'], ['light', '轻'], ['heavy', '重']] },
+    { key: 'open_state', label: '敞开/系扣', type: 'select', tier: 'normal', default: 'open', options: [['open', '敞开'], ['closed', '系扣']], desc: '系扣需要第二张图；未提供时按敞开显示。' }
+  ],
+  pants: [
+    { key: 'recolor', label: '换色', type: 'color', tier: 'normal', default: null },
+    { key: 'cuff', label: '裤脚翻边', type: 'toggle', tier: 'normal', default: false }
+  ],
+  shoes: [
+    { key: 'recolor', label: '换色', type: 'color', tier: 'normal', default: null },
+    { key: 'step_sound', label: '脚步声', type: 'select', tier: 'normal', default: 'quiet', options: [['sound', '响'], ['quiet', '静']] }
+  ],
+  sleeve_l: [
+    { key: 'follow', label: '跟随手臂', type: 'select', tier: 'normal', default: 'auto', options: [['auto', '自动'], ['arm_l', '左臂'], ['arm_r', '右臂']] },
+    { key: 'sleeve_len', label: '袖长', type: 'note', tier: 'normal', default: '由画面决定（只读）' }
+  ],
+  sleeve_r: [
+    { key: 'follow', label: '跟随手臂', type: 'select', tier: 'normal', default: 'auto', options: [['auto', '自动'], ['arm_l', '左臂'], ['arm_r', '右臂']] },
+    { key: 'sleeve_len', label: '袖长', type: 'note', tier: 'normal', default: '由画面决定（只读）' }
+  ],
+  acc: [
+    { key: 'attach', label: '挂点', type: 'select', tier: 'normal', default: 'head', options: [['head', '头顶'], ['face', '脸'], ['neck', '颈部'], ['spine', '脊柱'], ['hand', '手'], ['foot', '脚']] },
+    { key: 'depth', label: '前后', type: 'select', tier: 'normal', default: 'front', options: [['front', '前置'], ['back', '后置']] }
+  ]
+};
+
+var BUILTIN_ASSETS = [
+  { id: 'builtin.eyes.closed', name: '闭眼帧', source: 'builtin', part_type: 'eyes', frame_index: 2, status: 'builtin', note: '官方共用帧（内置占位，待接官方素材）' },
+  { id: 'builtin.mouth.open', name: '张嘴帧', source: 'builtin', part_type: 'mouth', frame_index: 2, status: 'builtin', note: '官方共用帧（内置占位）' },
+  { id: 'builtin.mouth.smile', name: '笑嘴帧', source: 'builtin', part_type: 'mouth', frame_index: 3, status: 'builtin', note: '官方共用帧（内置占位）' },
+  { id: 'builtin.mouth.o', name: 'O 嘴帧', source: 'builtin', part_type: 'mouth', frame_index: 4, status: 'builtin', note: '官方共用帧（内置占位）' },
+  { id: 'builtin.brow.up', name: '挑眉帧', source: 'builtin', part_type: 'brow', frame_index: 2, status: 'builtin', note: '官方共用帧（内置占位）' },
+  { id: 'builtin.brow.down', name: '压眉帧', source: 'builtin', part_type: 'brow', frame_index: 3, status: 'builtin', note: '官方共用帧（内置占位）' }
+];
+
+var edition = 'normal';
+try { edition = localStorage.getItem(EDITION_KEY) === 'pro' ? 'pro' : 'normal'; } catch (e) { edition = 'normal'; }
+
+var selection = null;       // 包围盒（多矩形时用于状态栏 / 兼容）
+var selectionRects = [];    // v3.1 真多矩形选区（互不重叠）
+var selectionInvertedFrom = null; // 反选前的原选区，用于取消反选恢复
+var selOnly = false;
+var antsOffset = 0;
+var antsTimer = null;
+var previewState = null;
+var layerCache = {};        // 每个图层的离屏 canvas 缓存
+var composeCache = null;    // 全部可见图层的整幅合成缓存（每帧只 blit 一次）
+var bgCache = null;         // 纸张 + 棋盘格缓存
+
+function motionById(id) { return MOTION_MAP[id] || null; }
+function motionsForPart(typeId) { return MOTIONS.filter(function (m) { return m.parts.indexOf(typeId) >= 0; }); }
+function motionGroupName(id) { var g = MOTION_GROUPS.filter(function (x) { return x.id === id; })[0]; return g ? g.name : id; }
+
+function defaultSettings(typeId) {
+  var out = {};
+  (SETTING_SCHEMA[typeId] || []).forEach(function (f) {
+    if (f.type === 'toggle') out[f.key] = !!f.default;
+    else if (f.type === 'range') out[f.key] = f.default;
+    else out[f.key] = f.default == null ? null : f.default;
+  });
+  return out;
+}
+
+function normalizeLayerSettings(typeId, raw) {
+  var out = defaultSettings(typeId);
+  var schema = SETTING_SCHEMA[typeId] || [];
+  if (!raw || typeof raw !== 'object') return out;
+  schema.forEach(function (f) {
+    var v = raw[f.key];
+    if (v === undefined) return;
+    if (f.type === 'range') {
+      v = Number(v);
+      if (isFinite(v)) out[f.key] = clampInt(v, f.min, f.max);
+    } else if (f.type === 'toggle') {
+      out[f.key] = !!v;
+    } else if (f.type === 'select') {
+      var ok = f.options.some(function (o) { return o[0] === v; });
+      if (ok) out[f.key] = v;
+    } else if (f.type === 'color') {
+      out[f.key] = normalizeCode(v);
+    } else if (f.type === 'note') {
+      out[f.key] = String(v == null ? (f.default || '') : v);
+    }
+  });
+  return out;
+}
+
+function defaultCharacter() {
+  var actions = {};
+  MOTIONS.forEach(function (m) {
+    if (m.group === 'action' || m.group === 'expression') actions[m.id] = !!m.launch;
+  });
+  return { personality: 'gentle', tune: 0, actions: actions };
+}
+
+function normalizeCharacter(raw) {
+  var out = defaultCharacter();
+  if (!raw || typeof raw !== 'object') return out;
+  if (PERSONALITY_KEYS.indexOf(raw.personality) >= 0) out.personality = raw.personality;
+  var t = Number(raw.tune);
+  out.tune = isFinite(t) ? clamp(t, -1, 1) : 0;
+  if (raw.actions && typeof raw.actions === 'object') {
+    Object.keys(out.actions).forEach(function (k) {
+      if (raw.actions[k] !== undefined) out.actions[k] = !!raw.actions[k];
+    });
+  }
+  return out;
+}
+
+function normalizeAnimation(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  var mid = MOTION_MAP[raw.motion_id] ? raw.motion_id : '';
+  if (!mid && !raw.trigger && !raw.asset_ref) return null;
+  var d = Number(raw.duration_ms);
+  return {
+    motion_id: mid,
+    trigger: String(raw.trigger || (mid ? MOTION_MAP[mid].trigger : '')),
+    duration_ms: isFinite(d) && d > 0 ? clampInt(d, 100, 30000) : (mid ? MOTION_MAP[mid].duration_ms : 1000),
+    loop: raw.loop !== undefined ? !!raw.loop : (mid ? MOTION_MAP[mid].loop : false),
+    asset_ref: typeof raw.asset_ref === 'string' ? raw.asset_ref : '',
+    enabled: raw.enabled !== false
+  };
+}
+
+function defaultMotionAssets() {
+  return BUILTIN_ASSETS.map(function (a) { return Object.assign({}, a); });
+}
+
+function normalizeAssets(raw, size) {
+  var out = defaultMotionAssets();
+  if (!Array.isArray(raw)) return out;
+  var n = size || artworkSizeGuess();
+  var seen = {};
+  out.forEach(function (a) { seen[a.id] = true; });
+  raw.forEach(function (a) {
+    if (!a || typeof a !== 'object') return;
+    var id = String(a.id || '');
+    if (!id || seen[id]) return;
+    var typeId = TYPE_MAP[a.part_type] ? a.part_type : null;
+    if (!typeId) return;
+    var source = ['builtin', 'imported', 'custom', 'procedural'].indexOf(a.source) >= 0 ? a.source : 'imported';
+    var pixels = null;
+    if (Array.isArray(a.pixels) && a.pixels.length === n) {
+      pixels = a.pixels.map(function (v) { return normalizeCode(v); });
+    }
+    seen[id] = true;
+    out.push({
+      id: id,
+      name: String(a.name || id),
+      source: source,
+      part_type: typeId,
+      frame_index: isFinite(Number(a.frame_index)) ? Number(a.frame_index) : 2,
+      pixels: pixels,
+      status: source === 'builtin' ? 'builtin' : (pixels ? 'ok' : 'missing'),
+      note: String(a.note || '')
+    });
+  });
+  return out;
+}
+
+function artworkSizeGuess() {
+  return artwork ? artwork.size : 32;
+}
+
+function assetById(id) {
+  if (!id) return null;
+  var list = (artwork && artwork.motion_assets) || [];
+  for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+  for (var j = 0; j < BUILTIN_ASSETS.length; j++) if (BUILTIN_ASSETS[j].id === id) return BUILTIN_ASSETS[j];
+  return null;
+}
+
+function missingAssetWarnings() {
+  var out = [];
+  if (!artwork) return out;
+  artwork.layers.forEach(function (l) {
+    var a = l.animation;
+    if (!a || !a.enabled || !a.asset_ref) return;
+    var asset = assetById(a.asset_ref);
+    if (!asset) {
+      out.push({ layer: l.display_name, asset_id: a.asset_ref, reason: '素材不存在' });
+    } else if (asset.source !== 'builtin' && !asset.pixels) {
+      out.push({ layer: l.display_name, asset_id: a.asset_ref, reason: '素材缺少帧像素（导入未完成或只登记了引用）' });
+    } else if (asset.status === 'missing') {
+      out.push({ layer: l.display_name, asset_id: a.asset_ref, reason: '素材标记为缺失' });
+    }
+  });
+  return out;
+}
+
+/* ---------------- 选区（多矩形，真补集） ---------------- */
+function clipRect(x0, y0, x1, y1) {
+  var n = artwork.size;
+  return {
+    x0: clampInt(Math.min(x0, x1), 0, n - 1), y0: clampInt(Math.min(y0, y1), 0, n - 1),
+    x1: clampInt(Math.max(x0, x1), 0, n - 1), y1: clampInt(Math.max(y0, y1), 0, n - 1)
+  };
+}
+
+function selectionBounds(rects) {
+  if (!rects.length) return null;
+  var b = { x0: rects[0].x0, y0: rects[0].y0, x1: rects[0].x1, y1: rects[0].y1 };
+  for (var i = 1; i < rects.length; i++) {
+    var r = rects[i];
+    b.x0 = Math.min(b.x0, r.x0); b.y0 = Math.min(b.y0, r.y0);
+    b.x1 = Math.max(b.x1, r.x1); b.y1 = Math.max(b.y1, r.y1);
+  }
+  return b;
+}
+
+function applySelectionRects(rects, msg) {
+  selectionRects = (rects || []).filter(function (r) { return r && r.x1 >= r.x0 && r.y1 >= r.y0; });
+  selection = selectionBounds(selectionRects);
+  if (selection) startAnts(); else stopAnts();
+  syncSelBar();
+  requestRender();
+  if (msg) setStatusMessage(msg);
+}
+
+function cellInSelection(x, y) {
+  if (!selectionRects.length) return true;
+  for (var i = 0; i < selectionRects.length; i++) {
+    var r = selectionRects[i];
+    if (x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1) return true;
+  }
+  return false;
+}
+
+function selectionInfo() {
+  if (!selectionRects.length) return null;
+  var b = selectionBounds(selectionRects);
+  var cells = 0;
+  for (var i = 0; i < selectionRects.length; i++) {
+    var r = selectionRects[i];
+    cells += (r.x1 - r.x0 + 1) * (r.y1 - r.y0 + 1);
+  }
+  return {
+    x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1,
+    w: b.x1 - b.x0 + 1, h: b.y1 - b.y0 + 1,
+    cells: cells, rects: selectionRects.length
+  };
+}
+
+function setSelectionRect(x0, y0, x1, y1) {
+  if (!artwork) return;
+  selectionInvertedFrom = null;
+  applySelectionRects([clipRect(x0, y0, x1, y1)]);
+}
+
+function clearSelection() {
+  selection = null;
+  selectionRects = [];
+  selectionInvertedFrom = null;
+  stopAnts();
+  syncSelBar();
+  requestRender();
+  setStatusMessage('已取消选区');
+}
+
+function selectAllCells() {
+  if (!artwork) return;
+  selectionInvertedFrom = null;
+  var n = artwork.size;
+  applySelectionRects([{ x0: 0, y0: 0, x1: n - 1, y1: n - 1 }]);
+}
+
+function invertSelection() {
+  if (!artwork) return;
+  var n = artwork.size;
+  // 再次点击「反选/还原」：恢复反选前的选区
+  if (selectionInvertedFrom) {
+    var back = selectionInvertedFrom;
+    selectionInvertedFrom = null;
+    applySelectionRects(back, '已恢复反选前的选区');
+    return;
+  }
+  if (!selectionRects.length) {
+    selectAllCells();
+    setStatusMessage('反选：原无选区，已全选；再次点击可还原');
+    return;
+  }
+  var mask = new Uint8Array(n * n);
+  selectionRects.forEach(function (r) {
+    for (var y = r.y0; y <= r.y1; y++) for (var x = r.x0; x <= r.x1; x++) mask[y * n + x] = 1;
+  });
+  // 全画布减选区：逐行取未覆盖的连续段，再把 x 范围相同的相邻行合并成矩形
+  var out = [], open = {};
+  for (var y = 0; y < n; y++) {
+    var runs = [];
+    var x = 0;
+    while (x < n) {
+      if (mask[y * n + x]) { x++; continue; }
+      var sx = x;
+      while (x < n && !mask[y * n + x]) x++;
+      runs.push([sx, x - 1]);
+    }
+    var nextOpen = {};
+    runs.forEach(function (run) {
+      var key = run[0] + ':' + run[1];
+      var o = open[key];
+      if (o && o.y1 === y - 1) { o.y1 = y; nextOpen[key] = o; }
+      else {
+        var nr = { x0: run[0], y0: y, x1: run[1], y1: y };
+        out.push(nr); nextOpen[key] = nr;
+      }
+    });
+    open = nextOpen;
+  }
+  var prev = selectionRects.map(function (r) { return { x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1 }; });
+  if (!out.length) {
+    selectionRects = []; selection = null; selectionInvertedFrom = prev;
+    stopAnts(); syncSelBar(); requestRender();
+    setStatusMessage('反选：当前选区已覆盖全画布（0 格）；再次点击可还原');
+    return;
+  }
+  selectionInvertedFrom = prev;
+  var total = out.reduce(function (s, r) { return s + (r.x1 - r.x0 + 1) * (r.y1 - r.y0 + 1); }, 0);
+  applySelectionRects(out, '反选：' + out.length + ' 块矩形 · ' + total + ' 格（再次点击还原）');
+}
+
+function startAnts() {
+  stopAnts();
+  antsTimer = setInterval(function () {
+    if (!selectionRects.length) { stopAnts(); return; }
+    antsOffset = (antsOffset + 2) % 12;
+    requestRender();
+  }, 130);
+}
+
+function stopAnts() {
+  if (antsTimer) { clearInterval(antsTimer); antsTimer = null; }
+  antsOffset = 0;
+}
+
+function syncSelBar() {
+  var bar = $('#selBar');
+  if (!bar) return;
+  bar.classList.toggle('hidden', !(selection || tool === 'select'));
+  var info = selectionInfo();
+  var txt = $('#selInfo');
+  if (txt) txt.textContent = info
+    ? (info.rects > 1 ? '选区 ' + info.cells + ' 格 · ' + info.rects + ' 块' : '选区 ' + info.w + '×' + info.h + ' · ' + info.cells + ' 格')
+    : '未选择（拖拽框选）';
+  var only = $('#selOnly');
+  if (only) only.checked = !!selOnly;
+}
+
+/* ---------------- 选区 → 层 ---------------- */
+var movePending = { mode: 'move', conflict: 'skip', targetId: null };
+
+function openMoveModal(mode, presetTargetId) {
+  mode = mode || 'move';
+  var src = currentLayer();
+  if (!src) { toast('当前没有图层', 'warn'); return; }
+  if (!selectionRects.length) { toast('先在画布上拖拽框选一个区域', 'warn'); return; }
+  var codes = selectedCodes(src);
+  if (!codes.length) { toast('没有可移动的像素', 'warn'); return; }
+
+  var targets = artwork.layers;
+  var others = targets.filter(function (l) { return l.id !== src.id; });
+  if (mode !== 'new' && !others.length) { toast('没有其他图层可放；可用「移入新层」', 'warn'); return; }
+  if (mode === 'new' && !canCreateType(src.part_type)) {
+    toast('「' + typeName(src.part_type) + '」已达 ' + TYPE_MAP[src.part_type].max + ' 层上限，不能新建同类层', 'err');
+    return;
+  }
+
+  var targetHtml = '';
+  if (mode !== 'new') {
+    var defaultTarget = presetTargetId || (others.filter(function (l) { return l.visible && !l.locked; })[0] || {}).id;
+    targetHtml = '<div class="field"><label>目标图层（当前层不可选）</label><select id="moveTarget">' +
+      targets.slice().reverse().map(function (l) {
+        var disabled = (l.id === src.id) || !l.visible || l.locked;
+        var reason = l.id === src.id ? '（当前层）' : !l.visible ? '（隐藏）' : l.locked ? '（锁定）' : '';
+        return '<option value="' + esc(l.id) + '"' + (disabled ? ' disabled' : '') + (l.id === defaultTarget ? ' selected' : '') + '>' +
+          esc(typeName(l.part_type) + ' #' + l.part_index + ' · ' + l.display_name + reason) + '</option>';
+      }).join('') + '</select>' +
+      '<span class="hint">当前层、隐藏 / 锁定的层会置灰并阻断；请先显示或解锁。</span></div>';
+  } else {
+    targetHtml = '<div class="type-note">将新建一个同类层「' + esc(src.display_name) + '」的副本层并移入，整次操作仍是一步撤销。</div>';
+  }
+
+  var body = targetHtml +
+    '<div class="field"><label>目标位置已有像素时</label>' +
+      '<label class="checkline"><input type="radio" name="moveConflict" value="skip" checked> <span><b>只填空白（默认）</b> — 目标已有像素的格子保持原样；<b>这些源像素留在源层</b>，不会丢。</span></label>' +
+      '<label class="checkline"><input type="radio" name="moveConflict" value="overwrite"> <span><b>覆盖</b> — 目标已有像素被源色号替换（旧目标像素会丢失，可用一次撤销回退）。</span></label>' +
+      '<label class="checkline"><input type="radio" name="moveConflict" value="cancel"> <span><b>取消</b> — 关闭弹窗，画布不动。</span></label>' +
+    '</div>' +
+    '<div class="type-note" id="moveStat">本选区已上色 ' + codes.length + ' 格；色号原样搬运，不改色、不改色板引用。</div>' +
+    '<div class="type-note">语义：真移动 = 源层对应格清空（null），目标层获得原色号；整次操作只产生一条撤销记录。</div>';
+
+  var api = showModal({
+    title: mode === 'new' ? '移入新建同类层' : mode === 'copy' ? '复制选区到图层' : '移动选区到图层',
+    width: 'min(520px,96vw)',
+    body: body,
+    buttons: [
+      { label: '取消', kind: 'ghost' },
+      { label: mode === 'copy' ? '应用复制' : '应用移动', primary: true, onClick: function (a) {
+        var conflictEl = a.root.querySelector('input[name=moveConflict]:checked');
+        var conflict = conflictEl ? conflictEl.value : 'skip';
+        if (conflict === 'cancel') { closeModal(); return false; }
+        var targetId = mode === 'new' ? null : a.root.querySelector('#moveTarget').value;
+        var r = performTransfer(mode, targetId, conflict, src.id);
+        if (!r || !r.ok) { a.setError(r ? r.reason : '移动失败'); return false; }
+        return true;
+      } }
+    ],
+    onMount: function (a) {
+      var sel = a.root.querySelector('#moveTarget');
+      function refresh() {
+        var conflict = a.root.querySelector('input[name=moveConflict]:checked');
+        if (conflict && conflict.value === 'cancel') {
+          a.root.querySelector('#moveStat').textContent = '已选择取消：不会改动图层。';
+          return;
+        }
+        if (!sel || !artwork) { a.root.querySelector('#moveStat').textContent = '本选区已上色 ' + codes.length + ' 格；将新建同类层并移入。'; return; }
+        var t = layerById(sel.value);
+        if (!t) return;
+        var n = artwork.size;
+        var conflicts = 0;
+        codes.forEach(function (pt) {
+          var v = t.pixels[pt.y * n + pt.x];
+          if (v !== null && v !== 'transparent') conflicts++;
+        });
+        var modeTxt = (conflict && conflict.value === 'overwrite') ? '覆盖' : '只填空白';
+        a.root.querySelector('#moveStat').textContent = '本选区已上色 ' + codes.length + ' 格；目标「' + t.display_name + '」冲突 ' + conflicts + ' 格（策略：' + modeTxt + '）。';
+      }
+      if (sel) sel.addEventListener('change', refresh);
+      a.root.querySelectorAll('input[name=moveConflict]').forEach(function (r) { r.addEventListener('change', refresh); });
+      refresh();
+    }
+  });
+  return api;
+}
+
+function selectedCodes(layer, sel) {
+  var out = [];
+  var n = artwork.size;
+  var rects = selectionRects.length ? selectionRects : (sel ? [sel] : []);
+  rects.forEach(function (r) {
+    for (var y = r.y0; y <= r.y1; y++) {
+      for (var x = r.x0; x <= r.x1; x++) {
+        var v = layer.pixels[y * n + x];
+        if (v !== null && v !== 'transparent') out.push({ x: x, y: y, code: v });
+      }
+    }
+  });
+  return out;
+}
+
+function performTransfer(mode, targetId, conflict, sourceId) {
+  sourceId = sourceId || (currentLayer() && currentLayer().id);
+  var src = layerById(sourceId);
+  if (!src) return { ok: false, reason: '源图层不存在' };
+  if (!selectionRects.length) return { ok: false, reason: '没有选区' };
+  var codes = selectedCodes(src);
+  if (!codes.length) return { ok: false, reason: '没有可移动的像素' };
+
+  var target = null;
+  if (mode === 'new') {
+    if (!canCreateType(src.part_type)) return { ok: false, reason: '同类层已达上限' };
+  } else {
+    target = layerById(targetId);
+    if (!target) return { ok: false, reason: '目标图层不存在或已删除' };
+    if (target.id === src.id) return { ok: false, reason: '目标层不能是当前层' };
+    if (!target.visible) return { ok: false, reason: '目标层「' + target.display_name + '」已隐藏，先显示再移动' };
+    if (target.locked) return { ok: false, reason: '目标层「' + target.display_name + '」已锁定，先解锁再移动' };
+  }
+
+  // 预判：只填空白且全部冲突时不执行（新层不会创建空壳）
+  if (target && conflict === 'skip') {
+    var n0 = artwork.size;
+    var occupied = 0;
+    codes.forEach(function (pt) {
+      var v = target.pixels[pt.y * n0 + pt.x];
+      if (v !== null && v !== 'transparent') occupied++;
+    });
+    if (occupied === codes.length) {
+      return { ok: false, reason: '目标位置全部已有像素，按「只填空白」无可移动；可改用覆盖' };
+    }
+  }
+
+  pushUndo();
+
+  if (mode === 'new') {
+    var idx = nextPartIndex(src.part_type);
+    target = makeLayer(artwork.size, src.part_type, idx, { pixels: makeEmptyPixels(artwork.size * artwork.size) });
+    target.display_name = layerLabelFor(src.part_type, idx);
+    artwork.layers.push(target);
+    currentLayerId = target.id;
+  }
+
+  var n = artwork.size;
+  var moved = 0, skipped = 0, overwritten = 0;
+  codes.forEach(function (pt) {
+    var i = pt.y * n + pt.x;
+    var tgt = target.pixels[i];
+    var occ = tgt !== null && tgt !== 'transparent';
+    if (occ && conflict !== 'overwrite') { skipped++; return; }
+    if (occ) overwritten++;
+    target.pixels[i] = pt.code;
+    if (mode !== 'copy') src.pixels[i] = null;
+    moved++;
+  });
+
+  var verb = mode === 'copy' ? '复制' : '移动';
+  var bx0 = n, by0 = n, bx1 = -1, by1 = -1;
+  codes.forEach(function (pt) {
+    if (pt.x < bx0) bx0 = pt.x; if (pt.x > bx1) bx1 = pt.x;
+    if (pt.y < by0) by0 = pt.y; if (pt.y > by1) by1 = pt.y;
+  });
+  if (bx1 >= 0) {
+    markLayerDirty(target, bx0, by0, bx1, by1);
+    if (mode !== 'copy') markLayerDirty(src, bx0, by0, bx1, by1);
+  }
+  commitChange(verb + ' ' + moved + ' 格 → 「' + target.display_name + '」' +
+    (skipped ? '，' + skipped + ' 格因只填空白留在源层' : '') +
+    (overwritten ? '，覆盖 ' + overwritten + ' 格' : '') + '（一步撤销）');
+  refreshAllUI();
+  return { ok: true, moved: moved, skipped: skipped, overwritten: overwritten, targetId: target.id };
+}
+
+/* ---------------- 部件设置 UI ---------------- */
+function schemaFor(typeId) { return SETTING_SCHEMA[typeId] || []; }
+function visibleFields(typeId) {
+  return schemaFor(typeId).filter(function (f) { return edition === 'pro' || f.tier !== 'pro'; });
+}
+
+function fieldHtml(layer, f) {
+  var v = layer.settings ? layer.settings[f.key] : undefined;
+  var id = 'set-' + layer.id + '-' + f.key;
+  var html = '<div class="set-row"><span class="set-label">' + esc(f.label) + '</span><span class="set-ctl">';
+  if (f.type === 'range') {
+    html += '<input type="range" id="' + id + '" data-set="range" data-key="' + f.key + '" min="' + f.min + '" max="' + f.max + '" step="' + (f.step || 1) + '" value="' + v + '">';
+  } else if (f.type === 'select') {
+    html += '<select id="' + id + '" data-set="select" data-key="' + f.key + '">' + f.options.map(function (o) {
+      return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+    }).join('') + '</select>';
+  } else if (f.type === 'toggle') {
+    html += '<label class="set-check"><input type="checkbox" id="' + id + '" data-set="toggle" data-key="' + f.key + '"' + (v ? ' checked' : '') + '><span>' + (v ? '已开启' : '关闭') + '</span></label>';
+  } else if (f.type === 'color') {
+    html += '<select id="' + id + '" data-set="color" data-key="' + f.key + '"><option value="">（不换色）</option>' +
+      (palette ? palette.colors.map(function (c) {
+        return '<option value="' + c.code + '"' + (c.code === v ? ' selected' : '') + '>' + c.code + ' · ' + esc(c.name) + '</option>';
+      }).join('') : '') + '</select>';
+  } else if (f.type === 'note') {
+    html += '<span class="set-note">' + esc(v || f.default || '') + '</span>';
+  }
+  html += '</span>';
+  if (f.type === 'range') html += '<span class="set-val" data-show="' + f.key + '">' + v + (f.unit || '') + '</span>';
+  html += '</div>';
+  if (f.desc) html += '<div class="set-desc">' + esc(f.desc) + '</div>';
+  return html;
+}
+
+function secHtml(title, body, tag) {
+  return '<div class="sec"><div class="sec-head">' + esc(title) + (tag ? '<span class="tier-tag">' + esc(tag) + '</span>' : '') + '</div><div class="sec-body">' + body + '</div></div>';
+}
+
+function syncEditionUI() {
+  var badge = $('#editionBadge');
+  if (badge) badge.textContent = edition === 'pro' ? '专业版' : '普通版';
+  var bn = $('#btnEditionNormal'), bp = $('#btnEditionPro');
+  if (bn) bn.classList.toggle('on', edition !== 'pro');
+  if (bp) bp.classList.toggle('on', edition === 'pro');
+  var state = $('#editionState');
+  if (state) state.textContent = edition === 'pro' ? '已开启' : '已关闭';
+}
+
+/* 角色级设置：性格 / 动作 / 表情 / 动效素材。与当前选中哪一层无关。 */
+function renderCharacter() {
+  var el = $('#characterBody');
+  if (!el) return;
+  syncEditionUI();
+  if (!artwork) { el.innerHTML = ''; return; }
+  if (!artwork.character) artwork.character = defaultCharacter();
+  var p = artwork.character;
+
+  if (!p.actions) p.actions = defaultCharacter().actions;
+
+  var pChips = PERSONALITY_KEYS.map(function (k) {
+    var pr = PERSONALITIES[k];
+    return '<button class="p-chip' + (p.personality === k ? ' active' : '') + '" data-act="personality" data-id="' + k + '" title="' + esc(pr.desc) + '">' + pr.name + '</button>';
+  }).join('');
+  var pBody = '<div class="p-chips">' + pChips + '</div>' +
+    '<div class="set-row"><span class="set-label">收 / 放</span><span class="set-ctl"><input type="range" data-act="tune" min="-1" max="1" step="1" value="' + p.tune + '"></span><span class="set-val">' + (p.tune > 0 ? '+' : '') + p.tune + ' 档</span></div>' +
+    '<div class="set-desc">' + esc(PERSONALITIES[p.personality].desc) + '。性格是角色级参数，作用于摆幅 / 步频 / 呼吸 / 眨眼 / 发飘；换任何一层都不变。</div>' +
+    (edition === 'pro'
+      ? '<div class="tier-hint">专业版：在「设置」页选中某层后改它的运动参数，即等于给这一层单独「覆盖」性格基准；不覆盖的部件继续跟随性格。</div>'
+      : '<div class="tier-hint">普通版：全部由性格统一驱动，不提供逐项覆盖。切到专业版可单独改。</div>');
+
+  var actionRows = MOTIONS.filter(function (m) { return m.group === 'action'; }).map(function (m) {
+    return '<label class="act-row' + (m.launch ? '' : ' off') + '"><input type="checkbox" data-act="action" value="' + m.id + '"' + (p.actions[m.id] ? ' checked' : '') + (m.launch ? '' : ' disabled') + '>' +
+      '<span class="act-name">' + esc(m.name) + '</span><span class="act-trig">' + esc(m.trigger) + '</span>' + (m.launch ? '' : '<span class="badge-off">未开放</span>') + '</label>';
+  }).join('');
+  var exprRows = MOTIONS.filter(function (m) { return m.group === 'expression'; }).map(function (m) {
+    return '<label class="act-row' + (m.launch ? '' : ' off') + '"><input type="checkbox" data-act="action" value="' + m.id + '"' + (p.actions[m.id] ? ' checked' : '') + (m.launch ? '' : ' disabled') + '>' +
+      '<span class="act-name">' + esc(m.name) + '</span><span class="act-trig">' + esc(m.trigger) + '</span>' + (m.launch ? '' : '<span class="badge-off">未开放</span>') + '</label>';
+  }).join('');
+
+  var assetsBody = '';
+  if (edition === 'pro') {
+    assetsBody = (artwork.motion_assets || []).map(function (a) {
+      return '<div class="asset-row"><span class="asset-src ' + a.source + '">' + a.source + '</span><span class="asset-name">' + esc(a.name) + '</span><span class="asset-type">' + esc(typeName(a.part_type)) + ' #' + a.frame_index + '</span>' +
+        (a.status === 'missing' ? '<span class="asset-miss">缺像素</span>' : '') + '</div>';
+    }).join('');
+    assetsBody += '<div class="set-order"><button class="mini-btn" data-act="import-assets">导入素材文件…</button></div>' +
+      '<div class="set-desc">优先级：玩家自绘帧 &gt; 官方共用帧 &gt; 程序化变换。导入会校验类型、帧尺寸与像素长度；缺素材会显示占位与警告，不静默失败。给某一层加帧请到「设置」页的该层。</div>' +
+      '<input type="file" id="motionAssetFile" accept=".json,application/json" class="hidden">';
+  } else {
+    assetsBody = '<div class="tier-hint">动效素材管理（内置 / 导入 / 自绘帧）在专业版开放。普通版仍会读取已有素材并在缺失时告警。</div>';
+  }
+
+  el.innerHTML = '<div class="sb-part"><b>角色级设置</b><span class="sb-xy">与当前选中层无关</span></div>' +
+    secHtml('性格', pBody) +
+    secHtml('动作（10）· 这个人会不会做', actionRows) +
+    secHtml('表情（8）· 情绪状态', exprRows) +
+    secHtml('动效素材', assetsBody, edition === 'pro' ? '专业版' : '');
+}
+
+function renderSettings() {
+  var el = $('#settingsBody');
+  if (!el) return;
+  if (!artwork) { el.innerHTML = ''; return; }
+  var l = currentLayer();
+  syncEditionUI();
+  if (!l) { el.innerHTML = '<div class="part-empty">当前没有图层。</div>'; return; }
+
+  var t = partType(l.part_type) || TYPE_MAP.acc;
+  var head = '<div class="sb-part"><b>' + esc(l.display_name) + '</b><span class="layer-badge cat-' + t.cat + '">' + esc(t.name) + ' #' + l.part_index + '</span><span class="sb-xy">' + l.pixels.length + ' 格</span></div>';
+
+  var appearance = visibleFields(l.part_type).map(function (f) { return fieldHtml(l, f); }).join('');
+  if (!appearance) appearance = '<div class="set-desc" style="margin:0">该部件没有外观项。</div>';
+
+  var motionFields = '';
+  if (edition === 'pro') {
+    var proFields = schemaFor(l.part_type).filter(function (f) { return f.tier === 'pro'; });
+    motionFields = proFields.length ? proFields.map(function (f) { return fieldHtml(l, f); }).join('')
+      : '<div class="set-desc" style="margin:0">该部件没有独立运动参数，由挂载的动效驱动。</div>';
+  } else {
+    motionFields = '<div class="tier-hint">普通版：运动细节由「性格预设」统一驱动；切到专业版可逐项微调。</div>';
+  }
+
+  var system = '';
+  system += '<div class="set-row"><span class="set-label">可见</span><span class="set-ctl"><label class="set-check"><input type="checkbox" data-act="visible"' + (l.visible ? ' checked' : '') + '><span>' + (l.visible ? '显示' : '隐藏') + '</span></label></span></div>';
+  if (t.cat === 'cloth' || l.part_type === 'acc') {
+    system += '<div class="set-row"><span class="set-label">可脱穿</span><span class="set-ctl"><label class="set-check"><input type="checkbox" data-act="active"' + (l.active ? ' checked' : '') + '><span>' + (l.active ? '已激活（参与演绎）' : '未激活（衣柜中收起）') + '</span></label></span></div>';
+  }
+  system += '<div class="set-row"><span class="set-label">锁定</span><span class="set-ctl"><label class="set-check"><input type="checkbox" data-act="locked"' + (l.locked ? ' checked' : '') + '><span>' + (l.locked ? '已锁定（禁止改画/移动目标）' : '未锁定') + '</span></label></span></div>';
+  var orderIdx = artwork.layers.indexOf(l) + 1;
+  system += '<div class="set-row"><span class="set-label">层级</span><span class="set-ctl set-order">第 ' + orderIdx + ' / ' + artwork.layers.length + ' 层 <button class="mini-btn" data-act="front">置顶</button><button class="mini-btn" data-act="back">置底</button></span></div>';
+  if (edition === 'pro') {
+    system += '<div class="set-row"><span class="set-label">锚点</span><span class="set-ctl set-order">' + Math.round(l.anchor.x) + ',' + Math.round(l.anchor.y) + ' <button class="mini-btn" data-act="anchor">画布上拖点</button></span></div>';
+  }
+
+  var anim = l.animation || {};
+  var compat = motionsForPart(l.part_type);
+  var motionOptions = '<option value="">（不参与）</option>' + MOTION_GROUPS.map(function (g) {
+    var items = compat.filter(function (m) { return m.group === g.id; });
+    if (!items.length) return '';
+    return '<optgroup label="' + g.name + '">' + items.map(function (m) {
+      return '<option value="' + m.id + '"' + (m.id === anim.motion_id ? ' selected' : '') + '>' + esc(m.name) + (m.launch ? '' : ' · 未开放') + '</option>';
+    }).join('') + '</optgroup>';
+  }).join('');
+  var assetOptions = '<option value="">（不使用帧素材）</option>' +
+    ((artwork.motion_assets || []).filter(function (a) { return a.part_type === l.part_type; }).map(function (a) {
+      return '<option value="' + esc(a.id) + '"' + (a.id === anim.asset_ref ? ' selected' : '') + '>' + esc(a.name) + ' · ' + a.source + (a.status === 'missing' ? '（缺失）' : '') + '</option>';
+    }).join(''));
+  var animBody =
+    '<div class="set-row"><span class="set-label">动效</span><span class="set-ctl"><select data-act="anim-motion">' + motionOptions + '</select></span></div>' +
+    '<div class="set-row"><span class="set-label">触发</span><span class="set-ctl"><input type="text" data-act="anim-trigger" value="' + esc(anim.trigger || '') + '" placeholder="如：打招呼 / 常驻随机"></span></div>' +
+    '<div class="set-row"><span class="set-label">时长</span><span class="set-ctl"><input type="number" data-act="anim-duration" min="100" max="30000" step="50" value="' + (anim.duration_ms || 1000) + '"> ms</span></div>' +
+    '<div class="set-row"><span class="set-label">循环</span><span class="set-ctl"><label class="set-check"><input type="checkbox" data-act="anim-loop"' + (anim.loop ? ' checked' : '') + '><span>' + (anim.loop ? '循环播放' : '播放一次') + '</span></label></span></div>' +
+    '<div class="set-row"><span class="set-label">素材</span><span class="set-ctl"><select data-act="anim-asset">' + assetOptions + '</select></span></div>' +
+    '<div class="set-desc">编辑器只保存配置并做最小试播；逐帧播放 / 时间轴合成由演绎系统负责。</div>' +
+    '<div class="set-order"><button class="mini-btn" data-act="preview">试播</button><button class="mini-btn" data-act="anim-clear">清除动效</button><button class="mini-btn" data-act="add-frame">这层加一帧</button></div>';
+  var warn = missingAssetWarnings();
+  if (warn.length) {
+    animBody += '<div class="asset-warn">素材缺失 ' + warn.length + ' 条：' + warn.map(function (w) {
+      return esc(w.layer + ' → ' + w.asset_id + '（' + w.reason + '）');
+    }).join('；') + '</div>';
+  }
+
+  el.innerHTML = head +
+    secHtml('外观设置', appearance, edition === 'pro' ? '' : '普通版') +
+    secHtml('运动设置', motionFields, edition === 'pro' ? '专业版' : '由性格驱动') +
+    secHtml('系统设置', system) +
+    secHtml('动效挂载 · 这层跟什么动', animBody);
+}
+
+function setLayerSetting(layer, key, value) {
+  if (!layer) return;
+  var schema = schemaFor(layer.part_type);
+  var f = schema.filter(function (x) { return x.key === key; })[0];
+  if (!f) return;
+  if (f.type === 'range') value = clampInt(Number(value), f.min, f.max);
+  else if (f.type === 'toggle') value = !!value;
+  else if (f.type === 'color') value = value ? normalizeCode(value) : null;
+  if (layer.settings[key] === value) return;
+  pushUndo();
+  layer.settings[key] = value;
+  commitChange('已保存「' + layer.display_name + ' · ' + f.label + '」');
+  if (f.type !== 'range') renderSettings();
+}
+
+function setEdition(next, fromUser) {
+  if (next !== 'normal' && next !== 'pro') return;
+  if (next === 'pro' && fromUser !== false) {
+    var ack = false;
+    try { ack = localStorage.getItem(PRO_RISK_KEY) === '1'; } catch (e) { ack = false; }
+    if (!ack) {
+      showModal({
+        title: '切换到专业模式',
+        width: 'min(480px,94vw)',
+        body: '<div class="type-note"><b>专业版会展开更多可调项</b>（锚点、摆幅、步频、呼吸、眨眼频率等）。<br>' +
+          '参数越多越容易调乱；不确定时保持默认或回到普通版。普通版不会显示这些细项，也不会改动已存的值。</div>' +
+          '<div class="type-note">存档不分档：切换只影响显示，不重置任何已填参数；但普通版下这些值不参与演绎（按性格预设驱动）。</div>',
+        buttons: [
+          { label: '留在普通版', kind: 'ghost' },
+          { label: '仍切换到专业版', primary: true, onClick: function () {
+            try { localStorage.setItem(PRO_RISK_KEY, '1'); } catch (e) { /* 忽略 */ }
+            applyEdition('pro');
+            return true;
+          } }
+        ]
+      });
+      return;
+    }
+  }
+  applyEdition(next);
+}
+
+function applyEdition(next) {
+  edition = next;
+  try { localStorage.setItem(EDITION_KEY, edition); } catch (e) { /* 忽略 */ }
+  renderSettings();
+  renderCharacter();
+  renderLayerList();
+  setStatusMessage(next === 'pro' ? '已切换到专业版（显示全部细项）' : '已切换到普通版（只显示必要项，存档不变）');
+}
+
+/* ---------------- 动效绑定 ---------------- */
+function bindMotionToLayer(layerId, motionId) {
+  var l = layerById(layerId);
+  if (!l) return null;
+  if (!motionId) { l.animation = null; commitChange('已清除动效'); renderSettings(); return null; }
+  var m = motionById(motionId);
+  if (!m) { toast('未知动效', 'err'); return null; }
+  if (m.parts.indexOf(l.part_type) < 0) { toast('该动效不适用于「' + typeName(l.part_type) + '」', 'err'); return null; }
+  var prev = l.animation || {};
+  var asset = prev.asset_ref || '';
+  if (!asset) {
+    var first = (artwork.motion_assets || []).filter(function (a) { return a.part_type === l.part_type; })[0];
+    if (first && (m.id === 'blink' || m.id === 'talk' || m.group === 'expression')) asset = first.id;
+  }
+  if (!prev.motion_id) pushUndo();
+  l.animation = {
+    motion_id: m.id,
+    trigger: m.trigger,
+    duration_ms: m.duration_ms,
+    loop: m.loop,
+    asset_ref: asset,
+    enabled: true
+  };
+  commitChange('已挂载动效「' + m.name + '」→ ' + l.display_name);
+  renderSettings();
+  return l.animation;
+}
+
+function clearMotion(layerId) {
+  var l = layerById(layerId);
+  if (!l || !l.animation) return;
+  pushUndo();
+  l.animation = null;
+  commitChange('已清除「' + l.display_name + '」的动效');
+  renderSettings();
+}
+
+function previewMotion() {
+  var l = currentLayer();
+  if (!l) return;
+  if (!l.animation || !l.animation.motion_id) { toast('这层还没有挂载动效', 'warn'); return; }
+  var m = motionById(l.animation.motion_id);
+  if (!m) { toast('动效不存在', 'err'); return; }
+  var dur = clampInt(l.animation.duration_ms || 900, 400, 2000);
+  previewState = { layerId: l.id, start: Date.now(), dur: dur, amp: 1 };
+  requestRender();
+  var tick = setInterval(function () {
+    if (!previewState || Date.now() - previewState.start > previewState.dur) {
+      clearInterval(tick);
+      previewState = null;
+      requestRender();
+      return;
+    }
+    requestRender();
+  }, 70);
+  toast('试播「' + m.name + '」' + dur + 'ms（编辑器最小预览；真实播放由演绎系统负责）', 'ok');
+}
+
+/* ---------------- 素材 ---------------- */
+function addFrameFromLayer() {
+  var l = currentLayer();
+  if (!l) { toast('当前没有图层', 'warn'); return; }
+  if (pixelCount(l) === 0) { toast('当前层没有像素，不能作为帧素材', 'warn'); return; }
+  pushUndo();
+  var sameType = (artwork.motion_assets || []).filter(function (a) { return a.part_type === l.part_type; });
+  var frameIdx = 2;
+  sameType.forEach(function (a) { if (a.frame_index >= frameIdx) frameIdx = a.frame_index + 1; });
+  var maxFrames = TYPE_MAP[l.part_type].max;
+  if (sameType.filter(function (a) { return a.source === 'custom'; }).length >= maxFrames) {
+    toast('「' + typeName(l.part_type) + '」自绘帧已达上限 ' + maxFrames, 'err');
+    return;
+  }
+  var asset = {
+    id: 'custom.' + l.part_type + '.' + frameIdx + '.' + uid('F'),
+    name: '自绘帧 ' + frameIdx,
+    source: 'custom',
+    part_type: l.part_type,
+    frame_index: frameIdx,
+    pixels: l.pixels.slice(),
+    status: 'ok',
+    note: '由「' + l.display_name + '」当前画面保存',
+    created_at: Date.now()
+  };
+  artwork.motion_assets.push(asset);
+  if (!l.animation) {
+    var mo = motionsForPart(l.part_type)[0];
+    l.animation = {
+      motion_id: mo ? mo.id : '', trigger: mo ? mo.trigger : '', duration_ms: mo ? mo.duration_ms : 800,
+      loop: mo ? mo.loop : false, asset_ref: asset.id, enabled: true
+    };
+  } else {
+    l.animation.asset_ref = asset.id;
+  }
+  commitChange('已把「' + l.display_name + '」存为帧素材，并绑定到该层动效');
+  renderSettings();
+}
+
+function importAssetsObject(json, filename) {
+  var list = null;
+  if (json && Array.isArray(json.assets)) list = json.assets;
+  else if (Array.isArray(json)) list = json;
+  if (!list || !list.length) { toast('素材文件格式不正确：需要 assets 数组', 'err'); return { ok: false }; }
+  pushUndo();
+  var ok = 0, bad = [];
+  var n = artwork.size * artwork.size;
+  var existing = {};
+  (artwork.motion_assets || []).forEach(function (a) { existing[a.id] = true; });
+  list.forEach(function (a, i) {
+    var reasons = [];
+    if (!a || typeof a !== 'object') reasons.push('不是对象');
+    else {
+      if (!a.id) reasons.push('缺少 id');
+      if (existing[a.id]) reasons.push('id 重复');
+      if (!TYPE_MAP[a.part_type]) reasons.push('部件类型无效：' + a.part_type);
+      if (a.source && ['builtin', 'imported', 'custom', 'procedural'].indexOf(a.source) < 0) reasons.push('来源无效：' + a.source);
+      if (a.pixels != null && (!Array.isArray(a.pixels) || a.pixels.length !== n)) reasons.push('像素长度应为 ' + n);
+      if (a.pixels == null) reasons.push('缺少 pixels');
+    }
+    if (reasons.length) { bad.push((a && a.id ? a.id : '第' + (i + 1) + '项') + '：' + reasons.join('；')); return; }
+    existing[a.id] = true;
+    artwork.motion_assets.push({
+      id: String(a.id),
+      name: String(a.name || a.id),
+      source: a.source || 'imported',
+      part_type: a.part_type,
+      frame_index: isFinite(Number(a.frame_index)) ? Number(a.frame_index) : 2,
+      pixels: a.pixels.map(function (v) { return normalizeCode(v); }),
+      status: 'ok',
+      note: String(a.note || ('导入自 ' + (filename || '文件')))
+    });
+    ok++;
+  });
+  commitChange('已导入动效素材 ' + ok + ' 条' + (bad.length ? '，拒绝 ' + bad.length + ' 条' : ''));
+  renderSettings();
+  if (bad.length) {
+    showModal({
+      title: '素材导入结果',
+      width: 'min(520px,96vw)',
+      body: '<div class="field"><label>成功 ' + ok + ' 条 / 失败 ' + bad.length + ' 条</label>' +
+        '<ul style="margin:0;padding-left:16px;font:10px/1.7 var(--font)">' + bad.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul></div>' +
+        '<div class="type-note">失败的条目没有写入；已存在的素材不会被静默替换。缺素材会在「动效素材」区显示红色告警与占位。</div>',
+      buttons: [{ label: '知道了', primary: true }]
+    });
+  } else {
+    toast('已导入动效素材 ' + ok + ' 条', 'ok');
+  }
+  return { ok: true, imported: ok, rejected: bad };
+}
+
+function handleAssetFile(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    try { importAssetsObject(JSON.parse(String(reader.result)), file.name); }
+    catch (e) { toast('素材 JSON 解析失败：' + e.message, 'err'); }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+/* ---------------- 层级置顶/置底 ---------------- */
+function moveLayerToEdge(id, toTop) {
+  var l = layerById(id);
+  if (!l) return;
+  var i = artwork.layers.indexOf(l);
+  if (i < 0) return;
+  if ((toTop && i === artwork.layers.length - 1) || (!toTop && i === 0)) { toast('已经到顶 / 到底了', 'warn'); return; }
+  pushUndo();
+  artwork.layers.splice(i, 1);
+  if (toTop) artwork.layers.push(l); else artwork.layers.unshift(l);
+  commitChange('已' + (toTop ? '置顶' : '置底') + '「' + l.display_name + '」');
+  refreshAllUI();
+}
+
+
+/* 调试 / 自检钩子（不参与界面逻辑） */
+window.__PE__ = {
+  state: function () {
+    return {
+      artwork: artwork ? JSON.parse(serializeArtwork()) : null,
+      currentLayerId: currentLayerId,
+      undo: undoStack.length,
+      redo: redoStack.length,
+      tool: tool,
+      modalOpen: isModalOpen
+    };
+  },
+  exportPayload: buildExportPayload,
+  buildExportCanvas: buildExportCanvas,
+  createLayerOfType: createLayerOfType,
+  openAddLayerModal: openAddLayerModal,
+  renameLayerById: function (id, name) { return renameLayer(layerById(id), name); },
+  deleteCurrentLayer: deleteCurrentLayer,
+  toggleLayerVisible: toggleLayerVisible,
+  setCurrentLayer: setCurrentLayer,
+  importObject: importObject,
+  migrateLegacy: migrateLegacy,
+  isLegacyArtwork: isLegacyArtwork,
+  normalizeV2: normalizeV2,
+  buildPartsIndex: buildPartsIndex,
+  createArtwork: createArtwork,
+  canvas: function () { return buildExportCanvas({ grid: false, numbers: false, transparent: true, scale: 1 }); },
+  parts: function () { return buildPartsIndex(artwork); },
+  types: PART_TYPES,
+  typeName: typeName,
+  /* v3 */
+  selection: function () { return selection ? selectionInfo() : null; },
+  setSelection: function (x0, y0, x1, y1) { setSelectionRect(x0, y0, x1, y1); },
+  selectAll: selectAllCells,
+  clearSelection: clearSelection,
+  selectionOnly: function (v) { if (v !== undefined) { selOnly = !!v; syncSelBar(); requestRender(); } return selOnly; },
+  transfer: function (mode, targetId, conflict) { return performTransfer(mode, targetId, conflict || 'skip'); },
+  moveModal: openMoveModal,
+  settingsOf: function (layerId) { var l = layerById(layerId) || currentLayer(); return l ? { id: l.id, settings: Object.assign({}, l.settings), locked: !!l.locked, animation: l.animation } : null; },
+  setSetting: function (layerId, key, value) { var l = layerById(layerId) || currentLayer(); if (!l) return null; setLayerSetting(l, key, value); return l.settings[key]; },
+  motions: MOTIONS,
+  motionGroups: MOTION_GROUPS,
+  bindMotion: bindMotionToLayer,
+  preview: previewMotion,
+  addFrame: addFrameFromLayer,
+  importAssets: importAssetsObject,
+  setEdition: function (v) { setEdition(v, false); },
+  getEdition: function () { return edition; },
+  missingAssets: missingAssetWarnings,
+  character: function () { return Object.assign({}, artwork.character); },
+  editionStats: function () {
+    var total = 0, visibleNormal = 0, visiblePro = 0;
+    Object.keys(SETTING_SCHEMA).forEach(function (tid) {
+      SETTING_SCHEMA[tid].forEach(function (f) {
+        total++;
+        if (f.tier === 'pro') visiblePro++; else visibleNormal++;
+      });
+    });
+    return { total: total, normalVisible: visibleNormal, proOnly: visiblePro, motions: MOTIONS.length, launchMotions: MOTIONS.filter(function (m) { return m.launch; }).length };
+  },
+  /* 仅用于自动化验收 */
+  paintCell: function (layerId, x, y, code) {
+    var l = layerById(layerId);
+    if (!l) return false;
+    pushUndo();
+    var ok = writeCell(l, x, y, code ? normalizeCode(code) : null);
+    commitChange('');
+    return ok;
+  },
+  layer: function (id) { var l = layerById(id); return l ? JSON.parse(JSON.stringify(l)) : null; },
+  layers: function () {
+    return artwork.layers.map(function (l) {
+      return { id: l.id, part_type: l.part_type, part_index: l.part_index, display_name: l.display_name, visible: l.visible, locked: !!l.locked };
+    });
+  },
+  setAnimation: function (layerId, patch) {
+    var l = layerById(layerId);
+    if (!l || !l.animation) return null;
+    pushUndo();
+    Object.assign(l.animation, patch);
+    commitChange('');
+    renderSettings();
+    return l.animation;
+  },
+  render: renderBoard,
+  bootArtwork: bootArtwork,
+  undo: undo,
+  redo: redo,
+  /* 仅用于自动化验收：不产生撤销栈的直写，用于帧率测量 */
+  paintRaw: function (layerId, x, y, code) {
+    var l = layerById(layerId);
+    if (!l) return false;
+    return writeCell(l, x, y, code ? normalizeCode(code) : null);
+  },
+  selectionRects: function () { return selectionRects.map(function (r) { return { x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1 }; }); },
+  invertSelection: invertSelection,
+  cacheStats: function () {
+    var k = Object.keys(layerCache).length;
+    var bytes = 0;
+    Object.keys(layerCache).forEach(function (id) { var c = layerCache[id]; bytes += c.canvas.width * c.canvas.height * 4; });
+    return { layers: k, bytes: bytes };
+  },
+  view: function () {
+    var cell = Math.max(1, Math.round(BASE_CELL * view.zoom * dpr)) / dpr;
+    return { panX: Math.round(view.panX * dpr) / dpr, panY: Math.round(view.panY * dpr) / dpr, zoom: view.zoom, cell: cell };
+  }
+};
+
+boot();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<html style="margin:0;padding:0;">
+<title>角色卡要哪些东西</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:860px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">一个角色卡要装六层，性格不属于「信息」</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">先给结论：性格不是填在信息栏里的，它和「雷区 / 说话风格」是一类；而编辑器现在这两类<b>一个字段都没有</b>。</div>
+
+<div style="margin-top:16px;background:#FDECEC;border:1px solid #F5CDCD;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#A14E50;margin-bottom:5px;">先说现状，免得你以为只是「放错位置」</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+编辑器 <span style="font-family:monospace;font-size:10px;">index.html</span> 里搜「姓名 / 简介 / 标签 / 性别 / 生日」= <b>0 处</b>；搜 7 个刻度 = 0 处。<br>
+它现在是一个<b>像素画 + 动效编辑器</b>，不是角色卡编辑器。卡的信息和性格在文档里有结构，在代码里没有入口。
+</div>
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:8px;">六层清单</div>
+
+<div style="display:grid;grid-template-columns:78px 1fr 66px;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;">
+<div style="background:#F7F7F5;padding:7px 8px;font-size:10px;font-weight:600;">层</div>
+<div style="background:#F7F7F5;padding:7px 8px;font-size:10px;font-weight:600;">装什么</div>
+<div style="background:#F7F7F5;padding:7px 8px;font-size:10px;font-weight:600;">现在</div>
+
+<div style="background:#fff;padding:8px;font-size:11px;font-weight:600;color:#4F6B9A;">① 形象</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.85;">像素矩阵（29×29，色号 + 部件双矩阵）<br>图层栈（17 部件、双名、锚点、动效绑定）<br>动作风格（自动 / 活泼 / 温和 / 慵懒 / 紧绷 + 收放）</div>
+<div style="background:#fff;padding:8px;font-size:11px;color:#35705A;font-weight:600;">全有</div>
+
+<div style="background:#fff;padding:8px;font-size:11px;font-weight:600;color:#4F6B9A;">② 身份</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.85;">姓名 1–12 字（必填） / 性别四选一 / 生日 月·日<br>简介 0–200 / 标签 0–6 / 封面裁剪（矩阵取一块）</div>
+<div style="background:#fff;padding:8px;font-size:11px;color:#A14E50;font-weight:600;">一个没有</div>
+
+<div style="background:#fff;padding:8px;font-size:11px;font-weight:600;color:#9A6A2F;">③ 性格</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.85;">7 个 1–5 刻度：社交度 / 表达量 / 节奏 / 好奇 / 秩序 / 情绪波动 / 亲密距离<br>冲突方式：硬顶 / 回避 / 示弱　·　24 词选 3–5<br><span style="font-size:10px;color:#5F6670;">管他去不去跟人说话、多久靠近；卡面只显词不显数值</span></div>
+<div style="background:#fff;padding:8px;font-size:11px;color:#A14E50;font-weight:600;">一个没有</div>
+
+<div style="background:#fff;padding:8px;font-size:11px;font-weight:600;color:#9A6A2F;">④ 边界</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.85;">价值观 ≥1 / 禁忌雷区 ≥1 / <span style="font-family:monospace;font-size:10px;">never_do</span> ≤10 条（永不变）<br>说话风格：句式模板 + 私人词包 10–20 词<br>知识边界：已知 / 未知 / 绝不可知</div>
+<div style="background:#fff;padding:8px;font-size:11px;color:#A14E50;font-weight:600;">一个没有</div>
+
+<div style="background:#fff;padding:8px;font-size:11px;font-weight:600;color:#35705A;">⑤ 关系</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.85;">与别的 OC：类型（亲缘 / 友缘 / 敌对 / 权力 / 爱慕）+ 双向强度 A→B、B→A + 备注</div>
+<div style="background:#fff;padding:8px;font-size:11px;color:#A14E50;font-weight:600;">一个没有</div>
+
+<div style="background:#fff;padding:8px;font-size:11px;font-weight:600;color:#5F6670;">⑥ 系统</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.85;">草稿 / 就绪、完成度、归属宇宙、版本号；以及运行时才有的记忆、怨气值、今日状态</div>
+<div style="background:#fff;padding:8px;font-size:11px;color:#9A6A2F;font-weight:600;">部分</div>
+</div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:6px;line-height:1.7;">前两层决定「长什么样、怎么会动」，中间三层决定「他是谁」，最后一层是系统自己填的。</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:8px;">为什么性格不该塞进「信息」</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px;">
+<div style="font-size:10px;color:#4F6B9A;font-weight:600;margin-bottom:5px;">信息 = 身份事实</div>
+<div style="font-size:11px;line-height:1.85;">姓名、生日、性别。<br>填错只是难看，改完世界不变。<br>一次填完，之后基本不动。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px;">
+<div style="font-size:10px;color:#9A6A2F;font-weight:600;margin-bottom:5px;">性格 = 行为设定</div>
+<div style="font-size:11px;line-height:1.85;">改一个刻度，他接下来几天的行为全变。<br>已有关系和记忆会显得「不像他」。<br>该带提示、该进撤销栈、不该随手改。</div>
+</div>
+</div>
+
+<div style="margin-top:18px;background:#fff;border-left:3px solid #5F6670;padding:11px 13px;">
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+<b style="color:#1A1B1C;">所以：</b>「信息」和「性格」放同一个表单里，会让人以为改性格跟改生日一样轻。实际上前者是<b>改了会变一个人</b>，后者只是改个数字。<br>
+这两样东西该在同一个页面出现，但必须有<b>明显分隔</b>和不同的话术。
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:6px;">编辑器页签怎么分（建议）</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:13px;font-family:monospace;font-size:11px;line-height:2.1;color:#3A3226;">
+<span style="color:#5F6670;">色板</span> ｜ <span style="color:#5F6670;">图层</span> ｜ <span style="color:#4F6B9A;font-weight:600;">角色</span> ｜ <span style="color:#5F6670;">设置</span> ｜ <span style="color:#35705A;font-weight:600;">资料</span> <span style="color:#B9B6AC;">← 新增</span><br>
+<br>
+<span style="color:#4F6B9A;font-weight:600;">【角色】= 表现层，随选中层变化</span><br>
+　动作风格 · 他动起来什么样<br>
+　预览栏 · 点一下就看<br>
+　动效素材<br>
+<br>
+<span style="color:#35705A;font-weight:600;">【资料】= 设定层，跟选中哪层无关</span><br>
+　① 基本信息　姓名 / 性别 / 生日 / 简介 / 标签<br>
+　② 性格　　　7 刻度 + 冲突方式，或 24 词选 3–5<br>
+　③ 边界　　　价值观 / 雷区 / 永不做 / 说话风格<br>
+　④ 关系　　　跟谁、什么关系、多深
+</div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:6px;line-height:1.7;">判断依据还是那条：换一个图层还看得见，属于这个人的整体；换了就消失，属于这一层。资料页四项全都跟图层无关。</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:6px;">文档里有两处得跟着改</div>
+<div style="display:grid;grid-template-columns:160px 1fr;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;">
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-weight:600;color:#5F6670;">位置</div>
+<div style="background:#fff;padding:7px 9px;font-size:10px;font-weight:600;color:#5F6670;">现在怎么写 / 该改成什么</div>
+
+<div style="background:#fff;padding:8px;font-size:10px;">§12.3 @1928</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.8;">现在：「详情页『性格』页签」两种填法。<br><b>问题</b>：详情页是世界里观察时点的，不是创作时填的。<br><b>改成</b>：详情页只<b>只读展示</b> 3–5 个词 + 一个「去编辑器改」；填法搬到编辑器资料页。</div>
+
+<div style="background:#fff;padding:8px;font-size:10px;">§12.10 @2180</div>
+<div style="background:#fff;padding:8px;font-size:11px;line-height:1.8;">现在：X13 十四项全是「怎么画」（撤销、对称笔、描边、猜部件…）。<br><b>缺口</b>：没有一条讲「卡的信息填在哪」。<br><b>改成</b>：补一项 X13.15「卡资料与性格表单」。</div>
+</div>
+
+<div style="margin-top:16px;background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:5px;">一个必须先定的选择</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+<b>A. 编辑器只画不算人</b>：资料/性格/边界都放在别处（创作台表单），编辑器只交出一张矩阵。<br>
+<b>B. 编辑器当角色工作台</b>：加「资料」页签，画完就地填完，一张卡在同一个文件里收口。<br>
+我倾向 B——文档 §12.10 说「编辑器是整个产品的入口，目标是十五分钟内画出一个能动的 OC」，如果填资料要跳出去，这十五分钟就断了。
+</div>
+</div>
+
+</div>
+</div>
+</html>

@@ -1,0 +1,161 @@
+<html style="margin:0;padding:0;">
+<title>多草稿与存档</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:820px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">要。而且存储方案得先算账再选</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">做一个人要几小时，中途想开第二个是必然。但「多草稿」不只是加个列表，它逼着你先把数据多大算清楚——算错，存到第 10 个就爆。</div>
+
+<div style="margin-top:18px;font-size:13px;font-weight:600;margin-bottom:4px;">为什么必须多草稿</div>
+<div style="display:grid;gap:8px;margin-top:9px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">做一个很久，中途想换手</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">画到一半突然想试试另一个想法。单画布就只能二选一——要么放弃当前，要么记着刚才画了啥。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">第一个必然做废</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">新手不懂 17 层怎么分，第一个 OC 大概率是练手。没有多草稿，他只能在同一个画布上反复推翻，越改越乱，最后删掉重来——把唯一的那份也删了。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:11px 13px;">
+<div style="font-size:11px;font-weight:600;">「一套衣服」和「一个角色」是同一种东西</div>
+<div style="font-size:11px;color:#5F6670;line-height:1.9;margin-top:4px;">衣柜里的每套衣服，本质是同一角色的另一个图层变体。既然要存多个变体，那存多角色的技术是同一套——不做，后面衣柜还得重做一次。</div>
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">先算一个角色多大</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">这个数字决定用 localStorage 还是 IndexedDB，别拍脑袋。</div>
+
+<div style="display:grid;grid-template-columns:1fr 118px;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;">
+<div style="background:#fff;padding:7px 9px;font-size:11px;">一层原始像素（29×29 = 841 格，每格 1 字节色号）</div>
+<div style="background:#fff;padding:7px 6px;font-size:11px;text-align:right;color:#5F6670;">841 B</div>
+
+<div style="background:#fff;padding:7px 9px;font-size:11px;">17 层</div>
+<div style="background:#fff;padding:7px 6px;font-size:11px;text-align:right;color:#5F6670;">14 KB</div>
+
+<div style="background:#fff;padding:7px 9px;font-size:11px;">加 3 帧（说话嘴、走路腿）＝ 4 帧 × 17 层</div>
+<div style="background:#fff;padding:7px 6px;font-size:11px;text-align:right;color:#5F6670;">56 KB</div>
+
+<div style="background:#FFF7E6;padding:7px 9px;font-size:11px;">转成 JSON 明文（每个数字变 <code style="font-size:10px;">0,0,0,</code> 三个字符）</div>
+<div style="background:#FFF7E6;padding:7px 6px;font-size:11px;text-align:right;color:#A14E50;">230 KB</div>
+
+<div style="background:#F0F8F3;padding:7px 9px;font-size:11px;">RLE 压缩后（拼豆风大片同色，实测能压 10 倍以上）</div>
+<div style="background:#F0F8F3;padding:7px 6px;font-size:11px;text-align:right;color:#35705A;">15–25 KB</div>
+</div>
+
+<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;">
+<div style="background:#FDF0F0;border:1px solid #F0DADA;border-radius:5px;padding:10px 13px;flex:1;min-width:220px;">
+<div style="font-size:11px;font-weight:600;color:#A14E50;">不压缩 + localStorage</div>
+<div style="font-size:11px;color:#6B5F4A;line-height:1.9;margin-top:4px;">5MB 上限 ÷ 230KB ≈ <b>21 个</b>，还没算浏览器其他占用。到第 15 个就写不进去了，而且 localStorage 写入是同步的，存一次卡一次。</div>
+</div>
+<div style="background:#F0F8F3;border:1px solid #CFE6D9;border-radius:5px;padding:10px 13px;flex:1;min-width:220px;">
+<div style="font-size:11px;font-weight:600;color:#35705A;">压缩 + IndexedDB</div>
+<div style="font-size:11px;color:#6B5F4A;line-height:1.9;margin-top:4px;">上限通常几百 MB，存 <b>几百到上千个</b>都不成问题，而且是异步写入，不卡画布。</div>
+</div>
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#5F6670;line-height:1.9;">
+结论：<b style="color:#1A1B1C;">用 IndexedDB 存，存之前 RLE 压缩。</b>两个都要，缺一个要么卡要么爆。
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">草稿列表长什么样</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">关键：看得见「完成度」。17 层可以只建一半，列表要能告诉玩家哪个还没做完。</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:6px;padding:14px;">
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px;">
+<span style="font-size:12px;font-weight:600;">我的角色</span>
+<span style="font-size:10px;padding:3px 10px;border:1px solid #4F6B9A;border-radius:11px;color:#4F6B9A;">＋ 新建</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;">
+
+<div style="border:1px solid #4F6B9A;border-radius:5px;padding:6px;background:#FAFBFD;">
+<div style="height:76px;background:#EFEDE7;border-radius:3px;display:flex;align-items:center;justify-content:center;">
+<span style="font-size:9px;color:#B9B6AC;">缩略图</span>
+</div>
+<div style="font-size:10px;margin-top:5px;">姐姐</div>
+<div style="font-size:9px;color:#35705A;margin-top:1px;">完成 17/17</div>
+<div style="font-size:9px;color:#B9B6AC;margin-top:1px;">3 分钟前</div>
+</div>
+
+<div style="border:1px solid #E4E3DD;border-radius:5px;padding:6px;">
+<div style="height:76px;background:#EFEDE7;border-radius:3px;display:flex;align-items:center;justify-content:center;">
+<span style="font-size:9px;color:#B9B6AC;">缩略图</span>
+</div>
+<div style="font-size:10px;margin-top:5px;">练手 1</div>
+<div style="font-size:9px;color:#9A6A2F;margin-top:1px;">完成 8/17</div>
+<div style="font-size:9px;color:#B9B6AC;margin-top:1px;">昨天</div>
+</div>
+
+<div style="border:1px solid #E4E3DD;border-radius:5px;padding:6px;">
+<div style="height:76px;background:#EFEDE7;border-radius:3px;display:flex;align-items:center;justify-content:center;">
+<span style="font-size:9px;color:#B9B6AC;">缩略图</span>
+</div>
+<div style="font-size:10px;margin-top:5px;">红衣版本</div>
+<div style="font-size:9px;color:#35705A;margin-top:1px;">完成 15/17</div>
+<div style="font-size:9px;color:#B9B6AC;margin-top:1px;">3 天前</div>
+</div>
+
+<div style="border:1px dashed #E4E3DD;border-radius:5px;padding:6px;display:flex;align-items:center;justify-content:center;min-height:112px;">
+<span style="font-size:10px;color:#B9B6AC;">＋</span>
+</div>
+
+</div>
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#5F6670;line-height:1.9;">
+完成度怎么算：<b>必填的 head / torso 在不在（算 2 项）+ 有多少层绑了动效</b>。不是数层数——建了 17 个空层不算完成。
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">自动保存</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:9px;">每落一笔就存太重，一次都不存又会丢。四个时机。</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;font-weight:600;">每 30 秒</div>
+<div style="font-size:10px;color:#5F6670;margin-top:3px;line-height:1.8;">只在有改动时存。没改就不写。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;font-weight:600;">切走窗口时</div>
+<div style="font-size:10px;color:#5F6670;margin-top:3px;line-height:1.8;">blur 立刻存一次，手机端切后台最常丢。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;font-weight:600;">关页面前</div>
+<div style="font-size:10px;color:#5F6670;margin-top:3px;line-height:1.8;">beforeunload 里存。注意这时只能同步写，所以要留一个 localStorage 的应急槽。</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:10px 11px;">
+<div style="font-size:11px;font-weight:600;">手动 Ctrl+S</div>
+<div style="font-size:10px;color:#5F6670;margin-top:3px;line-height:1.8;">左上角显示「已保存 / 保存中」，点一下也知道存没存。</div>
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">草稿和上岛是两种状态</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;margin-top:9px;">
+<div style="background:#fff;padding:11px 12px;">
+<div style="font-size:11px;font-weight:600;color:#4F6B9A;">草稿</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.9;margin-top:5px;">随便改，改多少次都行。不在岛上出现。</div>
+</div>
+<div style="background:#fff;padding:11px 12px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;">已上岛</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.9;margin-top:5px;">仍在岛上活动。此时再改，改动先存成「待生效」，下次这个角色回到岛外时应用——否则改到一半的 OC 正在走路，会当场变形。</div>
+</div>
+</div>
+
+<div style="margin-top:18px;background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:6px;">还必须有「导出成一个文件」</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+存在浏览器里，清个缓存就全没了。用户一旦意识到这点就不敢认真做。<br>
+所以要给一个导出：一个 <code style="font-size:10px;">.oc</code> 文件（就是压缩后的 JSON），能存到本地、能发给朋友、能再导入。<br>
+这既是备份，也是分享——「我给你我家 OC」这件事，比任何社交功能都更容易自传播。
+</div>
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:4px;">但别做成文件管理器</div>
+<div style="font-size:11px;line-height:2.0;">
+首版<b>上限 20 个草稿</b>就够，不做文件夹、不做标签、不做搜索。<br>
+理由：一个人观察蚂蚁箱里的 2–3 个 OC，做 20 个已经是玩很久了。做成文件夹体系，玩家会把时间花在整理，而不是画画。<br>
+到 20 个时提示「删掉一些再建」，简单粗暴但清楚。
+</div>
+
+</div>
+</div>
+</html>

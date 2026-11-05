@@ -1,0 +1,163 @@
+<html style="margin:0;padding:0;">
+<title>性格该放哪：角色级还是层级</title>
+<div style="box-sizing:border-box;padding:20px 18px;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;color:#1A1B1C;background:#F7F7F5;">
+<div style="max-width:830px;margin:0 auto;">
+
+<div style="font-size:19px;font-weight:600;">性格放错了，而且不只性格</div>
+<div style="font-size:12px;color:#5F6670;margin-top:5px;line-height:1.7;">现在「设置」页面板标题是「部件设置」，但里面塞了四项属于整个人、不属于这一层的东西。</div>
+
+<div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;">
+<div style="font-size:10px;color:#A14E50;font-weight:600;margin-bottom:6px;">现在塞在这一层里的</div>
+<div style="font-size:11px;line-height:2.0;">
+性格四选一　<span style="font-size:10px;color:#B9B6AC;">全局</span><br>
+动作 10 个勾选　<span style="font-size:10px;color:#B9B6AC;">全局</span><br>
+表情 8 个勾选　<span style="font-size:10px;color:#B9B6AC;">全局</span><br>
+动效素材管理　<span style="font-size:10px;color:#B9B6AC;">全局</span>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;">
+<div style="font-size:10px;color:#35705A;font-weight:600;margin-bottom:6px;">真正属于这一层的</div>
+<div style="font-size:11px;line-height:2.0;">
+外观设置　<span style="font-size:10px;color:#B9B6AC;">换色 / 高光 / 嘴型</span><br>
+运动设置　<span style="font-size:10px;color:#B9B6AC;">锚点 / 摆幅</span><br>
+系统设置　<span style="font-size:10px;color:#B9B6AC;">可见 / 激活 / 层序</span><br>
+动效挂载　<span style="font-size:10px;color:#B9B6AC;">这层跟什么动</span>
+</div>
+</div>
+</div>
+
+<div style="margin-top:20px;background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:6px;">为什么这是 bug 而不是「凑合能用」</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+选中「外套」层，把性格从温和改成活泼——然后切到「腿」层，发现性格也是活泼。<br>
+玩家会以为「我刚才只改了外套的性格」，实际改了整个人。<br>
+反过来更糟：在「头发」层把它调回温和，会把腿上的也改回去，而他不知道自己动了腿。<br>
+<b>某个设置改了另一处的东西，就是位置错了。</b>
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">正确的分区：三个页签各管一层范围</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;margin-top:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;border-top:3px solid #5F6670;">
+<div style="font-size:11px;font-weight:600;">图层</div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:2px;">选哪个层在动</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:6px;">层列表、新建、删除、合并、搜索</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;border-top:3px solid #4F6B9A;">
+<div style="font-size:11px;font-weight:600;">设置</div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:2px;">这一层的事</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:6px;">外观 / 运动 / 系统 / 动效挂载</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;border-top:3px solid #35705A;">
+<div style="font-size:11px;font-weight:600;">角色 <span style="font-size:9px;color:#fff;background:#35705A;padding:1px 5px;border-radius:3px;">新增</span></div>
+<div style="font-size:10px;color:#B9B6AC;margin-top:2px;">这一个人的事</div>
+<div style="font-size:10px;color:#5F6670;line-height:1.8;margin-top:6px;">性格 / 动作 10 / 表情 8 / 动效素材</div>
+</div>
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#5F6670;line-height:1.9;">
+判断标准一句话：<b style="color:#1A1B1C;">换一个层还看得见，就属于角色；换一个层就消失，就属于层。</b><br>
+「这个角色会不会挥手」换层当然还看得见 → 角色。「这层头发飘不飘」换层就变 → 层。
+</div>
+
+<div style="margin-top:24px;font-size:13px;font-weight:600;margin-bottom:4px;">分图层改吗？不改。一个基准 + 逐项覆盖</div>
+<div style="font-size:11px;color:#5F6670;margin-bottom:10px;">性格的意义就是「跨部件一致的节奏」。拆成每层一个，会立刻自相矛盾。</div>
+
+<div style="background:#fff;border-left:3px solid #4F6B9A;padding:12px 14px;">
+<div style="font-size:11px;line-height:1.95;color:#5F6670;">
+如果手臂性格活泼、腿性格慵懒——走起来是手臂大幅甩、腿慢慢挪，看着像半身不遂。<br>
+<b style="color:#1A1B1C;">性格不是「这条腿的性格」，是「这个人走路的样子」。</b>它必须是一个数。
+</div>
+</div>
+
+<div style="margin-top:14px;font-size:12px;font-weight:600;margin-bottom:6px;">专业版也不要每层一个性格，要「基准 + 覆盖」</div>
+
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px 13px;font-family:monospace;font-size:11px;line-height:1.9;">
+character.personality = 'lively'　<span style="color:#B9B6AC;">// 基准，全体生效</span><br>
+character.tune = 0　　　　　　　<span style="color:#B9B6AC;">// 整体再收放一档</span><br>
+character.overrides = {　　　　<span style="color:#B9B6AC;">// 专业版逐项覆盖，空 = 跟随基准</span><br>
+&nbsp;&nbsp;arm_r: { swing: 2 },　<span style="color:#B9B6AC;">// 这个人右手笨一点</span><br>
+&nbsp;&nbsp;eyes:&nbsp; { blink: 'normal' },<br>
+&nbsp;&nbsp;torso: { breath: 0 }　<span style="color:#B9B6AC;">// 这个人体弱</span><br>
+}
+</div>
+
+<div style="margin-top:10px;font-size:11px;color:#5F6670;line-height:1.9;">
+为什么用「覆盖」而不是「每层各存一份」：<br>
+<b>① 不覆盖的部件自动跟随基准</b>，改基准一下全身就变，不用挨个调 8 次。<br>
+<b>② 只需要补差异</b>，多数角色 overrides 是空的。<br>
+<b>③ 数据不会打架</b>——永远只有一个基准，一个覆盖表，不会出现「8 个性格哪个算数」。
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">普通版与专业版各给什么</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;">
+<div style="font-size:11px;font-weight:600;color:#4F6B9A;margin-bottom:7px;">普通版</div>
+<div style="font-size:11px;line-height:1.9;">
+四个 chip：活泼 / 温和 / 慵懒 / 紧绷<br>
+一条滑杆：更收一点 ↔ 更放一点（−1 / 0 / +1）<br>
+结束。<br>
+<span style="font-size:10px;color:#B9B6AC;">看不见任何 overrides，也不需要知道它存在。</span>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #E4E3DD;border-radius:5px;padding:12px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:7px;">专业版</div>
+<div style="font-size:11px;line-height:1.9;">
+同样的 chip + 滑杆，作为「基准」<br>
+下面多一张表：七个部件 × 各自参数<br>
+每格留空就跟随基准，填了才覆盖<br>
+<span style="font-size:10px;color:#B9B6AC;">面板是<b>角色页</b>，不是层设置页。</span>
+</div>
+</div>
+</div>
+
+<div style="margin-top:22px;font-size:13px;font-weight:600;margin-bottom:4px;">具体要改七处</div>
+
+<div style="display:grid;grid-template-columns:56px 1fr;gap:1px;background:#E4E3DD;border:1px solid #E4E3DD;">
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-weight:600;color:#5F6670;">位置</div>
+<div style="background:#fff;padding:7px 9px;font-size:10px;font-weight:600;color:#5F6670;">改什么</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">402</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">图层页保持不动，只留层列表与增删</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">414</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">新增第四个 tab「角色」，<b>版式与「设置」平级</b>；edition 切换挪到角色页顶部</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">4082<br>4089</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">性格渲染从 <b>renderSettings 挪到 renderCharacter</b>，不再随选中层重画</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">4091<br>4098</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">动作 / 表情勾选同样挪走，与性格同页</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">4100<br>4111</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">动效素材管理挪走，只留一个「本层加一帧」按钮在层设置里</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">4113<br>4121</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">renderSettings 只组装四段：外观 / 运动 / 系统 / 动效挂载</div>
+
+<div style="background:#fff;padding:7px 8px;font-size:10px;font-family:monospace;">3547<br>3553</div>
+<div style="background:#fff;padding:7px 9px;font-size:11px;">defaultCharacter 与 normalizeCharacter 各加一个 <b>overrides: {}</b>，导入旧档补空对象</div>
+</div>
+
+<div style="margin-top:22px;background:#FFF7E6;border:1px solid #F0E2C8;border-radius:5px;padding:12px 13px;">
+<div style="font-size:11px;font-weight:600;color:#9A6A2F;margin-bottom:6px;">一个连带问题，得同时处理</div>
+<div style="font-size:11px;line-height:1.95;color:#6B5F4A;">
+现在 <b>edition 切换</b>放在「部件设置」页顶部，跟层设置混在一起。<br>
+挪到角色页后，「专业版」这个开关就不再跟某一层绑定——这本来就是对的，它是<b>给这个人的编辑精度</b>，不是某一层的属性。<br>
+但要注意：层设置页的「运动设置」段仍要保留专业版判断（专业版才能展开锚点和摆幅），只是开关本身搬走。
+</div>
+</div>
+
+<div style="margin-top:20px;font-size:13px;font-weight:600;margin-bottom:4px;">改完玩家看到的样子</div>
+<div style="font-size:11px;line-height:2.0;">
+点「角色」→ 选活泼 → 一条收放滑杆 → 下面是动作和表情的勾选清单 → 完事离开。<br>
+点「图层」→ 选中外套 → 点「设置」→ 只有换色、下摆、层序、这层跟什么动。<br>
+<b style="color:#1A1B1C;">两个页签做的事不会互相污染，这才是分区。</b>
+</div>
+
+</div>
+</div>
+</html>
